@@ -1,0 +1,6 @@
+{
+  "name": "Gourmet Bistro & POS System",
+  "description": "Sistema profesional de pedidos, punto de venta (POS) y pantalla de cocina (KDS) para restaurantes gourmet con gestión de mesas, catálogo, pedidos y roles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
