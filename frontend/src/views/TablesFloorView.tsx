@@ -5,6 +5,8 @@ import { TableCard } from '../components/TableCard.tsx';
 import { StatusBadge } from '../components/ui/StatusBadge.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
+import { FoodPlate3D } from '../components/3d/FoodPlate3D.tsx';
+import { Food3DModal } from '../components/3d/Food3DModal.tsx';
 import {
   LayoutGrid,
   Filter,
@@ -33,6 +35,8 @@ export const TablesFloorView: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'Disponible' | 'Ocupada'>('all');
   const [areaFilter, setAreaFilter] = useState<string>('all');
   const [inspectedOrderId, setInspectedOrderId] = useState<number | null>(null);
+  const [is3DModalOpen, setIs3DModalOpen] = useState(false);
+  const [showHeroBanner, setShowHeroBanner] = useState(true);
 
   const inspectedOrder = orders.find((o) => o.id === inspectedOrderId);
 
@@ -86,6 +90,62 @@ export const TablesFloorView: React.FC = () => {
           )
         }
       />
+
+      {/* Jeton Editorial 3D Food Plates Hero Banner */}
+      {showHeroBanner && (
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#f73b20] via-[#f84d35] to-[#ffbfae] text-white p-6 sm:p-8 shadow-2xl border border-white/20 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Left text column */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white border border-white/30">
+                <Sparkles className="w-3.5 h-3.5 text-white" />
+                <span>Modelos 3D de Platos Gourmet • Presentación Culinaria</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white leading-[1.05]">
+                One POS for all dining needs.
+              </h2>
+
+              <p className="text-sm sm:text-base text-white/95 font-normal max-w-lg leading-relaxed">
+                Control de comandas y estado de mesas en tiempo real con alta gastronomía modelada en 3D interactivo.
+              </p>
+
+              <div className="flex items-center gap-3 pt-2 flex-wrap">
+                <button
+                  onClick={() => setIs3DModalOpen(true)}
+                  className="px-5 py-2.5 rounded-full bg-white text-[#f73b20] hover:bg-[#fdedea] font-semibold text-xs transition-all shadow-md cursor-pointer flex items-center gap-1.5 min-h-[44px]"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Explorar Platos en 3D
+                </button>
+
+                {(currentUser?.role === 'mesero' || currentUser?.role === 'administrador') && (
+                  <button
+                    onClick={() => setActiveView('nuevo-pedido')}
+                    className="px-5 py-2.5 rounded-full bg-black/20 hover:bg-black/30 backdrop-blur-md text-white font-semibold text-xs transition-all border border-white/30 cursor-pointer min-h-[44px] flex items-center gap-1.5"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Tomar Pedido
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowHeroBanner(false)}
+                  className="text-xs text-white/70 hover:text-white px-2 py-1 ml-auto cursor-pointer"
+                  title="Ocultar banner temporalmente"
+                >
+                  Ocultar banner
+                </button>
+              </div>
+            </div>
+
+            {/* Right 3D Canvas column */}
+            <div className="lg:col-span-5 h-72 sm:h-80 w-full rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 relative shadow-inner">
+              <FoodPlate3D variant="compact" className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metric Cards estilo Jeton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -318,6 +378,12 @@ export const TablesFloorView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Food 3D Modal */}
+      <Food3DModal
+        isOpen={is3DModalOpen}
+        onClose={() => setIs3DModalOpen(false)}
+      />
     </div>
   );
 };

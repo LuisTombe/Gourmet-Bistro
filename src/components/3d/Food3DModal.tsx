@@ -103,3 +103,4 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
     </div>
   );
 };
+

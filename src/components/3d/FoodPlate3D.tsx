@@ -475,3 +475,4 @@ export const FoodPlate3D: React.FC<FoodPlate3DProps> = ({
     </div>
   );
 };
+
