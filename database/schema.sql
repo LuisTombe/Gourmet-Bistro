@@ -173,3 +173,4 @@ INSERT INTO `system_version_snapshots` (`id`, `version_tag`, `branch`, `commit_h
 ('snap-001', 'v1.0.0-rc1', 'main', 'e95edec', 'Luis Tombe', 'administrador', 'Versión base funcional del prototipo interactivo (Mesas, KDS, Pedidos, Menú)', 'git_release'),
 ('snap-002', 'v1.0.0-docs', 'main', 'affd3ec', 'Luis Tombe', 'administrador', 'Documentación técnica del sistema: SRS, PRD, TRD y User Flow', 'git_release'),
 ('snap-003', 'v0.1.0-init', 'Dev', '01a744b', 'Luis Tombe', 'administrador', 'Initial commit: Configuración inicial del repositorio en rama Dev', 'git_release');
+

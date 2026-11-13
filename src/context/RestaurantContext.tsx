@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Order, OrderItem, OrderStatus, Product, Table, TableStatus, User, UserRole, SystemVersionSnapshot } from '../types/index.ts';
+import { api } from '../services/api.ts';
 import {
   INITIAL_USERS,
   INITIAL_PRODUCTS,
@@ -136,6 +137,39 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SNAPSHOTS, JSON.stringify(snapshots));
   }, [snapshots]);
+
+  // Carga inicial y sincronización con MySQL vía Backend REST API
+  const refreshAllFromDatabase = async () => {
+    try {
+      const [u, t, p, o, s] = await Promise.all([
+        api.getUsers(),
+        api.getTables(),
+        api.getProducts(),
+        api.getOrders(),
+        api.getSnapshots(),
+      ]);
+      if (u && u.length) setUsers(u);
+      if (t && t.length) setTables(t);
+      if (p && p.length) setProducts(p);
+      if (o) setOrders(o);
+      if (s && s.length) setSnapshots(s);
+    } catch (err) {
+      console.warn('API REST no disponible en este momento; operando con caché local.', err);
+    }
+  };
+
+  useEffect(() => {
+    refreshAllFromDatabase();
+    const interval = setInterval(() => {
+      api.getOrders().then((latestOrders) => {
+        if (latestOrders) setOrders(latestOrders);
+      }).catch(() => {});
+      api.getTables().then((latestTables) => {
+        if (latestTables) setTables(latestTables);
+      }).catch(() => {});
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -280,6 +314,16 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setOrders((prev) => [newOrder, ...prev]);
     showToast(`Pedido #${newOrderId} enviado a cocina para Mesa ${targetTable.tableNumber}`, 'success');
+
+    // Persistir orden en MySQL vía API REST
+    api.createOrder(targetTable.id, currentUser.id, items, notes)
+      .then((res) => {
+        if (res.order) {
+          setOrders((prev) => [res.order, ...prev.filter((o) => o.id !== newOrderId && o.id !== res.order.id)]);
+        }
+      })
+      .catch((err) => console.warn('Pedido guardado localmente (sincronización con backend pendiente):', err));
+
     return { success: true, orderId: newOrderId };
   };
 
@@ -314,6 +358,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       )
     );
 
+    // Persistir transición de estado en MySQL vía API REST
+    api.updateOrderStatus(orderId, nextStatus).catch(console.error);
+
     if (nextStatus === 'Entregado') {
       showToast(`Pedido #${orderId} entregado. Mesa ${order.tableNumber} liberada.`, 'success');
     } else if (nextStatus === 'Listo') {
@@ -340,6 +387,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const newProduct: Product = { ...productData, id: newId };
     setProducts((prev) => [...prev, newProduct]);
     showToast(`Producto '${newProduct.name}' creado exitosamente.`, 'success');
+    api.createProduct(productData).then((created) => {
+      if (created) setProducts((prev) => [...prev.filter((p) => p.id !== newId && p.id !== created.id), created]);
+    }).catch(console.error);
     return { success: true };
   };
 
@@ -359,6 +409,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...productData } : p)));
     showToast('Producto actualizado correctamente.', 'success');
+    api.updateProduct(id, productData).catch(console.error);
     return { success: true };
   };
 
@@ -370,6 +421,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, available: !p.available } : p))
     );
+    api.toggleProductAvailability(id).catch(console.error);
     const prod = products.find((p) => p.id === id);
     if (prod) {
       showToast(
@@ -390,6 +442,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     setProducts((prev) => prev.filter((p) => p.id !== id));
     showToast('Producto eliminado del menú.', 'success');
+    api.deleteProduct(id).catch(console.error);
     return { success: true };
   };
 
@@ -408,6 +461,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const newTable: Table = { ...tableData, id: newId };
     setTables((prev) => [...prev, newTable]);
     showToast(`Mesa ${newTable.tableNumber} creada exitosamente.`, 'success');
+    api.createTable(tableData).then((created) => {
+      if (created) setTables((prev) => [...prev.filter((t) => t.id !== newId && t.id !== created.id), created]);
+    }).catch(console.error);
     return { success: true };
   };
 
@@ -426,6 +482,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setTables((prev) => prev.map((t) => (t.id === id ? { ...t, ...tableData } : t)));
     showToast('Mesa actualizada correctamente.', 'success');
+    api.updateTable(id, tableData).catch(console.error);
     return { success: true };
   };
 
@@ -440,6 +497,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     setTables((prev) => prev.filter((t) => t.id !== id));
     showToast('Mesa eliminada correctamente.', 'success');
+    api.deleteTable(id).catch(console.error);
     return { success: true };
   };
 
@@ -462,6 +520,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
     setUsers((prev) => [...prev, newUser]);
     showToast(`Usuario '${newUser.username}' registrado.`, 'success');
+    api.createUser(userData).then((created) => {
+      if (created) setUsers((prev) => [...prev.filter((u) => u.id !== newId && u.id !== created.id), created]);
+    }).catch(console.error);
     return { success: true };
   };
 
@@ -482,6 +543,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...userData } : u)));
     showToast('Usuario actualizado.', 'success');
+    api.updateUser(id, userData).catch(console.error);
     return { success: true };
   };
 
@@ -497,6 +559,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u))
     );
+    api.toggleUserActive(id).catch(console.error);
     const u = users.find((user) => user.id === id);
     if (u) {
       showToast(`Usuario '${u.username}' ${!u.active ? 'activado' : 'desactivado'}.`, 'info');
@@ -524,6 +587,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
     setSnapshots((prev) => [newSnapshot, ...prev]);
     showToast(`Punto de versión "${newSnapshot.versionTag}" creado correctamente.`, 'success');
+    api.createSnapshot(description, versionTag, currentUser?.name, currentUser?.role).then((res) => {
+      if (res.snapshot) {
+        setSnapshots((prev) => [res.snapshot, ...prev.filter((s) => s.id !== newSnapshot.id && s.id !== res.snapshot.id)]);
+      }
+    }).catch(console.error);
     return { success: true, snapshot: newSnapshot };
   };
 
@@ -546,6 +614,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem(STORAGE_KEYS.TABLES, JSON.stringify(snap.stateBackup.tables));
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(snap.stateBackup.orders));
     showToast(`Sistema revertido con éxito al estado de la versión ${snap.versionTag}.`, 'success');
+    api.rollbackSnapshot(snapshotId).then(() => {
+      refreshAllFromDatabase();
+    }).catch(console.error);
     return { success: true, message: `Revertido a ${snap.versionTag}` };
   };
 
