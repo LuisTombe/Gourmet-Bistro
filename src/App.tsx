@@ -17,11 +17,11 @@ const AppContent: React.FC = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#ffffff] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">
-            Verificando sesión segura...
+          <div className="w-10 h-10 border-4 border-[#f73b20] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-[#360802] font-medium tracking-[0.04em] uppercase">
+            Cargando Jeton Bistro POS...
           </span>
         </div>
       </div>

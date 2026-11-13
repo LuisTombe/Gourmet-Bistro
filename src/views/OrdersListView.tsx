@@ -124,7 +124,7 @@ export const OrdersListView: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="py-12 text-center">
                     <EmptyState
-                      icon={ClipboardList}
+                      icon={<ClipboardList className="w-7 h-7" />}
                       title="No se encontraron pedidos"
                       description="Pruebe con otros filtros o registre un nuevo pedido."
                     />

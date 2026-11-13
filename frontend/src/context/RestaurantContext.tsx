@@ -4,6 +4,7 @@ import {
   OrderItem,
   OrderStatus,
   Product,
+  ProductCategory,
   Table,
   TableStatus,
   User,
@@ -20,6 +21,139 @@ import {
   computeTableStatus,
 } from '../domain/rules.ts';
 
+export interface DraftCartItem {
+  product: Product;
+  quantity: number;
+  notes?: string;
+}
+
+function classifyProductMeta(name: string, description: string): {
+  category: ProductCategory;
+  station: Product['station'];
+  image: string;
+} {
+  const text = `${name} ${description}`.toLowerCase();
+
+  if (
+    text.includes('bife') ||
+    text.includes('cordero') ||
+    text.includes('salmón') ||
+    text.includes('salmon') ||
+    text.includes('costilla') ||
+    text.includes('corte') ||
+    text.includes('parrilla') ||
+    text.includes('lomo') && !text.includes('carpaccio')
+  ) {
+    if (text.includes('salmón') || text.includes('salmon')) {
+      return {
+        category: 'Carnes & Grill',
+        station: 'Parrilla',
+        image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    if (text.includes('cordero') || text.includes('costilla')) {
+      return {
+        category: 'Carnes & Grill',
+        station: 'Parrilla',
+        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Carnes & Grill',
+      station: 'Parrilla',
+      image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('risotto') ||
+    text.includes('ravioli') ||
+    text.includes('pappardelle') ||
+    text.includes('pasta') ||
+    text.includes('tagliatelle')
+  ) {
+    if (text.includes('risotto')) {
+      return {
+        category: 'Pastas & Risottos',
+        station: 'Cocina',
+        image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Pastas & Risottos',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('tiramis') ||
+    text.includes('chocolate') ||
+    text.includes('esfera') ||
+    text.includes('postre') ||
+    text.includes('helado') ||
+    text.includes('mousse')
+  ) {
+    if (text.includes('tiramis')) {
+      return {
+        category: 'Postres',
+        station: 'Pastelería',
+        image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Postres',
+      station: 'Pastelería',
+      image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('cóctel') ||
+    text.includes('coctel') ||
+    text.includes('old fashioned') ||
+    text.includes('gin') ||
+    text.includes('limonada') ||
+    text.includes('vino') ||
+    text.includes('malbec') ||
+    text.includes('bourbon')
+  ) {
+    if (text.includes('limonada')) {
+      return {
+        category: 'Bebidas & Bar',
+        station: 'Bar',
+        image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Bebidas & Bar',
+      station: 'Bar',
+      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (text.includes('burrata')) {
+    return {
+      category: 'Entradas',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+  if (text.includes('atún') || text.includes('atun') || text.includes('tartar')) {
+    return {
+      category: 'Entradas',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  return {
+    category: 'Entradas',
+    station: 'Cocina',
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+  };
+}
+
 interface ToastNotification {
   id: string;
   type: 'success' | 'error' | 'info';
@@ -35,9 +169,15 @@ interface RestaurantContextType {
   orders: Order[];
   activeView: string;
   selectedTableForOrder: Table | null;
+  draftCart: DraftCartItem[];
   toasts: ToastNotification[];
   setActiveView: (view: string) => void;
   setSelectedTableForOrder: (table: Table | null) => void;
+  addToDraftCart: (product: Product, quantity?: number) => void;
+  updateDraftQuantity: (productId: number, delta: number) => void;
+  removeFromDraftCart: (productId: number) => void;
+  updateDraftItemNote: (productId: number, notes: string) => void;
+  clearDraftCart: () => void;
   login: (username: string, password?: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   createOrder: (
@@ -69,17 +209,57 @@ interface RestaurantContextType {
   rollbackToSnapshot: (snapshotId: string) => { success: boolean; message: string };
 }
 
+const INITIAL_SEEDED_PRODUCTS: Product[] = [
+  ['Carpaccio de Res Trufado', 'Láminas de lomo con aceite de trufa y parmesano reggiano.', 38000],
+  ['Burrata Pugliese con Higos', 'Burrata fresca sobre rúcula silvestre e higos caramelizados.', 34000],
+  ['Tartar de Atún Rojo & Palta', 'Atún fresco con aderezo ponzu y emulsión de aguacate.', 42000],
+  ['Ojo de Bife Angosto (400g)', 'Corte madurado 28 días terminado a la leña.', 89000],
+  ['Costillas de Cordero Patagónico', 'Costillas al romero y puré rústico.', 84000],
+  ['Salmón Austral Glaseado', 'Filete de salmón salvaje con glaseado teriyaki.', 72000],
+  ['Risotto ai Frutti di Mare', 'Arroz carnaroli con langostinos, calamares y mejillones.', 62000],
+  ['Ravioli de Ossobuco Braseado', 'Pasta artesanal bañada en reducción al vino tinto.', 56000],
+  ['Pappardelle al Ragu de Jabalí', 'Cintas caseras con ragú toscano cocinado 8 horas.', 54000],
+  ['Tiramisú Tradizionale', 'Savoiardi con café espresso y crema mascarpone.', 24000],
+  ['Esfera de Chocolate Valrhona', 'Mousse de avellana con baño de cacao amargo.', 28000],
+  ['Cóctel Smoked Old Fashioned', 'Bourbon añejo con piel de naranja y humo de roble.', 36000],
+  ['Gin Tonic Botánico', 'Ginebra artesanal con frutos rojos y enebro fresco.', 32000],
+  ['Limonada de Hierbabuena & Jengibre', 'Extracto natural de limón y hierbabuena fresca.', 14000],
+].map(([name, description, price], index) => {
+  const meta = classifyProductMeta(String(name), String(description));
+  return {
+    id: index + 1,
+    name: String(name),
+    description: String(description),
+    price: Number(price),
+    category: meta.category,
+    available: true,
+    image: meta.image,
+    station: meta.station,
+  };
+});
+
+const INITIAL_SEEDED_TABLES: Table[] = Array.from({ length: 9 }, (_, idx) => {
+  const areas: Table['area'][] = ['Salón Principal', 'Terraza Gourmet', 'Zona VIP'];
+  return {
+    id: idx + 1,
+    tableNumber: idx + 1,
+    capacity: idx % 3 === 0 ? 6 : idx % 2 === 0 ? 4 : 2,
+    area: areas[idx % areas.length],
+  };
+});
+
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
 
 export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [users, setUsers] = useState<User[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [tables, setTables] = useState<Table[]>([]);
+  const [products, setProducts] = useState<Product[]>(INITIAL_SEEDED_PRODUCTS);
+  const [tables, setTables] = useState<Table[]>(INITIAL_SEEDED_TABLES);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeView, setActiveView] = useState<string>('mesas');
   const [selectedTableForOrder, setSelectedTableForOrder] = useState<Table | null>(null);
+  const [draftCart, setDraftCart] = useState<DraftCartItem[]>([]);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>([]);
 
@@ -95,6 +275,56 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // --- Carrito borrador compartido entre Platos 3D y Nuevo Pedido ---
+  const addToDraftCart = useCallback((product: Product, quantity = 1) => {
+    if (!product.available) {
+      showToast(`"${product.name}" no está disponible actualmente.`, 'error');
+      return;
+    }
+    setDraftCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { product, quantity }];
+    });
+    showToast(`+${quantity} ${product.name} añadido al pedido en curso`, 'success');
+  }, [showToast]);
+
+  const updateDraftQuantity = useCallback((productId: number, delta: number) => {
+    setDraftCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.product.id === productId) {
+            const nextQty = item.quantity + delta;
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+          }
+          return item;
+        })
+        .filter((item): item is DraftCartItem => item !== null)
+    );
+  }, []);
+
+  const removeFromDraftCart = useCallback((productId: number) => {
+    setDraftCart((prev) => prev.filter((item) => item.product.id !== productId));
+  }, []);
+
+  const updateDraftItemNote = useCallback((productId: number, notes: string) => {
+    setDraftCart((prev) =>
+      prev.map((item) =>
+        item.product.id === productId ? { ...item, notes: notes.trim() } : item
+      )
+    );
+  }, []);
+
+  const clearDraftCart = useCallback(() => {
+    setDraftCart([]);
+  }, []);
+
   // 1. Cargar datos del catálogo y pedidos desde los microservicios
   const refreshData = useCallback(async () => {
     try {
@@ -106,26 +336,30 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (prodRes.status === 'fulfilled' && prodRes.value.productos) {
         setProducts(
-          prodRes.value.productos.map((p) => ({
-            id: p.id_producto,
-            name: p.nombre,
-            description: p.descripcion || '',
-            price: Number(p.precio),
-            category: 'Entradas',
-            available: Boolean(p.disponible),
-            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
-            station: 'Cocina',
-          }))
+          prodRes.value.productos.map((p) => {
+            const meta = classifyProductMeta(p.nombre, p.descripcion || '');
+            return {
+              id: p.id_producto,
+              name: p.nombre,
+              description: p.descripcion || '',
+              price: Number(p.precio),
+              category: meta.category,
+              available: Boolean(p.disponible),
+              image: meta.image,
+              station: meta.station,
+            };
+          })
         );
       }
 
       if (mesasRes.status === 'fulfilled' && mesasRes.value.mesas) {
+        const areas: Table['area'][] = ['Salón Principal', 'Terraza Gourmet', 'Zona VIP'];
         setTables(
-          mesasRes.value.mesas.map((m) => ({
+          mesasRes.value.mesas.map((m, idx) => ({
             id: m.id_mesa,
             tableNumber: m.numero_mesa,
-            capacity: 4,
-            area: 'Salón Principal',
+            capacity: idx % 3 === 0 ? 6 : idx % 2 === 0 ? 4 : 2,
+            area: areas[idx % areas.length],
           }))
         );
       }
@@ -587,9 +821,15 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         orders,
         activeView,
         selectedTableForOrder,
+        draftCart,
         toasts,
         setActiveView,
         setSelectedTableForOrder,
+        addToDraftCart,
+        updateDraftQuantity,
+        removeFromDraftCart,
+        updateDraftItemNote,
+        clearDraftCart,
         login,
         logout,
         createOrder,

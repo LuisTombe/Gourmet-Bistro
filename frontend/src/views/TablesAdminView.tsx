@@ -53,7 +53,7 @@ export const TablesAdminView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -67,7 +67,7 @@ export const TablesAdminView: React.FC = () => {
     }
 
     if (editingTable) {
-      const res = updateTable(editingTable.id, {
+      const res = await updateTable(editingTable.id, {
         tableNumber: Number(tableNumber),
         capacity: Number(capacity),
         area,
@@ -75,7 +75,7 @@ export const TablesAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar.');
     } else {
-      const res = addTable({
+      const res = await addTable({
         tableNumber: Number(tableNumber),
         capacity: Number(capacity),
         area,

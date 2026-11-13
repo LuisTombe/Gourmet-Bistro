@@ -90,7 +90,7 @@ export const MenuAdminView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -104,7 +104,7 @@ export const MenuAdminView: React.FC = () => {
     }
 
     if (editingProduct) {
-      const res = updateProduct(editingProduct.id, {
+      const res = await updateProduct(editingProduct.id, {
         name: name.trim(),
         description: description.trim(),
         price: Number(price),
@@ -116,7 +116,7 @@ export const MenuAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar.');
     } else {
-      const res = addProduct({
+      const res = await addProduct({
         name: name.trim(),
         description: description.trim(),
         price: Number(price),
@@ -211,7 +211,7 @@ export const MenuAdminView: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="py-12 text-center">
                     <EmptyState
-                      icon={UtensilsCrossed}
+                      icon={<UtensilsCrossed className="w-7 h-7" />}
                       title="No se encontraron productos"
                       description="Pruebe cambiando el filtro de categoría o busque por otro término."
                     />

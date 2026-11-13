@@ -47,7 +47,7 @@ export const UsersAdminView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -61,7 +61,7 @@ export const UsersAdminView: React.FC = () => {
     }
 
     if (editingUser) {
-      const res = updateUser(editingUser.id, {
+      const res = await updateUser(editingUser.id, {
         username: username.trim().toLowerCase(),
         name: name.trim(),
         role,
@@ -70,7 +70,7 @@ export const UsersAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar usuario.');
     } else {
-      const res = addUser({
+      const res = await addUser({
         username: username.trim().toLowerCase(),
         name: name.trim(),
         role,
