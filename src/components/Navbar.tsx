@@ -78,7 +78,8 @@ export const Navbar: React.FC = React.memo(() => {
     activeView === 'versionamiento';
 
   return (
-    <header className="bg-[#ffffff]/95 backdrop-blur-xl text-[#360802] border-b border-[#e7dcdb]/80 sticky top-0 z-40">
+    <>
+      <header className="bg-[#ffffff]/95 backdrop-blur-xl text-[#360802] border-b border-[#e7dcdb]/80 sticky top-0 z-40">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between min-h-[48px] gap-4">
           {/* Left: Clean Editorial Brand + Quiet Live Summary */}
@@ -248,7 +249,7 @@ export const Navbar: React.FC = React.memo(() => {
                     boxShadow:
                       'rgba(247, 59, 32, 0.1) 0px 12px 32px 0px, rgba(54, 8, 2, 0.06) 0px 2px 8px 0px',
                   }}
-                  className="absolute right-0 mt-2.5 w-76 bg-[#ffffff] border border-[#e7dcdb] rounded-2xl z-50 overflow-hidden divide-y divide-[#e7dcdb]"
+                  className="absolute right-0 top-full mt-2.5 w-72 sm:w-80 max-h-[calc(100vh-5rem)] overflow-y-auto bg-[#ffffff] border border-[#e7dcdb] rounded-2xl z-[60] divide-y divide-[#e7dcdb]"
                 >
                   <div className="p-4 bg-[#fdedea]/45">
                     <div className="flex items-center gap-3">
@@ -436,7 +437,9 @@ export const Navbar: React.FC = React.memo(() => {
         </button>
       </div>
 
+      </header>
+
       <Food3DModal isOpen={is3DModalOpen} onClose={() => setIs3DModalOpen(false)} />
-    </header>
+    </>
   );
 });

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { FoodPlate3D, PLATES_3D_CATALOG } from './FoodPlate3D.tsx';
 import { useRestaurant } from '../../context/RestaurantContext.tsx';
 import { calculateOrderTotal } from '../../domain/rules.ts';
@@ -118,19 +119,22 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
     setActiveView('nuevo-pedido');
   };
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#360802]/60 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-[#360802]/60 backdrop-blur-md overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-3d-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
         style={{
           boxShadow:
             'rgba(247, 59, 32, 0.14) 0px 16px 48px 0px, rgba(54, 8, 2, 0.12) 0px 4px 16px 0px',
         }}
-        className="relative w-full max-w-6xl bg-[#ffffff] rounded-[28px] border border-[#e7dcdb] overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[92vh]"
+        className="relative w-full max-w-6xl my-auto bg-[#ffffff] rounded-[28px] border border-[#e7dcdb] overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[92vh] lg:max-h-[88vh]"
       >
         {/* Close Button */}
         <button
@@ -147,10 +151,10 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
             background:
               'linear-gradient(135deg, #f36c7b 0%, #f73b20 48%, #f88a63 82%, #f9b489 100%)',
           }}
-          className="lg:col-span-5 relative min-h-[320px] sm:min-h-[420px] lg:min-h-[620px] flex flex-col justify-between overflow-hidden"
+          className="lg:col-span-5 relative min-h-[260px] sm:min-h-[340px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden"
         >
           {/* Top Editorial Badge */}
-          <div className="p-6 z-20 flex items-center justify-between">
+          <div className="p-6 z-20 flex items-center justify-between pointer-events-none">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-[0.03em]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Plato 3D #{currentPlate.id} de 5 · Interactivo</span>
@@ -191,7 +195,7 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
         </div>
 
         {/* Right Column (7 cols): Products on the Selected 3D Plate & Direct Order Integration */}
-        <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between bg-[#ffffff] overflow-y-auto max-h-[92vh]">
+        <div className="lg:col-span-7 p-5 sm:p-8 flex flex-col justify-between bg-[#ffffff] overflow-y-auto max-h-[58vh] lg:max-h-[88vh]">
           <div>
             {/* Category Pill & Editorial Title */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -374,4 +378,6 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };
