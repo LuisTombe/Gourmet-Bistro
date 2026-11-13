@@ -568,18 +568,26 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  // Actualización optimista (Optimistic UI) con reversión automática si falla el servidor
   const updateOrderStatus = async (
     orderId: number,
     nextStatus: OrderStatus
   ): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser) return { success: false, error: 'Debe iniciar sesión.' };
 
+    const previousOrders = orders;
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId ? { ...o, status: nextStatus, updatedAt: new Date().toISOString() } : o
+      )
+    );
+
     try {
       await api.pedidos.avanzar(orderId, nextStatus);
       showToast(`Pedido #${orderId} actualizado a '${nextStatus}'`, 'success');
-      await refreshData();
       return { success: true };
     } catch (err: any) {
+      setOrders(previousOrders);
       const msg = err instanceof ApiError ? err.message : 'Error al actualizar estado del pedido';
       showToast(msg, 'error');
       return { success: false, error: msg };
@@ -630,6 +638,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  // Actualización optimista de disponibilidad de producto con reversión si falla
   const toggleProductAvailability = async (id: number) => {
     if (!currentUser || currentUser.role !== 'administrador') {
       showToast('Acción no permitida.', 'error');
@@ -638,11 +647,17 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const prod = products.find((p) => p.id === id);
     if (!prod) return;
 
+    const previousProducts = products;
+    const nextAvailable = !prod.available;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, available: nextAvailable } : p))
+    );
+
     try {
-      await api.productos.disponibilidad(id, !prod.available);
-      showToast(`Producto '${prod.name}' ahora está ${!prod.available ? 'Disponible' : 'No disponible'}.`, 'info');
-      await refreshData();
+      await api.productos.disponibilidad(id, nextAvailable);
+      showToast(`Producto '${prod.name}' ahora está ${nextAvailable ? 'Disponible' : 'No disponible'}.`, 'info');
     } catch (err: any) {
+      setProducts(previousProducts);
       showToast(err.message || 'Error al cambiar disponibilidad', 'error');
     }
   };
@@ -651,12 +666,15 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede eliminar productos.' };
     }
+    const previousProducts = products;
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
     try {
       await api.productos.eliminar(id);
       showToast('Producto eliminado del menú.', 'success');
-      await refreshData();
       return { success: true };
     } catch (err: any) {
+      setProducts(previousProducts);
       const msg = err instanceof ApiError ? err.message : 'No se pudo eliminar el producto.';
       showToast(msg, 'error');
       return { success: false, error: msg };
@@ -760,11 +778,14 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       showToast('Acción no permitida.', 'error');
       return;
     }
+    const previousUsers = users;
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, active: false } : u)));
+
     try {
       await api.usuarios.desactivar(id);
       showToast('Cuenta de usuario desactivada.', 'info');
-      await refreshData();
     } catch (err: any) {
+      setUsers(previousUsers);
       showToast(err.message || 'Error al desactivar usuario', 'error');
     }
   };

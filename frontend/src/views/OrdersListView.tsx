@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Order, OrderStatus } from '../types/index.ts';
 import { StatusBadge } from '../components/ui/StatusBadge.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
+import { useDebounce } from '../hooks/useDebounce.ts';
 import {
   ClipboardList,
   Search,
@@ -25,19 +26,26 @@ export const OrdersListView: React.FC = () => {
 
   const inspectedOrder = orders.find((o) => o.id === inspectedOrderId);
 
-  // Filter orders
-  const filteredOrders = orders.filter((order) => {
-    if (selectedStatus !== 'Todos' && order.status !== selectedStatus) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchId = String(order.id).includes(q);
-      const matchTable = `mesa ${order.tableNumber}`.toLowerCase().includes(q) || String(order.tableNumber) === q;
-      const matchWaiter = order.waiterName.toLowerCase().includes(q);
-      const matchItem = order.items.some((i) => i.productName.toLowerCase().includes(q));
-      return matchId || matchTable || matchWaiter || matchItem;
-    }
-    return true;
-  });
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  // Filter orders with memoization + debounced query
+  const filteredOrders = useMemo(
+    () =>
+      orders.filter((order) => {
+        if (selectedStatus !== 'Todos' && order.status !== selectedStatus) return false;
+        if (debouncedSearch.trim()) {
+          const q = debouncedSearch.toLowerCase();
+          const matchId = String(order.id).includes(q);
+          const matchTable =
+            `mesa ${order.tableNumber}`.toLowerCase().includes(q) || String(order.tableNumber) === q;
+          const matchWaiter = order.waiterName.toLowerCase().includes(q);
+          const matchItem = order.items.some((i) => i.productName.toLowerCase().includes(q));
+          return matchId || matchTable || matchWaiter || matchItem;
+        }
+        return true;
+      }),
+    [orders, selectedStatus, debouncedSearch]
+  );
 
   const statuses: (OrderStatus | 'Todos')[] = [
     'Todos',

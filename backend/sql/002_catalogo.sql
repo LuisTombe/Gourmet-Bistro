@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS productos (
   descripcion VARCHAR(255) NULL,
   precio DECIMAL(10,2) NOT NULL,
   disponible BOOLEAN NOT NULL DEFAULT TRUE,
-  CONSTRAINT chk_producto_precio CHECK(precio > 0)
+  CONSTRAINT chk_producto_precio CHECK(precio > 0),
+  INDEX ix_productos_disponible (disponible, id_producto)
 ) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS mesas (
   id_mesa INT PRIMARY KEY AUTO_INCREMENT,

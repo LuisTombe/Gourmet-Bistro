@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FoodPlate3D, PLATES_3D_CATALOG } from './FoodPlate3D.tsx';
 import { useRestaurant } from '../../context/RestaurantContext.tsx';
 import { calculateOrderTotal } from '../../domain/rules.ts';
+import { OptimizedImage } from '../ui/OptimizedImage.tsx';
 import {
   X,
   Sparkles,
@@ -239,9 +240,11 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <img
+                        <OptimizedImage
                           src={product.image}
                           alt={product.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 rounded-xl object-cover border border-[#e7dcdb] shrink-0"
                         />
                         <div>

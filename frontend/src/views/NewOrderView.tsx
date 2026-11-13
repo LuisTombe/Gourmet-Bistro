@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
-import { Product, ProductCategory } from '../types/index.ts';
+import { ProductCategory } from '../types/index.ts';
 import { calculateOrderTotal } from '../domain/rules.ts';
 import { Food3DModal } from '../components/3d/Food3DModal.tsx';
 import { PLATES_3D_CATALOG } from '../components/3d/FoodPlate3D.tsx';
+import { useDebounce } from '../hooks/useDebounce.ts';
+import { OptimizedImage } from '../components/ui/OptimizedImage.tsx';
 import {
   Search,
   Plus,
@@ -69,18 +71,24 @@ export const NewOrderView: React.FC = () => {
     'Bebidas & Bar',
   ];
 
-  const filteredProducts = products.filter((prod) => {
-    if (selectedCategory !== 'Todos' && prod.category !== selectedCategory) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        prod.name.toLowerCase().includes(q) ||
-        prod.description.toLowerCase().includes(q) ||
-        prod.category.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  const filteredProducts = useMemo(
+    () =>
+      products.filter((prod) => {
+        if (selectedCategory !== 'Todos' && prod.category !== selectedCategory) return false;
+        if (debouncedSearch.trim()) {
+          const q = debouncedSearch.toLowerCase();
+          return (
+            prod.name.toLowerCase().includes(q) ||
+            prod.description.toLowerCase().includes(q) ||
+            prod.category.toLowerCase().includes(q)
+          );
+        }
+        return true;
+      }),
+    [products, selectedCategory, debouncedSearch]
+  );
 
   const availableTables = tables.filter((t) => getTableStatus(t.id) === 'Disponible');
   const currentTable = tables.find((t) => t.id === selectedTableId);
@@ -258,9 +266,11 @@ export const NewOrderView: React.FC = () => {
                 >
                   {/* Image & Station / 3D Badges */}
                   <div className="relative h-40 w-full bg-[#fdedea] overflow-hidden">
-                    <img
+                    <OptimizedImage
                       src={prod.image}
                       alt={prod.name}
+                      width={480}
+                      height={160}
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">

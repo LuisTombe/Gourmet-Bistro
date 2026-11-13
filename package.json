@@ -23,7 +23,6 @@
     "db:migrate": "node database/migrate.js"
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.1",
@@ -31,7 +30,6 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
     "mysql2": "^3.24.6",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
@@ -44,7 +42,6 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "autoprefixer": "^10.4.21",
     "concurrently": "^10.0.7",
     "esbuild": "^0.28.0",
     "tailwindcss": "^4.3.3",

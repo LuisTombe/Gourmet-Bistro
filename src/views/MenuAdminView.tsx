@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Product, ProductCategory } from '../types/index.ts';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
+import { useDebounce } from '../hooks/useDebounce.ts';
+import { OptimizedImage } from '../components/ui/OptimizedImage.tsx';
 import {
   BookOpen,
   Plus,
@@ -51,18 +53,24 @@ export const MenuAdminView: React.FC = () => {
     'Bebidas & Bar',
   ];
 
-  const filtered = products.filter((p) => {
-    if (selectedCategory !== 'Todos' && p.category !== selectedCategory) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  const filtered = useMemo(
+    () =>
+      products.filter((p) => {
+        if (selectedCategory !== 'Todos' && p.category !== selectedCategory) return false;
+        if (debouncedSearch.trim()) {
+          const q = debouncedSearch.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q)
+          );
+        }
+        return true;
+      }),
+    [products, selectedCategory, debouncedSearch]
+  );
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
@@ -222,9 +230,11 @@ export const MenuAdminView: React.FC = () => {
                 <tr key={prod.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3.5 px-4 sm:px-6">
                     <div className="flex items-center gap-3">
-                      <img
+                      <OptimizedImage
                         src={prod.image}
                         alt={prod.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200"
                       />
                       <div>

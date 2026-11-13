@@ -7,5 +7,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   rol ENUM('administrador','mesero','cocinero') NOT NULL,
   activo BOOLEAN NOT NULL DEFAULT TRUE,
   sesion_token_hash VARCHAR(255) NULL,
-  sesion_expira_en DATETIME NULL
+  sesion_expira_en DATETIME NULL,
+  INDEX ix_usuarios_sesion_activa (sesion_token_hash, activo, sesion_expira_en),
+  INDEX ix_usuarios_rol_activo (rol, activo)
 ) ENGINE=InnoDB;

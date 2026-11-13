@@ -1,6 +1,8 @@
 /* =====================================================================
-   Gourmet-Bistro Style Tokens — Inspirado en Jeton Editorial Design System
+   Gourmet-Bistro Style Tokens — Jeton Editorial Design System
    Paleta: Signal Orange (#f73b20), Ink Roast (#360802), Paper White (#ffffff)
+   Nota importante para Tailwind v4: No sobrescribir --spacing-* numérico
+   dentro de @theme para preservar la escala estándar (1 unidad = 0.25rem = 4px).
    ===================================================================== */
 
 @theme {
@@ -20,60 +22,7 @@
   --color-emerald-green: #34c771;
 
   /* Typography */
-  --font-sequel-sans: 'Sequel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-
-  /* Typography — Scale */
-  --text-caption: 12px;
-  --leading-caption: 1.5;
-  --tracking-caption: 0.36px;
-  --text-body-sm: 14px;
-  --leading-body-sm: 1.4;
-  --tracking-body-sm: 0.42px;
-  --text-body: 16px;
-  --leading-body: 1;
-  --text-subheading: 23px;
-  --leading-subheading: 1.2;
-  --tracking-subheading: 0.23px;
-  --text-heading-sm: 33px;
-  --leading-heading-sm: 1.2;
-  --tracking-heading-sm: 0.33px;
-  --text-heading: 44px;
-  --leading-heading: 1.2;
-  --tracking-heading: 0.44px;
-  --text-heading-lg: 72px;
-  --leading-heading-lg: 1;
-  --tracking-heading-lg: 0.72px;
-  --text-display: 106px;
-  --leading-display: 1;
-
-  /* Spacing */
-  --spacing-4: 4px;
-  --spacing-8: 8px;
-  --spacing-12: 12px;
-  --spacing-16: 16px;
-  --spacing-20: 20px;
-  --spacing-24: 24px;
-  --spacing-32: 32px;
-  --spacing-48: 48px;
-  --spacing-56: 56px;
-  --spacing-160: 160px;
-
-  /* Border Radius */
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
-  --radius-2xl-2: 19.255px;
-  --radius-2xl-3: 21.66px;
-  --radius-3xl: 24px;
-  --radius-full: 60px;
-  --radius-full-2: 84px;
-  --radius-full-3: 112px;
-  --radius-full-4: 150px;
-  --radius-full-5: 9999px;
-
-  /* Shadows */
-  --shadow-lg: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(247, 59, 32, 0.05) 0px 2px 8px 0px;
-  --shadow-md: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+  --font-sequel-sans: 'Plus Jakarta Sans', 'Sequel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -91,6 +40,18 @@
   --color-coral-red: #fb2d54;
   --color-cobalt-blue: #477ee9;
   --color-emerald-green: #34c771;
+
+  /* Escala de espaciado de referencia Jeton */
+  --jeton-space-4: 4px;
+  --jeton-space-8: 8px;
+  --jeton-space-12: 12px;
+  --jeton-space-16: 16px;
+  --jeton-space-20: 20px;
+  --jeton-space-24: 24px;
+  --jeton-space-32: 32px;
+  --jeton-space-48: 48px;
+  --jeton-space-56: 56px;
+  --jeton-space-160: 160px;
 
   /* Mapeo del Sistema Gourmet Bistro al Estilo Jeton */
   --gb-brand: #f73b20;
@@ -123,9 +84,9 @@
   --gb-radius-full: 9999px;
 
   /* Sombras distintivas Jeton (Inverted upward lift shadow) */
-  --gb-shadow-card: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px, 0 4px 16px rgba(54, 8, 2, 0.04);
-  --gb-shadow-card-hover: rgba(247, 59, 32, 0.12) 0px 8px 24px 0px, rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
-  --gb-focus: 0 0 0 3px rgba(247, 59, 32, 0.28);
+  --gb-shadow-card: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.04);
+  --gb-shadow-card-hover: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
+  --gb-focus: 0 0 0 3px rgba(247, 59, 32, 0.22);
 }
 
 body {
@@ -141,64 +102,17 @@ body {
 }
 
 .jeton-inverted-shadow {
-  box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
 }
 
 .jeton-card {
   background-color: #ffffff;
   border: 1px solid var(--color-sand-wash);
   border-radius: 16px;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .jeton-card:hover {
-  box-shadow: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
-}
-
-.jeton-btn-primary {
-  background-color: var(--color-signal-orange);
-  color: #ffffff;
-  border-radius: 12px;
-  font-weight: 500;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  transition: all 0.15s ease-in-out;
-}
-
-.jeton-btn-primary:hover {
-  background-color: #e02f17;
-  transform: translateY(-1px);
-}
-
-.jeton-pill-active {
-  background-color: var(--color-signal-orange);
-  color: #ffffff;
-  border-radius: 9999px;
-  font-weight: 500;
-}
-
-.jeton-pill-inactive {
-  background-color: #ffffff;
-  color: var(--color-ink-roast);
-  border: 1px solid var(--color-sand-wash);
-  border-radius: 9999px;
-  font-weight: 500;
-}
-
-.jeton-input {
-  background-color: rgba(247, 59, 32, 0.03);
-  border: 1px solid var(--color-sand-wash);
-  border-radius: 16px;
-  color: var(--color-ink-roast);
-  transition: all 0.15s ease-in-out;
-}
-
-.jeton-input:focus {
-  outline: none;
-  border-color: var(--color-signal-orange);
-  box-shadow: 0 0 0 3px rgba(247, 59, 32, 0.22);
+  box-shadow: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
 }

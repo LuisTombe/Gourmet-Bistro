@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS pedidos (
   CONSTRAINT chk_total_pedido CHECK(total > 0),
   UNIQUE KEY uq_mesa_activa (mesa_activa),
   INDEX ix_pedidos_mesa (id_mesa),
-  INDEX ix_pedidos_estado (estado)
+  INDEX ix_pedidos_estado (estado),
+  INDEX ix_pedidos_estado_id (estado, id_pedido DESC)
 ) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS detalle_pedido (
   id_detalle INT PRIMARY KEY AUTO_INCREMENT,
@@ -24,5 +25,6 @@ CREATE TABLE IF NOT EXISTS detalle_pedido (
   CONSTRAINT fk_detalle_pedido FOREIGN KEY(id_pedido) REFERENCES pedidos(id_pedido) ON DELETE RESTRICT,
   CONSTRAINT chk_cantidad CHECK(cantidad > 0),
   CONSTRAINT chk_precio_unitario CHECK(precio_unitario > 0),
-  INDEX ix_detalle_producto (id_producto)
+  INDEX ix_detalle_producto (id_producto),
+  INDEX ix_detalle_pedido_orden (id_pedido, id_detalle)
 ) ENGINE=InnoDB;
