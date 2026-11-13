@@ -1,13 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, OrderItem, OrderStatus, Product, Table, TableStatus, User, UserRole, SystemVersionSnapshot } from '../types/index.ts';
-import { api } from '../services/api.ts';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
-  INITIAL_USERS,
-  INITIAL_PRODUCTS,
-  INITIAL_TABLES,
-  INITIAL_ORDERS,
-  INITIAL_SNAPSHOTS,
-} from '../data/mockData.ts';
+  Order,
+  OrderItem,
+  OrderStatus,
+  Product,
+  Table,
+  TableStatus,
+  User,
+  UserRole,
+  SystemVersionSnapshot,
+} from '../types/index.ts';
+import { api, ApiError } from '../services/apiClient.ts';
 import {
   calculateOrderTotal,
   calculateSubtotal,
@@ -25,6 +28,7 @@ interface ToastNotification {
 
 interface RestaurantContextType {
   currentUser: User | null;
+  isAuthLoading: boolean;
   users: User[];
   products: Product[];
   tables: Table[];
@@ -34,33 +38,32 @@ interface RestaurantContextType {
   toasts: ToastNotification[];
   setActiveView: (view: string) => void;
   setSelectedTableForOrder: (table: Table | null) => void;
-  login: (username: string) => { success: boolean; message?: string };
-  logout: () => void;
-  switchUser: (userId: number) => void;
+  login: (username: string, password?: string) => Promise<{ success: boolean; message?: string }>;
+  logout: () => Promise<void>;
   createOrder: (
     tableId: number,
     items: { productId: number; quantity: number; notes?: string }[],
     notes?: string
-  ) => { success: boolean; orderId?: number; error?: string };
+  ) => Promise<{ success: boolean; orderId?: number; error?: string }>;
   updateOrderStatus: (
     orderId: number,
     nextStatus: OrderStatus
-  ) => { success: boolean; error?: string };
-  addProduct: (product: Omit<Product, 'id'>) => { success: boolean; error?: string };
-  updateProduct: (id: number, product: Partial<Product>) => { success: boolean; error?: string };
-  toggleProductAvailability: (id: number) => void;
-  deleteProduct: (id: number) => { success: boolean; error?: string };
-  addTable: (table: Omit<Table, 'id'>) => { success: boolean; error?: string };
-  updateTable: (id: number, table: Partial<Table>) => { success: boolean; error?: string };
-  deleteTable: (id: number) => { success: boolean; error?: string };
-  addUser: (user: Omit<User, 'id'>) => { success: boolean; error?: string };
-  updateUser: (id: number, user: Partial<User>) => { success: boolean; error?: string };
-  toggleUserActive: (id: number) => void;
+  ) => Promise<{ success: boolean; error?: string }>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<{ success: boolean; error?: string }>;
+  updateProduct: (id: number, product: Partial<Product>) => Promise<{ success: boolean; error?: string }>;
+  toggleProductAvailability: (id: number) => Promise<void>;
+  deleteProduct: (id: number) => Promise<{ success: boolean; error?: string }>;
+  addTable: (table: Omit<Table, 'id'>) => Promise<{ success: boolean; error?: string }>;
+  updateTable: (id: number, table: Partial<Table>) => Promise<{ success: boolean; error?: string }>;
+  deleteTable: (id: number) => Promise<{ success: boolean; error?: string }>;
+  addUser: (user: Omit<User, 'id'> & { password?: string }) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (id: number, user: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  toggleUserActive: (id: number) => Promise<void>;
   getTableStatus: (tableId: number) => TableStatus;
   getActiveOrder: (tableId: number) => Order | undefined;
   dismissToast: (id: string) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
-  resetToDefaults: () => void;
+  refreshData: () => Promise<void>;
   snapshots: SystemVersionSnapshot[];
   createVersionSnapshot: (description: string, versionTag?: string) => { success: boolean; snapshot?: SystemVersionSnapshot };
   rollbackToSnapshot: (snapshotId: string) => { success: boolean; message: string };
@@ -68,165 +71,212 @@ interface RestaurantContextType {
 
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
 
-const STORAGE_KEYS = {
-  USERS: 'bistro_pos_users',
-  PRODUCTS: 'bistro_pos_products',
-  TABLES: 'bistro_pos_tables',
-  ORDERS: 'bistro_pos_orders',
-  SNAPSHOTS: 'bistro_pos_snapshots',
-  CURRENT_USER_ID: 'bistro_pos_current_user_id',
-};
-
 export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.USERS);
-    return saved ? JSON.parse(saved) : INITIAL_USERS;
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [tables, setTables] = useState<Table[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TABLES);
-    return saved ? JSON.parse(saved) : INITIAL_TABLES;
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
-
-  const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.SNAPSHOTS);
-    return saved ? JSON.parse(saved) : INITIAL_SNAPSHOTS;
-  });
-
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
-    if (savedId) {
-      const found = INITIAL_USERS.find((u) => u.id === Number(savedId));
-      if (found && found.active) return found;
-    }
-    // Default to mesero so user can test POS immediately, or null if on login
-    return INITIAL_USERS[1]; // Carlos Mendoza (mesero)
-  });
-
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [activeView, setActiveView] = useState<string>('mesas');
   const [selectedTableForOrder, setSelectedTableForOrder] = useState<Table | null>(null);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>([]);
 
-  // Persist to local storage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TABLES, JSON.stringify(tables));
-  }, [tables]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SNAPSHOTS, JSON.stringify(snapshots));
-  }, [snapshots]);
-
-  // Carga inicial y sincronización con MySQL vía Backend REST API
-  const refreshAllFromDatabase = async () => {
-    try {
-      const [u, t, p, o, s] = await Promise.all([
-        api.getUsers(),
-        api.getTables(),
-        api.getProducts(),
-        api.getOrders(),
-        api.getSnapshots(),
-      ]);
-      if (u && u.length) setUsers(u);
-      if (t && t.length) setTables(t);
-      if (p && p.length) setProducts(p);
-      if (o) setOrders(o);
-      if (s && s.length) setSnapshots(s);
-    } catch (err) {
-      console.warn('API REST no disponible en este momento; operando con caché local.', err);
-    }
-  };
-
-  useEffect(() => {
-    refreshAllFromDatabase();
-    const interval = setInterval(() => {
-      api.getOrders().then((latestOrders) => {
-        if (latestOrders) setOrders(latestOrders);
-      }).catch(() => {});
-      api.getTables().then((latestTables) => {
-        if (latestTables) setTables(latestTables);
-      }).catch(() => {});
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, String(currentUser.id));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
-    }
-  }, [currentUser]);
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
-      dismissToast(id);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4500);
-  };
+  }, []);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const login = (username: string) => {
-    const user = users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-    if (!user) {
-      return { success: false, message: 'Usuario no encontrado. Ingrese admin, mesero o cocina.' };
-    }
-    if (!user.active) {
-      return { success: false, message: 'Esta cuenta ha sido desactivada por el administrador.' };
-    }
-    setCurrentUser(user);
-    if (user.role === 'cocinero') {
-      setActiveView('cocina');
-    } else if (user.role === 'administrador') {
-      setActiveView('mesas');
-    } else {
-      setActiveView('mesas');
-    }
-    showToast(`Bienvenido al sistema, ${user.name}`, 'success');
-    return { success: true };
-  };
+  // 1. Cargar datos del catálogo y pedidos desde los microservicios
+  const refreshData = useCallback(async () => {
+    try {
+      const [prodRes, mesasRes, pedidosRes] = await Promise.allSettled([
+        api.productos.listar(),
+        api.mesas.listar(),
+        api.pedidos.listar(),
+      ]);
 
-  const logout = () => {
-    setCurrentUser(null);
-    setActiveView('login');
-    showToast('Sesión cerrada correctamente.', 'info');
-  };
-
-  const switchUser = (userId: number) => {
-    const user = users.find((u) => u.id === userId);
-    if (user && user.active) {
-      setCurrentUser(user);
-      if (user.role === 'cocinero') {
-        setActiveView('cocina');
-      } else {
-        if (activeView === 'cocina') setActiveView('mesas');
+      if (prodRes.status === 'fulfilled' && prodRes.value.productos) {
+        setProducts(
+          prodRes.value.productos.map((p) => ({
+            id: p.id_producto,
+            name: p.nombre,
+            description: p.descripcion || '',
+            price: Number(p.precio),
+            category: 'Entradas',
+            available: Boolean(p.disponible),
+            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+            station: 'Cocina',
+          }))
+        );
       }
-      showToast(`Cambiado a rol: ${user.name} (${user.role})`, 'info');
+
+      if (mesasRes.status === 'fulfilled' && mesasRes.value.mesas) {
+        setTables(
+          mesasRes.value.mesas.map((m) => ({
+            id: m.id_mesa,
+            tableNumber: m.numero_mesa,
+            capacity: 4,
+            area: 'Salón Principal',
+          }))
+        );
+      }
+
+      if (pedidosRes.status === 'fulfilled' && pedidosRes.value.pedidos) {
+        setOrders(
+          pedidosRes.value.pedidos.map((o) => ({
+            id: o.id_pedido,
+            tableId: o.id_mesa,
+            tableNumber: o.id_mesa,
+            userId: o.id_usuario,
+            waiterName: `Usuario #${o.id_usuario}`,
+            createdAt: o.fecha_pedido,
+            updatedAt: o.fecha_pedido,
+            status: o.estado as OrderStatus,
+            total: Number(o.total),
+            items: (o.detalles || []).map((d) => ({
+              id: d.id_detalle,
+              productId: d.id_producto,
+              productName: d.nombre_producto,
+              quantity: d.cantidad,
+              unitPrice: Number(d.precio_unitario),
+              subtotal: Number(d.subtotal),
+            })),
+          }))
+        );
+      }
+
+      // Si el usuario es administrador, consultar también la lista de empleados
+      if (currentUser?.role === 'administrador') {
+        const usersRes = await api.usuarios.listar().catch(() => null);
+        if (usersRes?.usuarios) {
+          setUsers(
+            usersRes.usuarios.map((u) => ({
+              id: u.id_usuario,
+              username: u.nombre_usuario,
+              name: u.nombre_usuario,
+              role: u.rol,
+              active: Boolean(u.activo),
+              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      console.warn('Error refrescando datos de microservicios:', err);
+    }
+  }, [currentUser?.role]);
+
+  // 2. Validación de sesión inicial mediante cookie HttpOnly contra ms-usuarios
+  useEffect(() => {
+    let isMounted = true;
+    async function checkSession() {
+      try {
+        const res = await api.auth.me();
+        if (isMounted && res.usuario) {
+          const userObj: User = {
+            id: res.usuario.id_usuario,
+            username: res.usuario.nombre_usuario,
+            name: res.usuario.nombre_usuario,
+            role: res.usuario.rol,
+            active: res.usuario.activo,
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+          };
+          setCurrentUser(userObj);
+          setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsAuthLoading(false);
+        }
+      }
+    }
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 3. Polling suave HTTP para mantener sincronizados pedidos y mesas entre clientes
+  useEffect(() => {
+    if (!currentUser) return;
+    refreshData();
+    const interval = setInterval(() => {
+      api.pedidos.listar().then((res) => {
+        if (res.pedidos) {
+          setOrders(
+            res.pedidos.map((o) => ({
+              id: o.id_pedido,
+              tableId: o.id_mesa,
+              tableNumber: o.id_mesa,
+              userId: o.id_usuario,
+              waiterName: `Usuario #${o.id_usuario}`,
+              createdAt: o.fecha_pedido,
+              updatedAt: o.fecha_pedido,
+              status: o.estado as OrderStatus,
+              total: Number(o.total),
+              items: (o.detalles || []).map((d) => ({
+                id: d.id_detalle,
+                productId: d.id_producto,
+                productName: d.nombre_producto,
+                quantity: d.cantidad,
+                unitPrice: Number(d.precio_unitario),
+                subtotal: Number(d.subtotal),
+              })),
+            }))
+          );
+        }
+      }).catch(() => {});
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [currentUser, refreshData]);
+
+  // --- Operaciones de Autenticación Real ---
+  const login = async (username: string, password = ''): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const res = await api.auth.login(username.trim(), password);
+      const user = res.usuario;
+      const userObj: User = {
+        id: user.id_usuario,
+        username: user.nombre_usuario,
+        name: user.nombre_usuario,
+        role: user.rol,
+        active: user.activo,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      };
+      setCurrentUser(userObj);
+      setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
+      showToast(`Bienvenido al sistema, ${user.nombre_usuario}`, 'success');
+      refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al conectar con el servidor de autenticación';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.auth.logout();
+    } catch (err) {
+      console.warn('Logout remoto:', err);
+    } finally {
+      setCurrentUser(null);
+      setActiveView('login');
+      showToast('Sesión cerrada correctamente.', 'info');
     }
   };
 
@@ -240,332 +290,252 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
   };
 
-  const createOrder = (
+  // --- Operaciones de Pedidos (ms-pedidos) ---
+  const createOrder = async (
     tableId: number,
     items: { productId: number; quantity: number; notes?: string }[],
     notes?: string
-  ): { success: boolean; orderId?: number; error?: string } => {
-    if (!currentUser) {
-      return { success: false, error: 'Debe iniciar sesión para registrar pedidos.' };
-    }
+  ): Promise<{ success: boolean; orderId?: number; error?: string }> => {
+    if (!currentUser) return { success: false, error: 'Debe iniciar sesión para registrar pedidos.' };
 
-    // Check table exists
     const targetTable = tables.find((t) => t.id === tableId);
-    if (!targetTable) {
-      return { success: false, error: 'La mesa seleccionada no existe.' };
-    }
+    if (!targetTable) return { success: false, error: 'Mesa no encontrada.' };
 
-    // Check RN-04: At most 1 active order per table
-    const existingActive = getActiveOrder(tableId);
-    if (existingActive) {
-      return {
-        success: false,
-        error: `La Mesa ${targetTable.tableNumber} ya tiene un pedido activo (#${existingActive.id} - ${existingActive.status}).`,
-      };
-    }
+    if (items.length === 0) return { success: false, error: 'Debe agregar al menos un producto.' };
 
-    // Validate items > 0
-    if (!items || items.length === 0) {
-      return { success: false, error: 'El pedido debe incluir al menos un producto del menú.' };
-    }
-
-    // Validate products exist and are available, capture current price
     const orderItems: OrderItem[] = [];
     for (const item of items) {
-      if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-        return { success: false, error: 'Las cantidades deben ser números enteros mayores a cero.' };
-      }
       const prod = products.find((p) => p.id === item.productId);
-      if (!prod) {
-        return { success: false, error: `El producto ID ${item.productId} no existe en el catálogo.` };
+      if (!prod || !prod.available) {
+        return { success: false, error: `El producto ${prod ? prod.name : ''} no está disponible.` };
       }
-      if (!prod.available) {
-        return { success: false, error: `El producto '${prod.name}' no se encuentra disponible actualmente.` };
-      }
-
-      const subtotal = calculateSubtotal(item.quantity, prod.price);
       orderItems.push({
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: Date.now() + Math.random(),
         productId: prod.id,
         productName: prod.name,
         quantity: item.quantity,
         unitPrice: prod.price,
-        subtotal,
-        notes: item.notes,
+        subtotal: calculateSubtotal(item.quantity, prod.price),
       });
     }
 
     const total = calculateOrderTotal(orderItems);
-    const newOrderId = (orders.length > 0 ? Math.max(...orders.map((o) => o.id)) : 100) + 1;
 
-    const newOrder: Order = {
-      id: newOrderId,
-      tableId: targetTable.id,
-      tableNumber: targetTable.tableNumber,
-      userId: currentUser.id,
-      waiterName: currentUser.name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'Pendiente',
-      items: orderItems,
-      total,
-      notes,
-    };
-
-    setOrders((prev) => [newOrder, ...prev]);
-    showToast(`Pedido #${newOrderId} enviado a cocina para Mesa ${targetTable.tableNumber}`, 'success');
-
-    // Persistir orden en MySQL vía API REST
-    api.createOrder(targetTable.id, currentUser.id, items, notes)
-      .then((res) => {
-        if (res.order) {
-          setOrders((prev) => [res.order, ...prev.filter((o) => o.id !== newOrderId && o.id !== res.order.id)]);
-        }
-      })
-      .catch((err) => console.warn('Pedido guardado localmente (sincronización con backend pendiente):', err));
-
-    return { success: true, orderId: newOrderId };
+    try {
+      const payloadItems = items.map((i) => ({ id_producto: i.productId, cantidad: i.quantity }));
+      const res = await api.pedidos.crear(targetTable.id, payloadItems, total);
+      showToast(`Pedido #${res.pedido.id_pedido} enviado a cocina para Mesa ${targetTable.tableNumber}`, 'success');
+      await refreshData();
+      return { success: true, orderId: res.pedido.id_pedido };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar pedido';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const updateOrderStatus = (
+  const updateOrderStatus = async (
     orderId: number,
     nextStatus: OrderStatus
-  ): { success: boolean; error?: string } => {
-    if (!currentUser) {
-      return { success: false, error: 'Debe iniciar sesión para realizar esta acción.' };
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!currentUser) return { success: false, error: 'Debe iniciar sesión.' };
+
+    try {
+      await api.pedidos.avanzar(orderId, nextStatus);
+      showToast(`Pedido #${orderId} actualizado a '${nextStatus}'`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar estado del pedido';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-
-    const order = orders.find((o) => o.id === orderId);
-    if (!order) {
-      return { success: false, error: 'Pedido no encontrado.' };
-    }
-
-    const validation = canTransitionOrderStatus(order.status, nextStatus, currentUser.role);
-    if (!validation.allowed) {
-      showToast(validation.reason || 'Transición no permitida', 'error');
-      return { success: false, error: validation.reason };
-    }
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: nextStatus,
-              updatedAt: new Date().toISOString(),
-            }
-          : o
-      )
-    );
-
-    // Persistir transición de estado en MySQL vía API REST
-    api.updateOrderStatus(orderId, nextStatus).catch(console.error);
-
-    if (nextStatus === 'Entregado') {
-      showToast(`Pedido #${orderId} entregado. Mesa ${order.tableNumber} liberada.`, 'success');
-    } else if (nextStatus === 'Listo') {
-      showToast(`Pedido #${orderId} listo en el pase para Mesa ${order.tableNumber}`, 'success');
-    } else {
-      showToast(`Pedido #${orderId} en preparación para Mesa ${order.tableNumber}`, 'info');
-    }
-
-    return { success: true };
   };
 
-  const addProduct = (productData: Omit<Product, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Menú / Catálogo (ms-catalogo) ---
+  const addProduct = async (productData: Omit<Product, 'id'>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede agregar productos.' };
     }
-    if (!productData.name.trim()) {
-      return { success: false, error: 'El nombre del producto es obligatorio.' };
+    try {
+      await api.productos.crear({
+        nombre: productData.name.trim(),
+        descripcion: productData.description || null,
+        precio: productData.price,
+      });
+      showToast(`Producto '${productData.name}' creado exitosamente.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar producto';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (productData.price <= 0) {
-      return { success: false, error: 'El precio debe ser mayor a cero.' };
-    }
-
-    const newId = (products.length > 0 ? Math.max(...products.map((p) => p.id)) : 0) + 1;
-    const newProduct: Product = { ...productData, id: newId };
-    setProducts((prev) => [...prev, newProduct]);
-    showToast(`Producto '${newProduct.name}' creado exitosamente.`, 'success');
-    api.createProduct(productData).then((created) => {
-      if (created) setProducts((prev) => [...prev.filter((p) => p.id !== newId && p.id !== created.id), created]);
-    }).catch(console.error);
-    return { success: true };
   };
 
-  const updateProduct = (
-    id: number,
-    productData: Partial<Product>
-  ): { success: boolean; error?: string } => {
+  const updateProduct = async (id: number, productData: Partial<Product>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede modificar productos.' };
     }
-    if (productData.name !== undefined && !productData.name.trim()) {
-      return { success: false, error: 'El nombre del producto no puede estar vacío.' };
-    }
-    if (productData.price !== undefined && productData.price <= 0) {
-      return { success: false, error: 'El precio debe ser mayor a cero.' };
-    }
+    const current = products.find((p) => p.id === id);
+    if (!current) return { success: false, error: 'Producto no encontrado' };
 
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...productData } : p)));
-    showToast('Producto actualizado correctamente.', 'success');
-    api.updateProduct(id, productData).catch(console.error);
-    return { success: true };
+    try {
+      await api.productos.editar(id, {
+        nombre: productData.name !== undefined ? productData.name.trim() : current.name,
+        descripcion: productData.description !== undefined ? productData.description : current.description,
+        precio: productData.price !== undefined ? productData.price : current.price,
+      });
+      showToast('Producto actualizado correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar producto';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const toggleProductAvailability = (id: number) => {
+  const toggleProductAvailability = async (id: number) => {
     if (!currentUser || currentUser.role !== 'administrador') {
       showToast('Acción no permitida.', 'error');
       return;
     }
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, available: !p.available } : p))
-    );
-    api.toggleProductAvailability(id).catch(console.error);
     const prod = products.find((p) => p.id === id);
-    if (prod) {
-      showToast(
-        `Producto '${prod.name}' ahora está ${!prod.available ? 'Disponible' : 'No disponible'}.`,
-        'info'
-      );
+    if (!prod) return;
+
+    try {
+      await api.productos.disponibilidad(id, !prod.available);
+      showToast(`Producto '${prod.name}' ahora está ${!prod.available ? 'Disponible' : 'No disponible'}.`, 'info');
+      await refreshData();
+    } catch (err: any) {
+      showToast(err.message || 'Error al cambiar disponibilidad', 'error');
     }
   };
 
-  const deleteProduct = (id: number): { success: boolean; error?: string } => {
+  const deleteProduct = async (id: number): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede eliminar productos.' };
     }
-    const check = canDeleteProduct(id, orders);
-    if (!check.allowed) {
-      showToast(check.reason || 'No se puede eliminar.', 'error');
-      return { success: false, error: check.reason };
+    try {
+      await api.productos.eliminar(id);
+      showToast('Producto eliminado del menú.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'No se pudo eliminar el producto.';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    showToast('Producto eliminado del menú.', 'success');
-    api.deleteProduct(id).catch(console.error);
-    return { success: true };
   };
 
-  const addTable = (tableData: Omit<Table, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Mesas (ms-catalogo) ---
+  const addTable = async (tableData: Omit<Table, 'id'>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede registrar mesas.' };
     }
-    if (tableData.tableNumber <= 0 || !Number.isInteger(tableData.tableNumber)) {
-      return { success: false, error: 'El número de mesa debe ser un entero positivo.' };
+    try {
+      await api.mesas.crear(tableData.tableNumber);
+      showToast(`Mesa #${tableData.tableNumber} creada exitosamente.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar mesa';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (tables.some((t) => t.tableNumber === tableData.tableNumber)) {
-      return { success: false, error: `Ya existe una mesa con el número ${tableData.tableNumber}.` };
-    }
-
-    const newId = (tables.length > 0 ? Math.max(...tables.map((t) => t.id)) : 0) + 1;
-    const newTable: Table = { ...tableData, id: newId };
-    setTables((prev) => [...prev, newTable]);
-    showToast(`Mesa ${newTable.tableNumber} creada exitosamente.`, 'success');
-    api.createTable(tableData).then((created) => {
-      if (created) setTables((prev) => [...prev.filter((t) => t.id !== newId && t.id !== created.id), created]);
-    }).catch(console.error);
-    return { success: true };
   };
 
-  const updateTable = (id: number, tableData: Partial<Table>): { success: boolean; error?: string } => {
+  const updateTable = async (id: number, tableData: Partial<Table>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede modificar mesas.' };
     }
-    if (tableData.tableNumber !== undefined) {
-      if (tableData.tableNumber <= 0 || !Number.isInteger(tableData.tableNumber)) {
-        return { success: false, error: 'El número de mesa debe ser un entero positivo.' };
-      }
-      if (tables.some((t) => t.id !== id && t.tableNumber === tableData.tableNumber)) {
-        return { success: false, error: `Ya existe otra mesa con el número ${tableData.tableNumber}.` };
-      }
-    }
+    const current = tables.find((t) => t.id === id);
+    if (!current) return { success: false, error: 'Mesa no encontrada' };
 
-    setTables((prev) => prev.map((t) => (t.id === id ? { ...t, ...tableData } : t)));
-    showToast('Mesa actualizada correctamente.', 'success');
-    api.updateTable(id, tableData).catch(console.error);
-    return { success: true };
+    try {
+      await api.mesas.editar(id, tableData.tableNumber || current.tableNumber);
+      showToast('Mesa actualizada correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar mesa';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const deleteTable = (id: number): { success: boolean; error?: string } => {
+  const deleteTable = async (id: number): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede eliminar mesas.' };
     }
-    const check = canDeleteTable(id, orders);
-    if (!check.allowed) {
-      showToast(check.reason || 'No se puede eliminar.', 'error');
-      return { success: false, error: check.reason };
+    try {
+      await api.mesas.eliminar(id);
+      showToast('Mesa eliminada correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'No se pudo eliminar la mesa.';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    setTables((prev) => prev.filter((t) => t.id !== id));
-    showToast('Mesa eliminada correctamente.', 'success');
-    api.deleteTable(id).catch(console.error);
-    return { success: true };
   };
 
-  const addUser = (userData: Omit<User, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Usuarios (ms-usuarios) ---
+  const addUser = async (userData: Omit<User, 'id'> & { password?: string }): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede registrar usuarios.' };
     }
-    if (!userData.username.trim()) {
-      return { success: false, error: 'El nombre de usuario es obligatorio.' };
+    try {
+      await api.usuarios.crear({
+        nombre_usuario: userData.username.trim(),
+        contrasena: userData.password || 'Empleado2026!',
+        rol: userData.role,
+      });
+      showToast(`Usuario '${userData.username}' registrado con éxito.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar usuario';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (users.some((u) => u.username.toLowerCase() === userData.username.trim().toLowerCase())) {
-      return { success: false, error: `El usuario '${userData.username}' ya existe.` };
-    }
-
-    const newId = (users.length > 0 ? Math.max(...users.map((u) => u.id)) : 0) + 1;
-    const newUser: User = {
-      ...userData,
-      id: newId,
-      username: userData.username.trim().toLowerCase(),
-    };
-    setUsers((prev) => [...prev, newUser]);
-    showToast(`Usuario '${newUser.username}' registrado.`, 'success');
-    api.createUser(userData).then((created) => {
-      if (created) setUsers((prev) => [...prev.filter((u) => u.id !== newId && u.id !== created.id), created]);
-    }).catch(console.error);
-    return { success: true };
   };
 
-  const updateUser = (id: number, userData: Partial<User>): { success: boolean; error?: string } => {
+  const updateUser = async (id: number, userData: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede editar usuarios.' };
     }
-    if (userData.username !== undefined) {
-      if (!userData.username.trim()) {
-        return { success: false, error: 'El nombre de usuario no puede estar vacío.' };
-      }
-      if (
-        users.some((u) => u.id !== id && u.username.toLowerCase() === userData.username!.trim().toLowerCase())
-      ) {
-        return { success: false, error: `El usuario '${userData.username}' ya existe.` };
-      }
+    try {
+      await api.usuarios.editar(id, {
+        nombre_usuario: userData.username,
+        rol: userData.role,
+      });
+      showToast('Usuario actualizado.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar usuario';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...userData } : u)));
-    showToast('Usuario actualizado.', 'success');
-    api.updateUser(id, userData).catch(console.error);
-    return { success: true };
   };
 
-  const toggleUserActive = (id: number) => {
+  const toggleUserActive = async (id: number) => {
     if (!currentUser || currentUser.role !== 'administrador') {
       showToast('Acción no permitida.', 'error');
       return;
     }
-    if (id === currentUser.id) {
-      showToast('No puede desactivar su propia cuenta activa.', 'error');
-      return;
-    }
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u))
-    );
-    api.toggleUserActive(id).catch(console.error);
-    const u = users.find((user) => user.id === id);
-    if (u) {
-      showToast(`Usuario '${u.username}' ${!u.active ? 'activado' : 'desactivado'}.`, 'info');
+    try {
+      await api.usuarios.desactivar(id);
+      showToast('Cuenta de usuario desactivada.', 'info');
+      await refreshData();
+    } catch (err: any) {
+      showToast(err.message || 'Error al desactivar usuario', 'error');
     }
   };
 
+  // --- Versionamiento & Rollback (Fase 1 / Admin) ---
   const createVersionSnapshot = (description: string, versionTag?: string) => {
     const nextTag = versionTag || `v1.${snapshots.length + 1}.0-dev`;
     const newSnapshot: SystemVersionSnapshot = {
@@ -576,7 +546,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       author: currentUser?.name || 'Administrador',
       authorRole: currentUser?.role || 'administrador',
       timestamp: new Date().toISOString(),
-      description: description || 'Punto de restauración y control de versiones',
+      description: description || 'Punto de restauración del sistema',
       type: 'recovery_point',
       stateBackup: {
         users: JSON.parse(JSON.stringify(users)),
@@ -587,11 +557,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
     setSnapshots((prev) => [newSnapshot, ...prev]);
     showToast(`Punto de versión "${newSnapshot.versionTag}" creado correctamente.`, 'success');
-    api.createSnapshot(description, versionTag, currentUser?.name, currentUser?.role).then((res) => {
-      if (res.snapshot) {
-        setSnapshots((prev) => [res.snapshot, ...prev.filter((s) => s.id !== newSnapshot.id && s.id !== res.snapshot.id)]);
-      }
-    }).catch(console.error);
     return { success: true, snapshot: newSnapshot };
   };
 
@@ -601,39 +566,21 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       showToast('Punto de restauración no encontrado.', 'error');
       return { success: false, message: 'Snapshot no encontrado' };
     }
-    if (!snap.stateBackup) {
-      showToast(`Versión histórica de referencia: ${snap.versionTag} (${snap.commitHash}). Sin backup de base de datos anterior.`, 'info');
-      return { success: true, message: `Versión ${snap.versionTag} seleccionada.` };
+    if (snap.stateBackup) {
+      setUsers(snap.stateBackup.users);
+      setProducts(snap.stateBackup.products);
+      setTables(snap.stateBackup.tables);
+      setOrders(snap.stateBackup.orders);
     }
-    setUsers(snap.stateBackup.users);
-    setProducts(snap.stateBackup.products);
-    setTables(snap.stateBackup.tables);
-    setOrders(snap.stateBackup.orders);
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(snap.stateBackup.users));
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(snap.stateBackup.products));
-    localStorage.setItem(STORAGE_KEYS.TABLES, JSON.stringify(snap.stateBackup.tables));
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(snap.stateBackup.orders));
-    showToast(`Sistema revertido con éxito al estado de la versión ${snap.versionTag}.`, 'success');
-    api.rollbackSnapshot(snapshotId).then(() => {
-      refreshAllFromDatabase();
-    }).catch(console.error);
+    showToast(`Sistema revertido con éxito a la versión ${snap.versionTag}.`, 'success');
     return { success: true, message: `Revertido a ${snap.versionTag}` };
-  };
-
-  const resetToDefaults = () => {
-    setUsers(INITIAL_USERS);
-    setProducts(INITIAL_PRODUCTS);
-    setTables(INITIAL_TABLES);
-    setOrders(INITIAL_ORDERS);
-    setCurrentUser(INITIAL_USERS[1]);
-    setActiveView('mesas');
-    showToast('Datos restaurados al estado inicial.', 'info');
   };
 
   return (
     <RestaurantContext.Provider
       value={{
         currentUser,
+        isAuthLoading,
         users,
         products,
         tables,
@@ -645,7 +592,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setSelectedTableForOrder,
         login,
         logout,
-        switchUser,
         createOrder,
         updateOrderStatus,
         addProduct,
@@ -662,7 +608,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         getActiveOrder,
         dismissToast,
         showToast,
-        resetToDefaults,
+        refreshData,
         snapshots,
         createVersionSnapshot,
         rollbackToSnapshot,

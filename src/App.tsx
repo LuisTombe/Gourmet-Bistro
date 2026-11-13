@@ -13,7 +13,20 @@ import { UsersAdminView } from './views/UsersAdminView.tsx';
 import { VersionControlAdminView } from './views/VersionControlAdminView.tsx';
 
 const AppContent: React.FC = () => {
-  const { currentUser, activeView } = useRestaurant();
+  const { currentUser, isAuthLoading, activeView } = useRestaurant();
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">
+            Verificando sesión segura...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (

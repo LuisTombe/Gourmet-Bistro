@@ -1,23 +1,19 @@
 {
-  "name": "gourmet-bistro-backend",
-  "version": "1.0.0",
+  "name": "gourmet-bistro-srs-backend-kit",
   "private": true,
   "type": "module",
-  "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "users": "node services/ms-usuarios/server.mjs",
+    "catalog": "node services/ms-catalogo/server.mjs",
+    "orders": "node services/ms-pedidos/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check services/ms-usuarios/server.mjs && node --check services/ms-catalogo/server.mjs && node --check services/ms-pedidos/server.mjs"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
-    "mysql2": "^3.12.0"
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0"
+    "mysql2": "^3.15.0",
+    "zod": "^3.25.0"
   }
 }
-

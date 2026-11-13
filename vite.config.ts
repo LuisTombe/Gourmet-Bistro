@@ -12,6 +12,14 @@ export default defineConfig(() => {
       },
     },
     server: {
+      port: 3000,
+      proxy: {
+        '/api/auth': { target: 'http://127.0.0.1:4001', changeOrigin: true },
+        '/api/usuarios': { target: 'http://127.0.0.1:4001', changeOrigin: true },
+        '/api/productos': { target: 'http://127.0.0.1:4002', changeOrigin: true },
+        '/api/mesas': { target: 'http://127.0.0.1:4002', changeOrigin: true },
+        '/api/pedidos': { target: 'http://127.0.0.1:4003', changeOrigin: true },
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

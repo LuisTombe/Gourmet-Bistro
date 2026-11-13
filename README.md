@@ -1,144 +1,126 @@
-# Gourmet Bistro POS - Sistema de Gestión Gastronómica & KDS
+# Gourmet Bistro POS - Sistema de Gestión Gastronómica & KDS (SENA)
 
-Sistema Full-Stack de punto de venta (POS) y visualización de pedidos en cocina (KDS) para restaurantes, construido con arquitectura moderna en **React**, **Node.js (Express)** y **MySQL / MariaDB (XAMPP)**.
-
----
-
-## 🚀 Stack Tecnológica
-
-- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Lucide React, Framer Motion.
-- **Backend:** Node.js, Express, `mysql2/promise`, CORS, Dotenv.
-- **Base de Datos:** MySQL / MariaDB (XAMPP por defecto en `localhost:3306`).
-- **Control de Versiones:** Git (Flujo en ramas `main`, `Dev` y `QA`), módulo de versionamiento con snapshots y rollback en interfaz para el rol Administrador.
+Sistema Full-Stack de gestión de menú, mesas, pedidos y cocina (KDS) para restaurantes pequeños, desarrollado siguiendo la especificación formal del documento SRS versión 3 (SENA - Tecnólogo en Análisis y Desarrollo de Software).
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🚀 Arquitectura y Stack Tecnológica
+
+El sistema implementa una arquitectura desacoplada basada en microservicios, seguridad con cookies HttpOnly y persistencia relacional estricta:
+
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Lucide React, Framer Motion y efecto ambiental `AmbientTwinkle`.
+- **Backend (3 Microservicios en Node.js + Express):**
+  - **`ms-usuarios` (Puerto 4001):** Autenticación con bcrypt, sesiones revocables en MySQL, cookies HttpOnly y gestión de personal (`/api/auth/*`, `/api/usuarios/*`).
+  - **`ms-catalogo` (Puerto 4002):** Catálogo de productos y gestión de mesas con verificación de disponibilidad derivada (`/api/productos/*`, `/api/mesas/*`).
+  - **`ms-pedidos` (Puerto 4003):** Registro de pedidos y detalles bajo transacciones SQL atómicas, cálculo de subtotales y totales, máquina de estados estricta (`Pendiente` → `En preparación` → `Listo` → `Entregado`) y candados de integridad (`/api/pedidos/*`).
+- **Base de Datos (MySQL / MariaDB en XAMPP):**
+  - Instancia compartida dividida en 3 bases de datos lógicas con aislamiento de usuarios SQL:
+    - `restaurante_usuarios` (usuario `gb_usuarios`)
+    - `restaurante_catalogo` (usuario `gb_catalogo`)
+    - `restaurante_pedidos` (usuario `gb_pedidos`)
+- **Control de Versiones & Rollback (Fase 1 / Admin):** Módulo en panel administrativo para supervisar ramas Git, commits, generar snapshots de estado y ejecutar rollback seguro ante errores.
+
+---
+
+## 📁 Estructura del Repositorio
 
 ```plaintext
 Gourmet-Bistro/
-├── .env.example              # Plantilla de variables de entorno (rastreada en Git)
-├── .env                      # Variables locales reales (ignorado en .gitignore)
-├── .gitignore                # Reglas de exclusión de Git
-├── package.json              # Dependencias y scripts globales de orquestación
-├── database/
-│   ├── schema.sql            # Definición DDL de tablas y datos semilla (Seed)
-│   └── migrate.js            # Script automatizado de migración a MySQL
-├── backend/
-│   ├── package.json          # Configuración del servicio backend
-│   ├── src/
-│   │   ├── config/db.js      # Pool de conexiones a MySQL (mysql2/promise)
-│   │   ├── controllers/      # Controladores de negocio (Auth, Tables, Products, Orders, Snapshots)
-│   │   ├── routes/           # Rutas REST de la API (/api/users, /api/tables, /api/products, etc.)
-│   │   └── server.js         # Servidor Express, middlewares y health check
+├── docs/                     # Documentación técnica, diseño y trazabilidad (SRS Kit)
+│   ├── 01_DIAGNOSTICO_BRECHAS.md
+│   ├── 02_CATALOGO_HERRAMIENTAS.md
+│   ├── 03_PATRONES_DISENO.md
+│   ├── 04_CONTRATOS_API.md
+│   ├── 05_TRAZABILIDAD_RF.md
+│   ├── 06_GUIA_ANTIGRAVITY.md
+│   └── 07_PRUEBAS_Y_ACEPTACION.md
+├── backend/                  # Servicios de backend y bases de datos
+│   ├── package.json          # Dependencias (bcryptjs, express, mysql2, zod, dotenv)
+│   ├── .env.example          # Plantilla de variables de entorno de servicios
+│   ├── sql/                  # Scripts DDL de las 3 bases de datos
+│   │   ├── 001_usuarios.sql
+│   │   ├── 002_catalogo.sql
+│   │   └── 003_pedidos.sql
+│   ├── services/
+│   │   ├── shared/           # Reglas de dominio puras (domain.mjs) e infraestructura (infra.mjs)
+│   │   ├── ms-usuarios/      # Microservicio de Usuarios y Autenticación (Puerto 4001)
+│   │   ├── ms-catalogo/      # Microservicio de Catálogo y Mesas (Puerto 4002)
+│   │   └── ms-pedidos/       # Microservicio de Pedidos y Cocina (Puerto 4003)
 │   └── tests/
-│       └── e2e.test.js       # Pruebas de integración End-to-End contra MySQL
-└── frontend/
-    ├── package.json          # Configuración del cliente frontend
-    ├── index.html            # Plantilla HTML principal
-    ├── vite.config.ts        # Configuración de compilación Vite
-    └── src/
-        ├── components/       # Componentes React (Navbar, Login, TableCard, StatusBadge, etc.)
-        ├── context/          # RestaurantContext con sincronización reactiva y API
-        ├── data/             # MockData inicial y datos de respaldo
-        ├── domain/           # Reglas de negocio puras y validaciones RBAC
-        ├── services/         # Cliente HTTP (api.ts) que consume la API REST
-        ├── types/            # Definiciones de TypeScript
-        └── views/            # Vistas por rol (Mesas, Nuevo Pedido, KDS Cocina, Menú, Usuarios, Versionamiento)
+│       └── domain.test.mjs   # Pruebas unitarias PU-01 a PU-05
+├── src/                      # Código fuente del Frontend React
+│   ├── components/           # Componentes (Navbar, LoginView, AmbientTwinkle, StatusBadge, etc.)
+│   ├── context/              # RestaurantContext integrado con apiClient.ts
+│   ├── domain/               # Reglas de negocio del frontend
+│   ├── services/             # apiClient.ts (adaptador HTTP con cookies HttpOnly)
+│   ├── types/                # Definiciones TypeScript
+│   └── views/                # Vistas por rol (Mesas, Nuevo Pedido, Cocina KDS, Menú, Usuarios, Versionamiento)
+├── vite.config.ts            # Configuración de Vite con reverse proxy a los 3 microservicios
+└── package.json              # Orquestación global del proyecto
 ```
 
 ---
 
-## ⚙️ Configuración y Puesta en Marcha
+## ⚙️ Puesta en Marcha
 
 ### 1. Requisitos Previos
-- **Node.js:** Versión 18 o superior (`node -v`).
-- **XAMPP:** Con el módulo **MySQL** iniciado en el puerto `3306`.
-- **Git:** Configurado en la rama `Dev`.
+- Node.js 18+ instalado.
+- XAMPP con **MySQL** activo en el puerto `3306`.
 
-### 2. Variables de Entorno
-El repositorio incluye un archivo [.env.example](file:///c:/Users/USER/Gourmet%20System/Gourmet-Bistro/.env.example). Cree una copia llamada `.env` en la raíz del proyecto:
-
-```bash
-cp .env.example .env
-```
-
-Contenido por defecto de `.env`:
-```env
-PORT=5000
-NODE_ENV=development
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=gourmet_bistro
-
-CLIENT_URL=http://localhost:3000
-```
-
-### 3. Instalación de Dependencias
-Ejecute en la raíz del proyecto:
-```bash
+### 2. Configuración de Base de Datos y Semilla
+Los scripts de creación y poblado se ejecutan directamente con:
+```powershell
+# En la raíz o backend:
+cd backend
 npm install
+node services/ms-usuarios/seed-admin.mjs
+node services/ms-catalogo/seed-catalogo.mjs
+cd ..
 ```
 
-### 4. Creación y Migración de la Base de Datos
-Asegúrese de que el servicio MySQL en XAMPP esté corriendo y ejecute:
-```bash
-npm run db:migrate
-```
-*Este comando crea la base de datos `gourmet_bistro`, todas sus tablas relacionales y carga los datos iniciales.*
+### 3. Cuentas de Acceso Preconfiguradas en MySQL
+El sistema incluye las cuentas con hash seguro `bcrypt` para validar los 3 roles:
+- **Administrador:** Usuario: `admin` | Contraseña: `AdminPass2026!`
+- **Mesero:** Usuario: `carlos_m` | Contraseña: `MeseroPass2026!`
+- **Cocinero:** Usuario: `chef_mateo` | Contraseña: `CocinaPass2026!`
 
 ---
 
-## 🏃‍♂️ Ejecución de la Aplicación
+## 🏃‍♂️ Ejecución del Sistema
 
-Puede iniciar ambos servicios concurrentemente o por separado:
-
-### Opción A: Modo Concurrente (Recomendado)
-Inicia el Backend (puerto 5000) y el Frontend (puerto 3000) en paralelo:
-```bash
+### Modo Completo (Servicios + Frontend en Paralelo):
+```powershell
 npm run dev
 ```
+*(Inicia los tres microservicios en los puertos 4001, 4002 y 4003, y el frontend de Vite en el puerto 3000 con proxy transparente a `/api/*`)*.
 
-### Opción B: Ejecución Independiente
-- **Levantar Backend REST API:**
-  ```bash
-  npm run dev:backend
-  # El servidor escucha en http://localhost:5000
+### O ejecutar de forma independiente:
+- **Microservicios Backend:**
+  ```powershell
+  npm run services
   ```
-- **Levantar Frontend React:**
-  ```bash
+- **Frontend React:**
+  ```powershell
   npm run dev:frontend
-  # La aplicación abre en http://localhost:3000
   ```
 
 ---
 
 ## 🧪 Pruebas Automatizadas
 
-1. **Pruebas Unitarias de Reglas de Negocio (Node Native Test):**
-   ```bash
-   npm test
-   ```
-2. **Pruebas de Integración End-to-End con la Base de Datos:**
-   *(Con el backend y MySQL activos)*
-   ```bash
-   npm run test:e2e
-   ```
-3. **Verificación de Tipos y Compilación:**
-   ```bash
-   npm run build
-   ```
-
----
-
-## 🛡️ Módulo de Versionamiento e Histórico (Solo Admin)
-
-Diseñado e integrado en cumplimiento de los requerimientos de la **Fase 1**:
-- **Visibilidad:** Restringido exclusivamente al usuario con rol **Administrador** (`admin`).
-- **Ubicación:** Acceso directo desde el menú de perfil en la barra de navegación: *Versionamiento & Histórico*.
-- **Supervisión de Versiones:** Muestra la rama activa (`Dev`), estado de sincronización con `origin/Dev`, hash del commit actual e historial de cambios.
-- **Puntos de Restauración (Snapshots):** El administrador puede generar un snapshot del estado completo de la base de datos y la aplicación antes de cambios críticos.
-- **Capacidad de Rollback:** En caso de errores introducidos por miembros del equipo, el administrador puede seleccionar cualquier versión o snapshot anterior y ejecutar un **Rollback Inmediato**, restaurando de manera segura el estado previo del sistema.
+- **Pruebas Unitarias del SRS Kit (PU-01 a PU-05):**
+  ```powershell
+  npm run test:services
+  ```
+- **Comprobación Sintáctica de los 3 Microservicios:**
+  ```powershell
+  npm run check:services
+  ```
+- **Pruebas de Reglas de Negocio en Frontend:**
+  ```powershell
+  npm test
+  ```
+- **Compilación de Producción:**
+  ```powershell
+  npm run build
+  ```

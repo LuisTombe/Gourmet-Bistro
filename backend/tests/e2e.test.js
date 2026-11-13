@@ -89,3 +89,4 @@ runTests().catch((err) => {
   console.error('❌ Error en pruebas E2E:', err);
   process.exit(1);
 });
+

@@ -1,40 +1,50 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
-import { Flame, Shield, UserCheck, ChefHat, LogIn, Lock, User, AlertCircle } from 'lucide-react';
+import { Flame, Shield, UserCheck, ChefHat, LogIn, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
+import { AmbientTwinkle } from './AmbientTwinkle.tsx';
 
 export const LoginView: React.FC = () => {
-  const { login, users } = useRestaurant();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useRestaurant();
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('AdminPass2026!');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!username.trim()) {
       setError('Por favor ingrese su nombre de usuario.');
       return;
     }
+    if (!password) {
+      setError('Por favor ingrese su contraseña.');
+      return;
+    }
 
-    const res = login(username);
-    if (!res.success) {
-      setError(res.message || 'Error al iniciar sesión.');
+    setIsSubmitting(true);
+    try {
+      const res = await login(username, password);
+      if (!res.success) {
+        setError(res.message || 'Credenciales inválidas o cuenta desactivada.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleQuickLogin = (uname: string) => {
+  const handleFillCredentials = (u: string, p: string) => {
     setError(null);
-    setUsername(uname);
-    setPassword('••••••••');
-    const res = login(uname);
-    if (!res.success) {
-      setError(res.message || 'Error al iniciar sesión.');
-    }
+    setUsername(u);
+    setPassword(p);
   };
 
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Warm ambient background lights evoking amber reduction and fire */}
+      {/* Luces y estrellas tenues de fondo (AmbientTwinkle del kit) */}
+      <AmbientTwinkle />
+
+      {/* Degradado cálido difuminado */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-[#EA580C]/20 to-[#D97706]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
@@ -71,9 +81,10 @@ export const LoginView: React.FC = () => {
                 </div>
                 <input
                   type="text"
+                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin, mesero o cocina"
+                  placeholder="admin, carlos_m, chef_mateo"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA580C] focus:border-transparent transition-all"
                   autoFocus
                 />
@@ -90,9 +101,10 @@ export const LoginView: React.FC = () => {
                 </div>
                 <input
                   type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="••••••••••••"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA580C] focus:border-transparent transition-all"
                 />
               </div>
@@ -100,23 +112,33 @@ export const LoginView: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full min-h-[48px] py-3 px-4 rounded-xl text-white bg-[#EA580C] hover:bg-[#CC4900] active:scale-[0.99] font-bold text-sm tracking-wide shadow-md shadow-orange-950/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full min-h-[48px] py-3 px-4 rounded-xl text-white bg-[#EA580C] hover:bg-[#CC4900] active:scale-[0.99] font-bold text-sm tracking-wide shadow-md shadow-orange-950/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
             >
-              <LogIn className="w-4 h-4" />
-              Ingresar al Sistema
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Autenticando en Servidor...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  Ingresar al Sistema
+                </>
+              )}
             </button>
           </form>
 
-          {/* Quick Demo Access Buttons */}
+          {/* Cuentas de Acceso Verificables en MySQL */}
           <div className="mt-8 pt-6 border-t border-slate-700/80">
             <p className="text-xs text-center font-semibold text-slate-400 uppercase tracking-wider mb-3">
-              Acceso Rápido de Demostración
+              Cuentas Registradas en Base de Datos
             </p>
 
             <div className="grid grid-cols-1 gap-2">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('mesero')}
+                onClick={() => handleFillCredentials('carlos_m', 'MeseroPass2026!')}
                 className="w-full px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left flex items-center gap-3 transition-colors text-xs text-slate-200"
               >
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
@@ -124,35 +146,35 @@ export const LoginView: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-white">Carlos Mendoza (Mesero)</div>
-                  <div className="text-[11px] text-slate-400">Gestión de mesas, toma de pedidos y entrega</div>
+                  <div className="text-[11px] text-slate-400">carlos_m • MeseroPass2026!</div>
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleQuickLogin('cocina')}
+                onClick={() => handleFillCredentials('chef_mateo', 'CocinaPass2026!')}
                 className="w-full px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left flex items-center gap-3 transition-colors text-xs text-slate-200"
               >
                 <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
                   <ChefHat className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-white">Elena Rossi (Chef / Cocina)</div>
-                  <div className="text-[11px] text-slate-400">KDS pantalla de cocina y avance de estados</div>
+                  <div className="font-bold text-white">Mateo Silvestri (Chef Cocina)</div>
+                  <div className="text-[11px] text-slate-400">chef_mateo • CocinaPass2026!</div>
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleQuickLogin('admin')}
+                onClick={() => handleFillCredentials('admin', 'AdminPass2026!')}
                 className="w-full px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left flex items-center gap-3 transition-colors text-xs text-slate-200"
               >
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                   <Shield className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-white">Mateo Valenzuela (Administrador)</div>
-                  <div className="text-[11px] text-slate-400">Control total de menú, mesas, usuarios y reportes</div>
+                  <div className="font-bold text-white">Administrador General</div>
+                  <div className="text-[11px] text-slate-400">admin • AdminPass2026!</div>
                 </div>
               </button>
             </div>
@@ -161,7 +183,7 @@ export const LoginView: React.FC = () => {
 
         {/* Footer info */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          MVP Académico • 18 Requisitos Funcionales (RF-01 a RF-18)
+          Microservicios Activos: Usuarios (:4001) • Catálogo (:4002) • Pedidos (:4003)
         </p>
       </div>
     </div>
