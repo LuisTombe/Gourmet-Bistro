@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, OrderItem, OrderStatus, Product, Table, TableStatus, User, UserRole } from '../types/index.ts';
+import { Order, OrderItem, OrderStatus, Product, Table, TableStatus, User, UserRole, SystemVersionSnapshot } from '../types/index.ts';
 import {
   INITIAL_USERS,
   INITIAL_PRODUCTS,
   INITIAL_TABLES,
   INITIAL_ORDERS,
+  INITIAL_SNAPSHOTS,
 } from '../data/mockData.ts';
 import {
   calculateOrderTotal,
@@ -59,6 +60,9 @@ interface RestaurantContextType {
   dismissToast: (id: string) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   resetToDefaults: () => void;
+  snapshots: SystemVersionSnapshot[];
+  createVersionSnapshot: (description: string, versionTag?: string) => { success: boolean; snapshot?: SystemVersionSnapshot };
+  rollbackToSnapshot: (snapshotId: string) => { success: boolean; message: string };
 }
 
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
@@ -68,6 +72,7 @@ const STORAGE_KEYS = {
   PRODUCTS: 'bistro_pos_products',
   TABLES: 'bistro_pos_tables',
   ORDERS: 'bistro_pos_orders',
+  SNAPSHOTS: 'bistro_pos_snapshots',
   CURRENT_USER_ID: 'bistro_pos_current_user_id',
 };
 
@@ -90,6 +95,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
     return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+  });
+
+  const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.SNAPSHOTS);
+    return saved ? JSON.parse(saved) : INITIAL_SNAPSHOTS;
   });
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -122,6 +132,10 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
   }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SNAPSHOTS, JSON.stringify(snapshots));
+  }, [snapshots]);
 
   useEffect(() => {
     if (currentUser) {
@@ -489,6 +503,52 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  const createVersionSnapshot = (description: string, versionTag?: string) => {
+    const nextTag = versionTag || `v1.${snapshots.length + 1}.0-dev`;
+    const newSnapshot: SystemVersionSnapshot = {
+      id: `snap-${Date.now()}`,
+      versionTag: nextTag,
+      branch: 'Dev',
+      commitHash: Math.random().toString(16).substring(2, 9),
+      author: currentUser?.name || 'Administrador',
+      authorRole: currentUser?.role || 'administrador',
+      timestamp: new Date().toISOString(),
+      description: description || 'Punto de restauración y control de versiones',
+      type: 'recovery_point',
+      stateBackup: {
+        users: JSON.parse(JSON.stringify(users)),
+        products: JSON.parse(JSON.stringify(products)),
+        tables: JSON.parse(JSON.stringify(tables)),
+        orders: JSON.parse(JSON.stringify(orders)),
+      },
+    };
+    setSnapshots((prev) => [newSnapshot, ...prev]);
+    showToast(`Punto de versión "${newSnapshot.versionTag}" creado correctamente.`, 'success');
+    return { success: true, snapshot: newSnapshot };
+  };
+
+  const rollbackToSnapshot = (snapshotId: string) => {
+    const snap = snapshots.find((s) => s.id === snapshotId);
+    if (!snap) {
+      showToast('Punto de restauración no encontrado.', 'error');
+      return { success: false, message: 'Snapshot no encontrado' };
+    }
+    if (!snap.stateBackup) {
+      showToast(`Versión histórica de referencia: ${snap.versionTag} (${snap.commitHash}). Sin backup de base de datos anterior.`, 'info');
+      return { success: true, message: `Versión ${snap.versionTag} seleccionada.` };
+    }
+    setUsers(snap.stateBackup.users);
+    setProducts(snap.stateBackup.products);
+    setTables(snap.stateBackup.tables);
+    setOrders(snap.stateBackup.orders);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(snap.stateBackup.users));
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(snap.stateBackup.products));
+    localStorage.setItem(STORAGE_KEYS.TABLES, JSON.stringify(snap.stateBackup.tables));
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(snap.stateBackup.orders));
+    showToast(`Sistema revertido con éxito al estado de la versión ${snap.versionTag}.`, 'success');
+    return { success: true, message: `Revertido a ${snap.versionTag}` };
+  };
+
   const resetToDefaults = () => {
     setUsers(INITIAL_USERS);
     setProducts(INITIAL_PRODUCTS);
@@ -532,6 +592,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         dismissToast,
         showToast,
         resetToDefaults,
+        snapshots,
+        createVersionSnapshot,
+        rollbackToSnapshot,
       }}
     >
       {children}

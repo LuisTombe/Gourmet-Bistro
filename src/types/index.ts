@@ -61,3 +61,23 @@ export interface Order {
   total: number;
   notes?: string;
 }
+
+export type SnapshotType = 'git_release' | 'audit_snapshot' | 'recovery_point';
+
+export interface SystemVersionSnapshot {
+  id: string;
+  versionTag: string;
+  branch: string;
+  commitHash: string;
+  author: string;
+  authorRole: string;
+  timestamp: string;
+  description: string;
+  type: SnapshotType;
+  stateBackup?: {
+    users: User[];
+    products: Product[];
+    tables: Table[];
+    orders: Order[];
+  };
+}

@@ -10,6 +10,7 @@ import { OrdersListView } from './views/OrdersListView.tsx';
 import { MenuAdminView } from './views/MenuAdminView.tsx';
 import { TablesAdminView } from './views/TablesAdminView.tsx';
 import { UsersAdminView } from './views/UsersAdminView.tsx';
+import { VersionControlAdminView } from './views/VersionControlAdminView.tsx';
 
 const AppContent: React.FC = () => {
   const { currentUser, activeView } = useRestaurant();
@@ -39,6 +40,8 @@ const AppContent: React.FC = () => {
         return <TablesAdminView />;
       case 'usuarios':
         return <UsersAdminView />;
+      case 'versionamiento':
+        return <VersionControlAdminView />;
       default:
         return <TablesFloorView />;
     }

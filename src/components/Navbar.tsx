@@ -17,6 +17,7 @@ import {
   Check,
   Sliders,
   Settings,
+  GitBranch,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -94,7 +95,10 @@ export const Navbar: React.FC = () => {
   };
 
   const isSettingsActive =
-    activeView === 'menu' || activeView === 'gestion-mesas' || activeView === 'usuarios';
+    activeView === 'menu' ||
+    activeView === 'gestion-mesas' ||
+    activeView === 'usuarios' ||
+    activeView === 'versionamiento';
 
   return (
     <header className="bg-[#1E293B] text-white border-b border-[#334155] sticky top-0 z-40 shadow-sm">
@@ -224,6 +228,7 @@ export const Navbar: React.FC = () => {
                   {activeView === 'menu' && 'Ajustes: Menú'}
                   {activeView === 'gestion-mesas' && 'Ajustes: Mesas'}
                   {activeView === 'usuarios' && 'Ajustes: Personal'}
+                  {activeView === 'versionamiento' && 'Ajustes: Versiones & Git'}
                 </span>
               </div>
             )}
@@ -391,6 +396,33 @@ export const Navbar: React.FC = () => {
                           </div>
                         </div>
                         {activeView === 'usuarios' && <Check className="w-4 h-4 text-white" />}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveView('versionamiento');
+                          setProfilePanelOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors ${
+                          activeView === 'versionamiento'
+                            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+                            : 'text-slate-200 hover:bg-slate-800/80'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <GitBranch className="w-4 h-4 text-amber-400" />
+                          <div>
+                            <div className="font-medium">Versionamiento & Histórico</div>
+                            <div
+                              className={`text-[10px] ${
+                                activeView === 'versionamiento' ? 'text-orange-100' : 'text-slate-400'
+                              }`}
+                            >
+                              Control de versiones y rollback
+                            </div>
+                          </div>
+                        </div>
+                        {activeView === 'versionamiento' && <Check className="w-4 h-4 text-white" />}
                       </button>
                     </div>
                   </div>
