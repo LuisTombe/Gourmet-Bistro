@@ -44,14 +44,14 @@ export const LoginView: React.FC = () => {
       {/* Luces y estrellas tenues de fondo (AmbientTwinkle del kit) */}
       <AmbientTwinkle />
 
-      {/* Degradado cálido difuminado */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-[#EA580C]/20 to-[#D97706]/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Degradado tenue difuminado */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-[#2554F4]/20 to-[#1741CF]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Emblem & Title */}
         <div className="text-center">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-[#EA580C] to-[#D97706] items-center justify-center text-white shadow-xl shadow-orange-950/40 mb-3 border border-orange-400/30">
-            <Flame className="w-8 h-8 text-amber-100" />
+          <div className="inline-flex w-16 h-16 rounded-2xl bg-[#2554F4] items-center justify-center text-white shadow-xl shadow-blue-950/40 mb-3 border border-blue-400/30">
+            <Flame className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
             GOURMET BISTRO
@@ -85,7 +85,7 @@ export const LoginView: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin, carlos_m, chef_mateo"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA580C] focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554F4] focus:border-transparent transition-all"
                   autoFocus
                 />
               </div>
@@ -105,7 +105,7 @@ export const LoginView: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA580C] focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554F4] focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@ export const LoginView: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full min-h-[48px] py-3 px-4 rounded-xl text-white bg-[#EA580C] hover:bg-[#CC4900] active:scale-[0.99] font-bold text-sm tracking-wide shadow-md shadow-orange-950/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full min-h-[48px] py-3 px-4 rounded-xl text-white bg-[#2554F4] hover:bg-[#1741CF] active:scale-[0.99] font-bold text-sm tracking-wide shadow-md shadow-blue-950/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

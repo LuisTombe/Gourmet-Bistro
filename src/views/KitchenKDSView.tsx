@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Order, OrderStatus } from '../types/index.ts';
-import { StatusBadge } from '../components/StatusBadge.tsx';
+import { StatusBadge } from '../components/ui/StatusBadge.tsx';
 import {
   ChefHat,
   Clock,

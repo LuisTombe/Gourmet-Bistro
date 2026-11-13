@@ -1,8 +1,8 @@
 import React from 'react';
 import { Table, TableStatus } from '../types/index.ts';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
-import { StatusBadge } from './StatusBadge.tsx';
-import { Users, Clock, PlusCircle, Eye, CheckCircle2, AlertCircle } from 'lucide-react';
+import { StatusBadge } from './ui/StatusBadge.tsx';
+import { Users, Clock, PlusCircle, Eye, CheckCircle2 } from 'lucide-react';
 
 interface TableCardProps {
   table: Table;
@@ -15,7 +15,6 @@ export const TableCard: React.FC<TableCardProps> = ({ table, onOpenOrder, onView
   const status: TableStatus = getTableStatus(table.id);
   const activeOrder = getActiveOrder(table.id);
 
-  // Calculate elapsed minutes if active order exists
   const getElapsedMinutes = () => {
     if (!activeOrder) return 0;
     const diffMs = Date.now() - new Date(activeOrder.createdAt).getTime();
@@ -27,131 +26,110 @@ export const TableCard: React.FC<TableCardProps> = ({ table, onOpenOrder, onView
 
   return (
     <div
-      className={`rounded-2xl transition-all duration-200 border-2 shadow-sm relative overflow-hidden flex flex-col justify-between ${
+      className={`bg-white rounded-2xl border transition-all duration-200 shadow-xs hover:shadow-md relative overflow-hidden flex flex-col justify-between ${
         status === 'Disponible'
-          ? 'bg-[#FFFFFF] border-emerald-500/30 hover:border-emerald-500 hover:shadow-md'
+          ? 'border-[#E3E7EF] hover:border-[#2554F4]'
           : isOverdue
-          ? 'bg-[#FEF2F2] border-rose-500 shadow-rose-100/50 hover:shadow-md'
-          : 'bg-[#FFFFFF] border-rose-400/40 hover:border-rose-500 hover:shadow-md'
+          ? 'border-[#FBB4BD] bg-[#FFF5F6]'
+          : 'border-[#FCE19B] bg-[#FFFDF5]'
       }`}
     >
       {/* Top Header */}
-      <div className="p-4 sm:p-5">
+      <div className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0F172A]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl font-black tracking-tight text-[#141722]">
                 Mesa {table.tableNumber < 10 ? `0${table.tableNumber}` : table.tableNumber}
               </span>
               <StatusBadge status={status} size="sm" />
             </div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 font-medium">
-              <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                <Users className="w-3 h-3 text-slate-500" />
-                {table.capacity} personas
+            <div className="flex items-center gap-2 mt-1.5 text-xs text-[#626B7A] font-medium">
+              <span className="inline-flex items-center gap-1 bg-[#F2F4F8] text-[#141722] px-2 py-0.5 rounded-md font-semibold">
+                <Users className="w-3 h-3 text-[#626B7A]" />
+                {table.capacity || 4} comensales
               </span>
-              <span className="text-slate-400">•</span>
-              <span>{table.area}</span>
+              <span>•</span>
+              <span>{table.area || 'Salón Principal'}</span>
             </div>
           </div>
 
           {status === 'Ocupada' && activeOrder && (
             <div className="text-right">
-              <div
-                className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-semibold ${
-                  isOverdue ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                <Clock className="w-3 h-3" />
-                {elapsed}m
+              <div className="text-[11px] font-bold text-[#626B7A] uppercase tracking-wider">
+                Pedido #{activeOrder.id}
+              </div>
+              <div className="text-sm font-extrabold text-[#141722] mt-0.5">
+                ${activeOrder.total.toLocaleString('es-CO')}
               </div>
             </div>
           )}
         </div>
 
-        {/* Card Body */}
+        {/* Active Order Details if occupied */}
         {status === 'Ocupada' && activeOrder ? (
-          <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+          <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Ticket:</span>
-              <span className="font-bold text-slate-800">#{activeOrder.id}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Estado cocina:</span>
+              <div className="flex items-center gap-1.5 text-[#626B7A]">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Tiempo:</span>
+                <span className={`font-bold ${isOverdue ? 'text-[#B53B46]' : 'text-[#141722]'}`}>
+                  {elapsed} min
+                </span>
+              </div>
               <StatusBadge status={activeOrder.status} size="sm" />
             </div>
 
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Mesero:</span>
-              <span className="font-medium text-slate-700 truncate max-w-[120px]">
-                {activeOrder.waiterName}
-              </span>
-            </div>
-
-            {/* Total */}
-            <div className="flex items-center justify-between pt-2 border-t border-dashed border-slate-200">
-              <span className="text-xs font-semibold text-slate-600">Total cuenta:</span>
-              <span className="text-base font-extrabold text-[#A33900] tabular-nums">
-                ${activeOrder.total.toLocaleString('es-CO')}
-              </span>
-            </div>
-
-            {/* Quick item count preview */}
-            <div className="bg-slate-50 p-2 rounded-lg text-xs text-slate-600">
-              <span className="font-semibold text-slate-700">{activeOrder.items.length} platos: </span>
-              <span className="text-slate-500 truncate">
-                {activeOrder.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
+            <div className="text-xs text-[#626B7A] truncate">
+              {activeOrder.items.length} {activeOrder.items.length === 1 ? 'ítem' : 'ítems'}:{' '}
+              <span className="text-[#141722] font-medium">
+                {activeOrder.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
               </span>
             </div>
           </div>
         ) : (
-          <div className="mt-6 py-6 text-center rounded-xl bg-emerald-50/60 border border-emerald-100">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-semibold text-emerald-800">Mesa Disponible</p>
-            <p className="text-xs text-emerald-600/80 mt-0.5">Limpia y lista para recibir comensales</p>
+          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-[#626B7A]">
+            <span className="inline-flex items-center gap-1 text-[#16774D] font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#16774D]" />
+              Lista para comensales
+            </span>
+            <span className="text-[11px] text-[#94A3B8]">Sin pedido activo</span>
           </div>
         )}
       </div>
 
-      {/* Card Actions Footer */}
-      <div className="p-3 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2">
+      {/* Action Footer */}
+      <div className="p-3 bg-[#F8F9FC] border-t border-[#E3E7EF]">
         {status === 'Disponible' ? (
           <button
             onClick={() => onOpenOrder(table)}
-            className="w-full min-h-[44px] px-4 py-2 bg-[#EA580C] hover:bg-[#CC4900] active:scale-[0.98] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+            className="w-full min-h-[44px] py-2.5 px-4 rounded-xl text-white bg-[#2554F4] hover:bg-[#1741CF] font-bold text-xs tracking-wide shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            Abrir Pedido
+            Tomar Pedido
           </button>
-        ) : activeOrder ? (
-          <>
+        ) : (
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => onViewOrder(activeOrder.id)}
-              className="flex-1 min-h-[44px] px-3 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+              onClick={() => onViewOrder(activeOrder!.id)}
+              className="flex-1 min-h-[44px] py-2 px-3 rounded-xl bg-white hover:bg-slate-50 border border-[#E3E7EF] text-[#141722] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Eye className="w-3.5 h-3.5 text-slate-500" />
-              Ver Ticket
+              <Eye className="w-3.5 h-3.5 text-[#626B7A]" />
+              Ver Comanda
             </button>
 
-            {/* If order is 'Listo', allow Mesero / Admin to deliver directly */}
-            {activeOrder.status === 'Listo' && (currentUser?.role === 'mesero' || currentUser?.role === 'administrador') ? (
+            {activeOrder && activeOrder.status === 'Listo' && (currentUser?.role === 'mesero' || currentUser?.role === 'administrador') && (
               <button
                 onClick={() => updateOrderStatus(activeOrder.id, 'Entregado')}
-                className="flex-1 min-h-[44px] px-3 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                className="flex-1 min-h-[44px] py-2 px-3 rounded-xl bg-[#16774D] hover:bg-[#115E3C] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer animate-pulse"
+                title="Confirmar entrega de platos a los comensales"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Entregar & Liberar
+                Entregar
               </button>
-            ) : (
-              <span className="text-[11px] text-slate-400 font-medium px-2 py-1 text-center flex-1">
-                {activeOrder.status === 'Pendiente' ? 'En cola cocina' : 'En preparación'}
-              </span>
             )}
-          </>
-        ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,150 @@
+/* =====================================================================
+   Gourmet-Bistro Design Tokens (Inspirado en Bold POS Restaurantes)
+   ===================================================================== */
+
+:root {
+  /* Superficies y Fondos */
+  --gb-bg: #F8F9FC;
+  --gb-surface: #FFFFFF;
+  --gb-surface-muted: #F2F4F8;
+
+  /* Tipografía y Textos */
+  --gb-ink: #141722;
+  --gb-ink-muted: #626B7A;
+  --gb-ink-light: #94A3B8;
+
+  /* Bordes */
+  --gb-border: #E3E7EF;
+  --gb-border-focus: #2554F4;
+
+  /* Color de Marca (Bold Blue + Toque Gourmet) */
+  --gb-brand: #2554F4;
+  --gb-brand-hover: #1741CF;
+  --gb-brand-soft: #EAF0FF;
+  --gb-brand-subtle: #F0F4FF;
+
+  /* Acento Gastronómico Fuego / Bistro */
+  --gb-accent-flame: #EA580C;
+  --gb-accent-amber: #D97706;
+
+  /* Estados Semánticos Operativos */
+  --gb-success: #16774D;
+  --gb-success-bg: #E7F7EE;
+  --gb-success-border: #A3E5C1;
+
+  --gb-warning: #996106;
+  --gb-warning-bg: #FFF4D6;
+  --gb-warning-border: #FCE19B;
+
+  --gb-danger: #B53B46;
+  --gb-danger-bg: #FFE9EC;
+  --gb-danger-border: #FBB4BD;
+
+  --gb-info: #0284C7;
+  --gb-info-bg: #E0F2FE;
+  --gb-info-border: #BAE6FD;
+
+  /* Radios de Esquinas */
+  --gb-radius-sm: 8px;
+  --gb-radius-md: 14px;
+  --gb-radius-lg: 20px;
+  --gb-radius-full: 9999px;
+
+  /* Sombras Modernas de Superficie */
+  --gb-shadow-card: 0 4px 20px rgba(20, 23, 34, 0.05);
+  --gb-shadow-card-hover: 0 8px 30px rgba(20, 23, 34, 0.09);
+  --gb-shadow-dropdown: 0 12px 36px rgba(20, 23, 34, 0.12);
+
+  /* Espaciado */
+  --gb-space-1: 4px;
+  --gb-space-2: 8px;
+  --gb-space-3: 12px;
+  --gb-space-4: 16px;
+  --gb-space-6: 24px;
+  --gb-space-8: 32px;
+
+  /* Foco Accesible para Teclado */
+  --gb-focus: 0 0 0 3px rgba(37, 84, 244, 0.28);
+}
+
+body {
+  background-color: var(--gb-bg);
+  color: var(--gb-ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Clases Utilitarias Globales */
+.gb-card {
+  background-color: var(--gb-surface);
+  border: 1px solid var(--gb-border);
+  border-radius: var(--gb-radius-md);
+  box-shadow: var(--gb-shadow-card);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gb-card:hover {
+  box-shadow: var(--gb-shadow-card-hover);
+}
+
+.gb-btn-primary {
+  background-color: var(--gb-brand);
+  color: #FFFFFF;
+  border-radius: var(--gb-radius-md);
+  font-weight: 600;
+  transition: all 0.15s ease-in-out;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.gb-btn-primary:hover {
+  background-color: var(--gb-brand-hover);
+  transform: translateY(-1px);
+}
+
+.gb-btn-primary:active {
+  transform: translateY(0);
+}
+
+.gb-btn-secondary {
+  background-color: var(--gb-surface);
+  color: var(--gb-ink);
+  border: 1px solid var(--gb-border);
+  border-radius: var(--gb-radius-md);
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.gb-btn-secondary:hover {
+  background-color: var(--gb-surface-muted);
+  border-color: #CBD5E1;
+}
+
+.gb-pill-active {
+  background-color: var(--gb-brand);
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 84, 244, 0.25);
+}
+
+.gb-pill-inactive {
+  background-color: var(--gb-surface);
+  color: var(--gb-ink-muted);
+  border: 1px solid var(--gb-border);
+}
+
+.gb-pill-inactive:hover {
+  background-color: var(--gb-surface-muted);
+  color: var(--gb-ink);
+}

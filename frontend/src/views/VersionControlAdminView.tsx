@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
 import {
   GitBranch,
   History,
@@ -230,7 +231,7 @@ export const VersionControlAdminView: React.FC = () => {
           <div className="md:col-span-2 flex items-end">
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md"
+              className="w-full py-2.5 px-4 bg-[#2554F4] hover:bg-[#1741CF] text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm min-h-[44px] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Guardar Snapshot
@@ -256,9 +257,9 @@ export const VersionControlAdminView: React.FC = () => {
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'all'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-[#2554F4] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -266,9 +267,9 @@ export const VersionControlAdminView: React.FC = () => {
             </button>
             <button
               onClick={() => setFilterType('recovery_point')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'recovery_point'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-[#2554F4] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -276,9 +277,9 @@ export const VersionControlAdminView: React.FC = () => {
             </button>
             <button
               onClick={() => setFilterType('git_release')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'git_release'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-[#2554F4] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >

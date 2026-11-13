@@ -109,13 +109,13 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-2.5 text-left group focus:outline-none"
               title="Volver a la vista principal"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EA580C] to-[#D97706] flex items-center justify-center text-white shadow-md shadow-orange-950/30 group-hover:scale-105 transition-transform">
-                <Flame className="w-5 h-5 text-amber-100" />
+              <div className="w-10 h-10 rounded-xl bg-[#2554F4] flex items-center justify-center text-white shadow-md shadow-blue-950/30 group-hover:scale-105 transition-transform">
+                <Flame className="w-5 h-5 text-white" />
               </div>
               <div>
                 <span className="font-extrabold text-lg tracking-tight text-white flex items-center gap-1.5">
                   GOURMET BISTRO
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-[#EA580C]/30 text-orange-300 px-1.5 py-0.5 rounded border border-orange-500/30">
+                  <span className="text-[10px] font-bold uppercase tracking-widest bg-[#2554F4]/30 text-blue-200 px-1.5 py-0.5 rounded border border-blue-400/30">
                     POS
                   </span>
                 </span>
@@ -158,7 +158,7 @@ export const Navbar: React.FC = () => {
                   onClick={() => setActiveView('mesas')}
                   className={`px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-colors ${
                     activeView === 'mesas'
-                      ? 'bg-[#EA580C] text-white shadow-sm'
+                      ? 'bg-[#2554F4] text-white shadow-sm'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                   }`}
                 >
@@ -170,7 +170,7 @@ export const Navbar: React.FC = () => {
                   onClick={() => setActiveView('nuevo-pedido')}
                   className={`px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-colors ${
                     activeView === 'nuevo-pedido'
-                      ? 'bg-[#EA580C] text-white shadow-sm'
+                      ? 'bg-[#2554F4] text-white shadow-sm'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                   }`}
                 >
@@ -186,7 +186,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setActiveView('cocina')}
                 className={`px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-colors relative ${
                   activeView === 'cocina'
-                    ? 'bg-[#EA580C] text-white shadow-sm'
+                    ? 'bg-[#2554F4] text-white shadow-sm'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                 }`}
               >
@@ -205,7 +205,7 @@ export const Navbar: React.FC = () => {
               onClick={() => setActiveView('pedidos')}
               className={`px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-colors relative ${
                 activeView === 'pedidos'
-                  ? 'bg-[#EA580C] text-white shadow-sm'
+                  ? 'bg-[#2554F4] text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
               }`}
             >
@@ -322,7 +322,7 @@ export const Navbar: React.FC = () => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors ${
                           activeView === 'menu'
-                            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+                            ? 'bg-[#2554F4] text-white font-semibold shadow-sm'
                             : 'text-slate-200 hover:bg-slate-800/80'
                         }`}
                       >
@@ -349,7 +349,7 @@ export const Navbar: React.FC = () => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors ${
                           activeView === 'gestion-mesas'
-                            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+                            ? 'bg-[#2554F4] text-white font-semibold shadow-sm'
                             : 'text-slate-200 hover:bg-slate-800/80'
                         }`}
                       >
@@ -376,7 +376,7 @@ export const Navbar: React.FC = () => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors ${
                           activeView === 'usuarios'
-                            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+                            ? 'bg-[#2554F4] text-white font-semibold shadow-sm'
                             : 'text-slate-200 hover:bg-slate-800/80'
                         }`}
                       >
@@ -403,7 +403,7 @@ export const Navbar: React.FC = () => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors ${
                           activeView === 'versionamiento'
-                            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+                            ? 'bg-[#2554F4] text-white font-semibold shadow-sm'
                             : 'text-slate-200 hover:bg-slate-800/80'
                         }`}
                       >
@@ -452,7 +452,7 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => setActiveView('mesas')}
               className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap ${
-                activeView === 'mesas' ? 'bg-[#EA580C] text-white' : 'text-slate-400'
+                activeView === 'mesas' ? 'bg-[#2554F4] text-white' : 'text-slate-400'
               }`}
             >
               Salón
@@ -460,7 +460,7 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => setActiveView('nuevo-pedido')}
               className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap ${
-                activeView === 'nuevo-pedido' ? 'bg-[#EA580C] text-white' : 'text-slate-400'
+                activeView === 'nuevo-pedido' ? 'bg-[#2554F4] text-white' : 'text-slate-400'
               }`}
             >
               + Pedido
@@ -471,7 +471,7 @@ export const Navbar: React.FC = () => {
           <button
             onClick={() => setActiveView('cocina')}
             className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap ${
-              activeView === 'cocina' ? 'bg-[#EA580C] text-white' : 'text-slate-400'
+              activeView === 'cocina' ? 'bg-[#2554F4] text-white' : 'text-slate-400'
             }`}
           >
             Cocina {kitchenActiveCount > 0 ? `(${kitchenActiveCount})` : ''}
@@ -480,7 +480,7 @@ export const Navbar: React.FC = () => {
         <button
           onClick={() => setActiveView('pedidos')}
           className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap ${
-            activeView === 'pedidos' ? 'bg-[#EA580C] text-white' : 'text-slate-400'
+            activeView === 'pedidos' ? 'bg-[#2554F4] text-white' : 'text-slate-400'
           }`}
         >
           Pedidos {readyCount > 0 ? `(${readyCount})` : ''}

@@ -255,10 +255,10 @@ export const NewOrderView: React.FC = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+                  className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-[#EA580C] text-white shadow-sm shadow-orange-950/20'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-[#2554F4] text-white shadow-xs'
+                      : 'bg-white border border-[#E3E7EF] text-[#626B7A] hover:bg-[#F2F4F8] hover:text-[#141722]'
                   }`}
                 >
                   {cat}
@@ -275,12 +275,12 @@ export const NewOrderView: React.FC = () => {
               return (
                 <div
                   key={prod.id}
-                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between shadow-sm ${
+                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between shadow-xs ${
                     !prod.available
-                      ? 'opacity-60 border-slate-200 bg-slate-50'
+                      ? 'opacity-60 border-[#E3E7EF] bg-slate-50'
                       : inCart
-                      ? 'border-[#EA580C] ring-2 ring-[#EA580C]/20 shadow-md'
-                      : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                      ? 'border-[#2554F4] ring-2 ring-[#2554F4]/20 shadow-md'
+                      : 'border-[#E3E7EF] hover:border-slate-300 hover:shadow-md'
                   }`}
                 >
                   {/* Image & Badges */}
@@ -317,7 +317,7 @@ export const NewOrderView: React.FC = () => {
                     </div>
 
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-base font-extrabold text-[#A33900] tabular-nums">
+                      <span className="text-base font-extrabold text-[#141722] tabular-nums">
                         ${prod.price.toLocaleString('es-CO')}
                       </span>
 
@@ -325,20 +325,20 @@ export const NewOrderView: React.FC = () => {
                       {prod.available && (
                         <div>
                           {inCart ? (
-                            <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-xl p-0.5">
+                            <div className="flex items-center gap-1.5 bg-[#EAF0FF] border border-[#2554F4]/30 rounded-xl p-0.5">
                               <button
                                 onClick={() => updateQuantity(prod.id, -1)}
-                                className="w-7 h-7 rounded-lg bg-white text-[#EA580C] font-bold flex items-center justify-center hover:bg-orange-100 active:scale-95 transition-all"
+                                className="w-7 h-7 rounded-lg bg-white text-[#2554F4] font-bold flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all cursor-pointer"
                                 aria-label="Restar 1"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="w-6 text-center font-extrabold text-xs text-orange-950 tabular-nums">
+                              <span className="w-6 text-center font-extrabold text-xs text-[#2554F4] tabular-nums">
                                 {inCart.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(prod.id, 1)}
-                                className="w-7 h-7 rounded-lg bg-[#EA580C] text-white font-bold flex items-center justify-center hover:bg-[#CC4900] active:scale-95 transition-all shadow-sm"
+                                className="w-7 h-7 rounded-lg bg-[#2554F4] text-white font-bold flex items-center justify-center hover:bg-[#1741CF] active:scale-95 transition-all shadow-xs cursor-pointer"
                                 aria-label="Sumar 1"
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -347,7 +347,7 @@ export const NewOrderView: React.FC = () => {
                           ) : (
                             <button
                               onClick={() => addToCart(prod)}
-                              className="px-3 py-1.5 bg-[#EA580C] hover:bg-[#CC4900] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1 shadow-sm transition-all"
+                              className="px-3.5 py-1.5 bg-[#2554F4] hover:bg-[#1741CF] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1 shadow-xs transition-all cursor-pointer"
                             >
                               <Plus className="w-3.5 h-3.5" />
                               Agregar
@@ -514,22 +514,22 @@ export const NewOrderView: React.FC = () => {
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               placeholder="Ej. Servir platos al tiempo, comensal alérgico al maní..."
-              className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA580C]"
+              className="w-full px-3 py-2 text-xs bg-white border border-[#E3E7EF] rounded-xl text-[#141722] focus:outline-none focus:ring-2 focus:ring-[#2554F4]"
             />
           </div>
 
           {/* Totals & Submit Footer */}
-          <div className="p-4 bg-slate-50/80 border-t border-slate-200 space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold text-slate-600">Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)} ítems):</span>
-              <span className="font-bold text-slate-800 tabular-nums">
+          <div className="p-4 bg-[#F8F9FC] border-t border-[#E3E7EF] space-y-3">
+            <div className="flex items-center justify-between text-xs text-[#626B7A]">
+              <span>Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)} ítems):</span>
+              <span className="font-bold text-[#141722] tabular-nums">
                 ${total.toLocaleString('es-CO')}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-lg pt-2 border-t border-dashed border-slate-300">
-              <span className="font-extrabold text-slate-900">Total a Pagar:</span>
-              <span className="font-black text-[#A33900] text-xl tabular-nums">
+            <div className="flex items-center justify-between text-base pt-2 border-t border-slate-200">
+              <span className="font-extrabold text-[#141722]">Total de la Comanda:</span>
+              <span className="font-black text-[#2554F4] text-xl tabular-nums">
                 ${total.toLocaleString('es-CO')}
               </span>
             </div>
@@ -537,14 +537,14 @@ export const NewOrderView: React.FC = () => {
             <button
               onClick={handleSendToKitchen}
               disabled={isSubmitting || cart.length === 0 || !selectedTableId || isSelectedTableOccupied}
-              className={`w-full min-h-[48px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              className={`w-full min-h-[48px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
                 cart.length === 0 || !selectedTableId || isSelectedTableOccupied
-                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                  : 'bg-[#EA580C] hover:bg-[#CC4900] active:scale-[0.98] text-white shadow-orange-950/20'
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-[#2554F4] hover:bg-[#1741CF] active:scale-[0.98] text-white shadow-[#2554F4]/20'
               }`}
             >
               <Send className="w-4 h-4" />
-              {isSubmitting ? 'Enviando comanda...' : 'Enviar Pedido a Cocina'}
+              {isSubmitting ? 'Enviando comanda a cocina...' : 'Confirmar & Enviar a Cocina'}
             </button>
           </div>
         </div>

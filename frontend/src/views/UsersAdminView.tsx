@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { User, UserRole } from '../types/index.ts';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
 import {
   Users,
   Plus,
@@ -87,34 +88,25 @@ export const UsersAdminView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Personal & Control de Acceso
-            </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {users.length} cuentas
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Gestione empleados, asigne roles autorizados y controle la activación de accesos.
-          </p>
-        </div>
-
-        <button
-          onClick={handleOpenAdd}
-          className="min-h-[44px] px-4 py-2.5 bg-[#EA580C] hover:bg-[#CC4900] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar Empleado
-        </button>
-      </div>
+      <PageHeader
+        title="Personal & Control de Acceso"
+        subtitle="Gestione empleados, asigne roles autorizados y controle la activación de accesos."
+        badge={`${users.length} cuentas`}
+        action={
+          <button
+            onClick={handleOpenAdd}
+            className="min-h-[44px] px-4 py-2.5 bg-[#2554F4] hover:bg-[#1741CF] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Registrar Empleado
+          </button>
+        }
+      />
 
       {/* Users Table */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E3E7EF] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -252,7 +244,7 @@ export const UsersAdminView: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="ej. mesero3, chef2"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
                   required
                 />
               </div>
@@ -266,7 +258,7 @@ export const UsersAdminView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ej. Andrés Gómez"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
                   required
                 />
               </div>
@@ -278,7 +270,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
                 >
                   <option value="mesero">Mesero (Toma pedidos & entrega)</option>
                   <option value="cocinero">Cocinero (KDS cocina & preparación)</option>
@@ -293,7 +285,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={active ? 'active' : 'inactive'}
                   onChange={(e) => setActive(e.target.value === 'active')}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
                 >
                   <option value="active">Activo (Puede iniciar sesión)</option>
                   <option value="inactive">Desactivado (Acceso revocado)</option>
@@ -310,7 +302,7 @@ export const UsersAdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EA580C] hover:bg-[#CC4900] text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#2554F4] hover:bg-[#1741CF] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                 >
                   {editingUser ? 'Guardar Cambios' : 'Registrar Cuenta'}
                 </button>
