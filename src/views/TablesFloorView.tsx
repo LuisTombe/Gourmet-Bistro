@@ -66,7 +66,7 @@ export const TablesFloorView: React.FC = () => {
         title="Gestión de Mesas & Salón"
         subtitle="Monitoreo en tiempo real de la disponibilidad y estado de las mesas del restaurante."
         badge={
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#EAF0FF] text-[#2554F4] border border-[#2554F4]/20">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#fdedea] text-[#f73b20] border border-[#f84d35]/20">
             {tables.length} mesas registradas
           </span>
         }
@@ -78,7 +78,7 @@ export const TablesFloorView: React.FC = () => {
                 if (firstAvailable) handleOpenOrder(firstAvailable);
                 else setActiveView('nuevo-pedido');
               }}
-              className="min-h-[44px] py-2.5 px-4 rounded-xl text-white bg-[#2554F4] hover:bg-[#1741CF] font-bold text-xs tracking-wide shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="min-h-[44px] py-2.5 px-4 rounded-xl text-white bg-[#f73b20] hover:bg-[#e02f17] font-semibold text-xs tracking-wide shadow-sm flex items-center gap-2 transition-all cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               Nuevo Pedido
@@ -87,98 +87,110 @@ export const TablesFloorView: React.FC = () => {
         }
       />
 
-      {/* Metric Cards estilo Bold POS */}
+      {/* Metric Cards estilo Jeton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-[#E3E7EF] shadow-xs flex items-center justify-between">
+        <div
+          style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+          className="bg-white p-5 rounded-2xl border border-[#e7dcdb] flex items-center justify-between"
+        >
           <div>
-            <span className="text-xs font-bold text-[#626B7A] uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#74514b] uppercase tracking-wider">
               Mesas Libres
             </span>
-            <div className="mt-1 text-2xl font-black text-[#16774D]">
+            <div className="mt-1 text-2xl font-black text-[#34c771]">
               {availableCount}
             </div>
-            <div className="text-xs text-[#626B7A] mt-0.5">Listas para comensales</div>
+            <div className="text-xs text-[#74514b] mt-0.5">Listas para comensales</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#E7F7EE] text-[#16774D] flex items-center justify-center font-black text-lg">
+          <div className="w-12 h-12 rounded-xl bg-[#e6fbf0] text-[#34c771] flex items-center justify-center font-black text-lg">
             ✓
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#E3E7EF] shadow-xs flex items-center justify-between">
+        <div
+          style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+          className="bg-white p-5 rounded-2xl border border-[#e7dcdb] flex items-center justify-between"
+        >
           <div>
-            <span className="text-xs font-bold text-[#626B7A] uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#74514b] uppercase tracking-wider">
               Mesas Ocupadas
             </span>
-            <div className="mt-1 text-2xl font-black text-[#996106]">
+            <div className="mt-1 text-2xl font-black text-[#f73b20]">
               {occupiedCount}
             </div>
-            <div className="text-xs text-[#626B7A] mt-0.5">Con servicio activo</div>
+            <div className="text-xs text-[#74514b] mt-0.5">Con servicio activo</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#FFF4D6] text-[#996106] flex items-center justify-center font-black text-lg">
+          <div className="w-12 h-12 rounded-xl bg-[#fdedea] text-[#f73b20] flex items-center justify-center font-black text-lg">
             🍽️
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#E3E7EF] shadow-xs flex items-center justify-between">
+        <div
+          style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+          className="bg-white p-5 rounded-2xl border border-[#e7dcdb] flex items-center justify-between"
+        >
           <div>
-            <span className="text-xs font-bold text-[#626B7A] uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#74514b] uppercase tracking-wider">
               Pedidos Listos
             </span>
-            <div className="mt-1 text-2xl font-black text-[#2554F4]">
+            <div className="mt-1 text-2xl font-black text-[#477ee9]">
               {readyOrdersCount}
             </div>
-            <div className="text-xs text-[#626B7A] mt-0.5">Esperando entrega</div>
+            <div className="text-xs text-[#74514b] mt-0.5">Esperando entrega</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#EAF0FF] text-[#2554F4] flex items-center justify-center font-black text-lg">
+          <div className="w-12 h-12 rounded-xl bg-[#eaf0ff] text-[#477ee9] flex items-center justify-center font-black text-lg">
             ★
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#E3E7EF] shadow-xs flex items-center justify-between">
+        <div
+          style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+          className="bg-white p-5 rounded-2xl border border-[#e7dcdb] flex items-center justify-between"
+        >
           <div>
-            <span className="text-xs font-bold text-[#626B7A] uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#74514b] uppercase tracking-wider">
               Ocupación del Salón
             </span>
-            <div className="mt-1 text-2xl font-black text-[#141722]">
+            <div className="mt-1 text-2xl font-black text-[#360802]">
               {tables.length > 0 ? Math.round((occupiedCount / tables.length) * 100) : 0}%
             </div>
-            <div className="text-xs text-[#626B7A] mt-0.5">Capacidad en uso</div>
+            <div className="text-xs text-[#74514b] mt-0.5">Capacidad en uso</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#F2F4F8] text-[#141722] flex items-center justify-center font-black text-lg">
+          <div className="w-12 h-12 rounded-xl bg-[#fdedea] text-[#360802] flex items-center justify-center font-black text-lg">
             %
           </div>
         </div>
       </div>
 
       {/* Filtros estilo Tabs/Pills */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#E3E7EF]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#e7dcdb]">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`min-h-[38px] px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               statusFilter === 'all'
-                ? 'bg-[#2554F4] text-white shadow-xs'
-                : 'text-[#626B7A] hover:text-[#141722] hover:bg-[#F2F4F8]'
+                ? 'bg-[#f73b20] text-white shadow-xs'
+                : 'text-[#74514b] hover:text-[#360802] hover:bg-[#fdedea]'
             }`}
           >
             Todas ({tables.length})
           </button>
           <button
             onClick={() => setStatusFilter('Disponible')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`min-h-[38px] px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               statusFilter === 'Disponible'
-                ? 'bg-[#16774D] text-white shadow-xs'
-                : 'text-[#626B7A] hover:text-[#141722] hover:bg-[#F2F4F8]'
+                ? 'bg-[#34c771] text-white shadow-xs'
+                : 'text-[#74514b] hover:text-[#360802] hover:bg-[#fdedea]'
             }`}
           >
             Libres ({availableCount})
           </button>
           <button
             onClick={() => setStatusFilter('Ocupada')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`min-h-[38px] px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               statusFilter === 'Ocupada'
-                ? 'bg-[#996106] text-white shadow-xs'
-                : 'text-[#626B7A] hover:text-[#141722] hover:bg-[#F2F4F8]'
+                ? 'bg-[#f73b20] text-white shadow-xs'
+                : 'text-[#74514b] hover:text-[#360802] hover:bg-[#fdedea]'
             }`}
           >
             Ocupadas ({occupiedCount})
@@ -188,11 +200,11 @@ export const TablesFloorView: React.FC = () => {
         {/* Filtro por Áreas si hay múltiples */}
         {areas.length > 2 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#626B7A] font-medium">Área:</span>
+            <span className="text-xs text-[#74514b] font-medium">Área:</span>
             <select
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
-              className="text-xs bg-[#F8F9FC] border border-[#E3E7EF] rounded-xl px-3 py-1.5 font-semibold text-[#141722] focus:outline-none focus:ring-2 focus:ring-[#2554F4]"
+              className="text-xs bg-[#fdedea]/40 border border-[#e7dcdb] rounded-xl px-3 py-1.5 font-semibold text-[#360802] focus:outline-none focus:ring-2 focus:ring-[#f73b20]"
             >
               {areas.map((a) => (
                 <option key={a} value={a}>

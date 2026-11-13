@@ -231,7 +231,7 @@ export const VersionControlAdminView: React.FC = () => {
           <div className="md:col-span-2 flex items-end">
             <button
               type="submit"
-              className="w-full py-2.5 px-4 bg-[#2554F4] hover:bg-[#1741CF] text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm min-h-[44px] cursor-pointer"
+              className="w-full py-2.5 px-4 bg-[#f73b20] hover:bg-[#e02f17] text-white font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm min-h-[44px] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Guardar Snapshot
@@ -259,7 +259,7 @@ export const VersionControlAdminView: React.FC = () => {
               onClick={() => setFilterType('all')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'all'
-                  ? 'bg-[#2554F4] text-white shadow-xs'
+                  ? 'bg-[#f73b20] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -269,7 +269,7 @@ export const VersionControlAdminView: React.FC = () => {
               onClick={() => setFilterType('recovery_point')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'recovery_point'
-                  ? 'bg-[#2554F4] text-white shadow-xs'
+                  ? 'bg-[#f73b20] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -279,7 +279,7 @@ export const VersionControlAdminView: React.FC = () => {
               onClick={() => setFilterType('git_release')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
                 filterType === 'git_release'
-                  ? 'bg-[#2554F4] text-white shadow-xs'
+                  ? 'bg-[#f73b20] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >

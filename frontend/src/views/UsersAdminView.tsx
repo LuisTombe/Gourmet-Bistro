@@ -97,7 +97,7 @@ export const UsersAdminView: React.FC = () => {
         action={
           <button
             onClick={handleOpenAdd}
-            className="min-h-[44px] px-4 py-2.5 bg-[#2554F4] hover:bg-[#1741CF] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-xs transition-all"
+            className="min-h-[44px] px-4 py-2.5 bg-[#f73b20] hover:bg-[#e02f17] active:scale-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
           >
             <Plus className="w-4 h-4" />
             Registrar Empleado
@@ -106,7 +106,10 @@ export const UsersAdminView: React.FC = () => {
       />
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-[#E3E7EF] shadow-xs overflow-hidden">
+      <div
+        style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+        className="bg-white rounded-2xl border border-[#e7dcdb] overflow-hidden"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -244,7 +247,7 @@ export const UsersAdminView: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="ej. mesero3, chef2"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -258,7 +261,7 @@ export const UsersAdminView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ej. Andrés Gómez"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -270,7 +273,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 >
                   <option value="mesero">Mesero (Toma pedidos & entrega)</option>
                   <option value="cocinero">Cocinero (KDS cocina & preparación)</option>
@@ -285,7 +288,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={active ? 'active' : 'inactive'}
                   onChange={(e) => setActive(e.target.value === 'active')}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#2554F4]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 >
                   <option value="active">Activo (Puede iniciar sesión)</option>
                   <option value="inactive">Desactivado (Acceso revocado)</option>
@@ -302,7 +305,7 @@ export const UsersAdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 min-h-[44px] bg-[#2554F4] hover:bg-[#1741CF] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#f73b20] hover:bg-[#e02f17] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
                 >
                   {editingUser ? 'Guardar Cambios' : 'Registrar Cuenta'}
                 </button>

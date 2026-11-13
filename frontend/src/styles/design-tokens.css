@@ -1,150 +1,204 @@
 /* =====================================================================
-   Gourmet-Bistro Design Tokens (Inspirado en Bold POS Restaurantes)
+   Gourmet-Bistro Style Tokens — Inspirado en Jeton Editorial Design System
+   Paleta: Signal Orange (#f73b20), Ink Roast (#360802), Paper White (#ffffff)
    ===================================================================== */
 
+@theme {
+  /* Colors */
+  --color-signal-orange: #f73b20;
+  --color-brand-orange-tint: #f84d35;
+  --color-ink-roast: #360802;
+  --color-paper-white: #ffffff;
+  --color-carbon-black: #000000;
+  --color-ash-grey: #ababab;
+  --color-sand-wash: #e7dcdb;
+  --color-linen-blush: #fdedea;
+  --color-citrus-wash: #f5ffbb;
+  --color-mint-wash: #bcffbb;
+  --color-coral-red: #fb2d54;
+  --color-cobalt-blue: #477ee9;
+  --color-emerald-green: #34c771;
+
+  /* Typography */
+  --font-sequel-sans: 'Sequel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Typography — Scale */
+  --text-caption: 12px;
+  --leading-caption: 1.5;
+  --tracking-caption: 0.36px;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.4;
+  --tracking-body-sm: 0.42px;
+  --text-body: 16px;
+  --leading-body: 1;
+  --text-subheading: 23px;
+  --leading-subheading: 1.2;
+  --tracking-subheading: 0.23px;
+  --text-heading-sm: 33px;
+  --leading-heading-sm: 1.2;
+  --tracking-heading-sm: 0.33px;
+  --text-heading: 44px;
+  --leading-heading: 1.2;
+  --tracking-heading: 0.44px;
+  --text-heading-lg: 72px;
+  --leading-heading-lg: 1;
+  --tracking-heading-lg: 0.72px;
+  --text-display: 106px;
+  --leading-display: 1;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-160: 160px;
+
+  /* Border Radius */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-2xl-2: 19.255px;
+  --radius-2xl-3: 21.66px;
+  --radius-3xl: 24px;
+  --radius-full: 60px;
+  --radius-full-2: 84px;
+  --radius-full-3: 112px;
+  --radius-full-4: 150px;
+  --radius-full-5: 9999px;
+
+  /* Shadows */
+  --shadow-lg: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(247, 59, 32, 0.05) 0px 2px 8px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+}
+
 :root {
-  /* Superficies y Fondos */
-  --gb-bg: #F8F9FC;
-  --gb-surface: #FFFFFF;
-  --gb-surface-muted: #F2F4F8;
+  /* Jeton Base Colors */
+  --color-signal-orange: #f73b20;
+  --color-brand-orange-tint: #f84d35;
+  --color-ink-roast: #360802;
+  --color-paper-white: #ffffff;
+  --color-carbon-black: #000000;
+  --color-ash-grey: #ababab;
+  --color-sand-wash: #e7dcdb;
+  --color-linen-blush: #fdedea;
+  --color-citrus-wash: #f5ffbb;
+  --color-mint-wash: #bcffbb;
+  --color-coral-red: #fb2d54;
+  --color-cobalt-blue: #477ee9;
+  --color-emerald-green: #34c771;
 
-  /* Tipografía y Textos */
-  --gb-ink: #141722;
-  --gb-ink-muted: #626B7A;
-  --gb-ink-light: #94A3B8;
-
-  /* Bordes */
-  --gb-border: #E3E7EF;
-  --gb-border-focus: #2554F4;
-
-  /* Color de Marca (Bold Blue + Toque Gourmet) */
-  --gb-brand: #2554F4;
-  --gb-brand-hover: #1741CF;
-  --gb-brand-soft: #EAF0FF;
-  --gb-brand-subtle: #F0F4FF;
-
-  /* Acento Gastronómico Fuego / Bistro */
-  --gb-accent-flame: #EA580C;
-  --gb-accent-amber: #D97706;
+  /* Mapeo del Sistema Gourmet Bistro al Estilo Jeton */
+  --gb-brand: #f73b20;
+  --gb-brand-hover: #e02f17;
+  --gb-brand-soft: #fdedea;
+  --gb-brand-subtle: #fff6f4;
+  --gb-bg: #ffffff;
+  --gb-surface: #ffffff;
+  --gb-surface-muted: #fdedea;
+  --gb-ink: #360802;
+  --gb-ink-muted: #74514b;
+  --gb-ink-light: #ababab;
+  --gb-border: #e7dcdb;
+  --gb-border-focus: #f73b20;
 
   /* Estados Semánticos Operativos */
-  --gb-success: #16774D;
-  --gb-success-bg: #E7F7EE;
-  --gb-success-border: #A3E5C1;
+  --gb-success: #34c771;
+  --gb-success-bg: #bcffbb;
+  --gb-warning: #f84d35;
+  --gb-warning-bg: #fdedea;
+  --gb-danger: #fb2d54;
+  --gb-danger-bg: #ffebee;
+  --gb-info: #477ee9;
+  --gb-info-bg: #eaf0ff;
 
-  --gb-warning: #996106;
-  --gb-warning-bg: #FFF4D6;
-  --gb-warning-border: #FCE19B;
-
-  --gb-danger: #B53B46;
-  --gb-danger-bg: #FFE9EC;
-  --gb-danger-border: #FBB4BD;
-
-  --gb-info: #0284C7;
-  --gb-info-bg: #E0F2FE;
-  --gb-info-border: #BAE6FD;
-
-  /* Radios de Esquinas */
+  /* Radios */
   --gb-radius-sm: 8px;
-  --gb-radius-md: 14px;
-  --gb-radius-lg: 20px;
+  --gb-radius-md: 12px;
+  --gb-radius-lg: 16px;
   --gb-radius-full: 9999px;
 
-  /* Sombras Modernas de Superficie */
-  --gb-shadow-card: 0 4px 20px rgba(20, 23, 34, 0.05);
-  --gb-shadow-card-hover: 0 8px 30px rgba(20, 23, 34, 0.09);
-  --gb-shadow-dropdown: 0 12px 36px rgba(20, 23, 34, 0.12);
-
-  /* Espaciado */
-  --gb-space-1: 4px;
-  --gb-space-2: 8px;
-  --gb-space-3: 12px;
-  --gb-space-4: 16px;
-  --gb-space-6: 24px;
-  --gb-space-8: 32px;
-
-  /* Foco Accesible para Teclado */
-  --gb-focus: 0 0 0 3px rgba(37, 84, 244, 0.28);
+  /* Sombras distintivas Jeton (Inverted upward lift shadow) */
+  --gb-shadow-card: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px, 0 4px 16px rgba(54, 8, 2, 0.04);
+  --gb-shadow-card-hover: rgba(247, 59, 32, 0.12) 0px 8px 24px 0px, rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+  --gb-focus: 0 0 0 3px rgba(247, 59, 32, 0.28);
 }
 
 body {
-  background-color: var(--gb-bg);
-  color: var(--gb-ink);
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-roast);
+  font-family: var(--font-sequel-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Clases Utilitarias Globales */
-.gb-card {
-  background-color: var(--gb-surface);
-  border: 1px solid var(--gb-border);
-  border-radius: var(--gb-radius-md);
-  box-shadow: var(--gb-shadow-card);
+/* Clases Utilitarias Editorial Jeton */
+.jeton-hero-gradient {
+  background: linear-gradient(135deg, #f73b20 0%, #f84d35 32%, #ff8c79 68%, #ffd4cc 100%);
+}
+
+.jeton-inverted-shadow {
+  box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+}
+
+.jeton-card {
+  background-color: #ffffff;
+  border: 1px solid var(--color-sand-wash);
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.gb-card:hover {
-  box-shadow: var(--gb-shadow-card-hover);
+.jeton-card:hover {
+  box-shadow: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
 }
 
-.gb-btn-primary {
-  background-color: var(--gb-brand);
-  color: #FFFFFF;
-  border-radius: var(--gb-radius-md);
-  font-weight: 600;
-  transition: all 0.15s ease-in-out;
+.jeton-btn-primary {
+  background-color: var(--color-signal-orange);
+  color: #ffffff;
+  border-radius: 12px;
+  font-weight: 500;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1.25rem;
-  border: none;
-  cursor: pointer;
+  padding: 0 16px;
+  transition: all 0.15s ease-in-out;
 }
 
-.gb-btn-primary:hover {
-  background-color: var(--gb-brand-hover);
+.jeton-btn-primary:hover {
+  background-color: #e02f17;
   transform: translateY(-1px);
 }
 
-.gb-btn-primary:active {
-  transform: translateY(0);
+.jeton-pill-active {
+  background-color: var(--color-signal-orange);
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 500;
 }
 
-.gb-btn-secondary {
-  background-color: var(--gb-surface);
-  color: var(--gb-ink);
-  border: 1px solid var(--gb-border);
-  border-radius: var(--gb-radius-md);
-  font-weight: 600;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1.25rem;
-  cursor: pointer;
+.jeton-pill-inactive {
+  background-color: #ffffff;
+  color: var(--color-ink-roast);
+  border: 1px solid var(--color-sand-wash);
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.jeton-input {
+  background-color: rgba(247, 59, 32, 0.03);
+  border: 1px solid var(--color-sand-wash);
+  border-radius: 16px;
+  color: var(--color-ink-roast);
   transition: all 0.15s ease-in-out;
 }
 
-.gb-btn-secondary:hover {
-  background-color: var(--gb-surface-muted);
-  border-color: #CBD5E1;
-}
-
-.gb-pill-active {
-  background-color: var(--gb-brand);
-  color: #FFFFFF;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(37, 84, 244, 0.25);
-}
-
-.gb-pill-inactive {
-  background-color: var(--gb-surface);
-  color: var(--gb-ink-muted);
-  border: 1px solid var(--gb-border);
-}
-
-.gb-pill-inactive:hover {
-  background-color: var(--gb-surface-muted);
-  color: var(--gb-ink);
+.jeton-input:focus {
+  outline: none;
+  border-color: var(--color-signal-orange);
+  box-shadow: 0 0 0 3px rgba(247, 59, 32, 0.22);
 }

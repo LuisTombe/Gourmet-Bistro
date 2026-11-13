@@ -137,7 +137,7 @@ export const KitchenKDSView: React.FC = () => {
           {order.status === 'Pendiente' && (
             <button
               onClick={() => updateOrderStatus(order.id, 'En preparación')}
-              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-[#477ee9] hover:bg-[#386ad1] active:scale-[0.98] text-white font-semibold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
             >
               <Flame className="w-4 h-4 text-amber-300" />
               Iniciar Preparación
@@ -147,7 +147,7 @@ export const KitchenKDSView: React.FC = () => {
           {order.status === 'En preparación' && (
             <button
               onClick={() => updateOrderStatus(order.id, 'Listo')}
-              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-[#34c771] hover:bg-[#28a75a] active:scale-[0.98] text-white font-semibold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               Marcar como Listo al Pase
@@ -172,15 +172,15 @@ export const KitchenKDSView: React.FC = () => {
       {/* KDS Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#EA580C] to-[#D97706] flex items-center justify-center text-white shadow-lg shadow-orange-950/40">
+          <div className="w-12 h-12 rounded-2xl bg-[#f73b20] flex items-center justify-center text-white shadow-lg shadow-orange-950/40">
             <ChefHat className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white">
                 KDS • Pantalla de Cocina
               </h1>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#fdedea]/20 text-[#f73b20] border border-[#f84d35]/30">
                 Línea en Vivo
               </span>
             </div>

@@ -61,7 +61,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] text-[#131b2e] flex flex-col font-sans">
+    <div className="min-h-screen bg-white text-[#360802] flex flex-col font-sans">
       <Navbar />
       <main className="flex-1">
         {renderCurrentView()}

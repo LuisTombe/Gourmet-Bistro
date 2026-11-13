@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Product, ProductCategory, Table } from '../types/index.ts';
 import { calculateSubtotal, calculateOrderTotal } from '../domain/rules.ts';
+import { Food3DModal } from '../components/3d/Food3DModal.tsx';
 import {
   Search,
   Plus,
@@ -14,6 +15,7 @@ import {
   CheckCircle,
   ArrowLeft,
   Flame,
+  Sparkles,
 } from 'lucide-react';
 
 interface CartItem {
@@ -51,6 +53,8 @@ export const NewOrderView: React.FC = () => {
   const [tempItemNote, setTempItemNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [is3DModalOpen, setIs3DModalOpen] = useState(false);
+  const [active3DDishIdx, setActive3DDishIdx] = useState(0);
 
   // Sync selectedTableForOrder if set from salon
   useEffect(() => {
@@ -249,21 +253,36 @@ export const NewOrderView: React.FC = () => {
               )}
             </div>
 
-            {/* Category tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-[#2554F4] text-white shadow-xs'
-                      : 'bg-white border border-[#E3E7EF] text-[#626B7A] hover:bg-[#F2F4F8] hover:text-[#141722]'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            {/* Category tabs + 3D Dishes Pill */}
+            <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                      selectedCategory === cat
+                        ? 'bg-[#f73b20] text-white shadow-xs'
+                        : 'bg-white border border-[#e7dcdb] text-[#74514b] hover:bg-[#fdedea] hover:text-[#360802]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => {
+                  setActive3DDishIdx(0);
+                  setIs3DModalOpen(true);
+                }}
+                className="min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#fdedea] text-[#f73b20] border border-[#f84d35]/30 hover:bg-[#f73b20] hover:text-white transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs ml-2"
+                title="Abrir galería de modelos 3D de platos gourmet"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Ver Platos 3D</span>
+                <span className="sm:hidden">3D</span>
+              </button>
             </div>
           </div>
 
@@ -275,12 +294,13 @@ export const NewOrderView: React.FC = () => {
               return (
                 <div
                   key={prod.id}
-                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between shadow-xs ${
+                  style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col justify-between ${
                     !prod.available
-                      ? 'opacity-60 border-[#E3E7EF] bg-slate-50'
+                      ? 'opacity-60 border-[#e7dcdb] bg-slate-50'
                       : inCart
-                      ? 'border-[#2554F4] ring-2 ring-[#2554F4]/20 shadow-md'
-                      : 'border-[#E3E7EF] hover:border-slate-300 hover:shadow-md'
+                      ? 'border-[#f73b20] ring-2 ring-[#f73b20]/20 shadow-md'
+                      : 'border-[#e7dcdb] hover:border-[#f73b20]/60 hover:shadow-md'
                   }`}
                 >
                   {/* Image & Badges */}
@@ -291,14 +311,14 @@ export const NewOrderView: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-900/80 text-white backdrop-blur-sm">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white backdrop-blur-sm">
                         {prod.station}
                       </span>
                     </div>
 
                     {!prod.available && (
-                      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[1px] flex items-center justify-center">
-                        <span className="bg-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="bg-[#fb2d54] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                           Agotado / No Disponible
                         </span>
                       </div>
@@ -308,16 +328,16 @@ export const NewOrderView: React.FC = () => {
                   {/* Body Content */}
                   <div className="p-3.5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-sm text-[#0F172A] leading-tight line-clamp-1">
+                      <h3 className="font-semibold text-sm text-[#360802] leading-tight line-clamp-1">
                         {prod.name}
                       </h3>
-                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-[11px] text-[#74514b] line-clamp-2 mt-1 leading-relaxed">
                         {prod.description}
                       </p>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-base font-extrabold text-[#141722] tabular-nums">
+                    <div className="mt-3 pt-2.5 border-t border-[#e7dcdb] flex items-center justify-between">
+                      <span className="text-base font-black text-[#f73b20] tabular-nums">
                         ${prod.price.toLocaleString('es-CO')}
                       </span>
 
@@ -325,20 +345,20 @@ export const NewOrderView: React.FC = () => {
                       {prod.available && (
                         <div>
                           {inCart ? (
-                            <div className="flex items-center gap-1.5 bg-[#EAF0FF] border border-[#2554F4]/30 rounded-xl p-0.5">
+                            <div className="flex items-center gap-1.5 bg-[#fdedea] border border-[#f84d35]/30 rounded-xl p-0.5">
                               <button
                                 onClick={() => updateQuantity(prod.id, -1)}
-                                className="w-7 h-7 rounded-lg bg-white text-[#2554F4] font-bold flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all cursor-pointer"
+                                className="w-7 h-7 rounded-lg bg-white text-[#f73b20] font-bold flex items-center justify-center hover:bg-[#ffebee] active:scale-95 transition-all cursor-pointer shadow-xs"
                                 aria-label="Restar 1"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="w-6 text-center font-extrabold text-xs text-[#2554F4] tabular-nums">
+                              <span className="w-6 text-center font-black text-xs text-[#f73b20] tabular-nums">
                                 {inCart.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(prod.id, 1)}
-                                className="w-7 h-7 rounded-lg bg-[#2554F4] text-white font-bold flex items-center justify-center hover:bg-[#1741CF] active:scale-95 transition-all shadow-xs cursor-pointer"
+                                className="w-7 h-7 rounded-lg bg-[#f73b20] text-white font-bold flex items-center justify-center hover:bg-[#e02f17] active:scale-95 transition-all shadow-xs cursor-pointer"
                                 aria-label="Sumar 1"
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -347,7 +367,7 @@ export const NewOrderView: React.FC = () => {
                           ) : (
                             <button
                               onClick={() => addToCart(prod)}
-                              className="px-3.5 py-1.5 bg-[#2554F4] hover:bg-[#1741CF] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+                              className="px-3.5 py-1.5 bg-[#f73b20] hover:bg-[#e02f17] active:scale-95 text-white font-semibold text-xs rounded-xl flex items-center gap-1 shadow-xs transition-all cursor-pointer"
                             >
                               <Plus className="w-3.5 h-3.5" />
                               Agregar
@@ -505,8 +525,8 @@ export const NewOrderView: React.FC = () => {
           </div>
 
           {/* General Notes for Kitchen */}
-          <div className="p-3 bg-slate-50 border-t border-slate-100">
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <div className="p-3 bg-[#fdedea]/20 border-t border-[#e7dcdb]">
+            <label className="block text-[11px] font-semibold text-[#74514b] uppercase tracking-wider mb-1">
               Observaciones generales para cocina
             </label>
             <input
@@ -514,22 +534,22 @@ export const NewOrderView: React.FC = () => {
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               placeholder="Ej. Servir platos al tiempo, comensal alérgico al maní..."
-              className="w-full px-3 py-2 text-xs bg-white border border-[#E3E7EF] rounded-xl text-[#141722] focus:outline-none focus:ring-2 focus:ring-[#2554F4]"
+              className="w-full px-3 py-2 text-xs bg-white border border-[#e7dcdb] rounded-xl text-[#360802] focus:outline-none focus:ring-2 focus:ring-[#f73b20]"
             />
           </div>
 
           {/* Totals & Submit Footer */}
-          <div className="p-4 bg-[#F8F9FC] border-t border-[#E3E7EF] space-y-3">
-            <div className="flex items-center justify-between text-xs text-[#626B7A]">
+          <div className="p-4 bg-[#fdedea]/30 border-t border-[#e7dcdb] space-y-3">
+            <div className="flex items-center justify-between text-xs text-[#74514b]">
               <span>Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)} ítems):</span>
-              <span className="font-bold text-[#141722] tabular-nums">
+              <span className="font-bold text-[#360802] tabular-nums">
                 ${total.toLocaleString('es-CO')}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-base pt-2 border-t border-slate-200">
-              <span className="font-extrabold text-[#141722]">Total de la Comanda:</span>
-              <span className="font-black text-[#2554F4] text-xl tabular-nums">
+            <div className="flex items-center justify-between text-base pt-2 border-t border-[#e7dcdb]">
+              <span className="font-extrabold text-[#360802]">Total de la Comanda:</span>
+              <span className="font-black text-[#f73b20] text-xl tabular-nums">
                 ${total.toLocaleString('es-CO')}
               </span>
             </div>
@@ -540,7 +560,7 @@ export const NewOrderView: React.FC = () => {
               className={`w-full min-h-[48px] py-3 px-4 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
                 cart.length === 0 || !selectedTableId || isSelectedTableOccupied
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  : 'bg-[#2554F4] hover:bg-[#1741CF] active:scale-[0.98] text-white shadow-[#2554F4]/20'
+                  : 'bg-[#f73b20] hover:bg-[#e02f17] active:scale-[0.98] text-white shadow-lg shadow-[#f73b20]/20'
               }`}
             >
               <Send className="w-4 h-4" />
@@ -553,11 +573,11 @@ export const NewOrderView: React.FC = () => {
       {/* Item Modification / Kitchen Note Modal */}
       {activeItemNoteModal !== null && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 border border-slate-200 animate-in fade-in zoom-in-95">
-            <h3 className="font-bold text-sm text-slate-900 mb-1">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 border border-[#e7dcdb] animate-in fade-in zoom-in-95">
+            <h3 className="font-bold text-sm text-[#360802] mb-1">
               Nota especial de preparación
             </h3>
-            <p className="text-xs text-slate-500 mb-3">
+            <p className="text-xs text-[#74514b] mb-3">
               Indique términos de cocción, exclusión de ingredientes o especificaciones para el chef.
             </p>
 
@@ -566,20 +586,20 @@ export const NewOrderView: React.FC = () => {
               value={tempItemNote}
               onChange={(e) => setTempItemNote(e.target.value)}
               placeholder="Ej. Término medio, sin cebolla, salsa aparte..."
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA580C]"
+              className="w-full px-3 py-2 text-sm border border-[#e7dcdb] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f73b20]"
               autoFocus
             />
 
             <div className="mt-4 flex items-center justify-end gap-2">
               <button
                 onClick={() => setActiveItemNoteModal(null)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                className="px-3 py-1.5 rounded-lg border border-[#e7dcdb] text-xs font-semibold text-[#74514b] hover:bg-slate-100"
               >
                 Cancelar
               </button>
               <button
                 onClick={saveItemNote}
-                className="px-4 py-1.5 rounded-lg bg-[#EA580C] hover:bg-[#CC4900] text-xs font-bold text-white shadow-sm"
+                className="px-4 py-1.5 rounded-lg bg-[#f73b20] hover:bg-[#e02f17] text-xs font-bold text-white shadow-sm cursor-pointer"
               >
                 Guardar Nota
               </button>
@@ -587,6 +607,13 @@ export const NewOrderView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 3D Dishes Modal */}
+      <Food3DModal
+        isOpen={is3DModalOpen}
+        initialDishIndex={active3DDishIdx}
+        onClose={() => setIs3DModalOpen(false)}
+      />
     </div>
   );
 };
