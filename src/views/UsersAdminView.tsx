@@ -23,6 +23,7 @@ export const UsersAdminView: React.FC = () => {
 
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('mesero');
   const [active, setActive] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export const UsersAdminView: React.FC = () => {
     setEditingUser(null);
     setUsername('');
     setName('');
+    setPassword('');
     setRole('mesero');
     setActive(true);
     setFormError(null);
@@ -41,6 +43,7 @@ export const UsersAdminView: React.FC = () => {
     setEditingUser(u);
     setUsername(u.username);
     setName(u.name);
+    setPassword('');
     setRole(u.role);
     setActive(u.active);
     setFormError(null);
@@ -59,6 +62,10 @@ export const UsersAdminView: React.FC = () => {
       setFormError('El nombre completo es obligatorio.');
       return;
     }
+    if (!editingUser && password.trim().length < 8) {
+      setFormError('La contraseña es obligatoria y debe tener al menos 8 caracteres (RF-14).');
+      return;
+    }
 
     if (editingUser) {
       const res = await updateUser(editingUser.id, {
@@ -73,6 +80,7 @@ export const UsersAdminView: React.FC = () => {
       const res = await addUser({
         username: username.trim().toLowerCase(),
         name: name.trim(),
+        password: password.trim(),
         role,
         active,
         avatar:
@@ -265,6 +273,26 @@ export const UsersAdminView: React.FC = () => {
                   required
                 />
               </div>
+
+              {!editingUser && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Contraseña de Acceso (Mín. 8 caracteres) *
+                  </label>
+                  <div className="relative">
+                    <Key className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Mínimo 8 caracteres (se encripta con bcrypt)"
+                      minLength={8}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">

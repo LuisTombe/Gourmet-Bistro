@@ -15,8 +15,9 @@ import {
 } from 'lucide-react';
 
 export const KitchenKDSView: React.FC = () => {
-  const { orders, updateOrderStatus } = useRestaurant();
+  const { orders, updateOrderStatus, currentUser } = useRestaurant();
   const [now, setNow] = useState(Date.now());
+  const isCook = currentUser?.role === 'cocinero';
 
   React.useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 15000);
@@ -132,26 +133,38 @@ export const KitchenKDSView: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Button Footer */}
+        {/* Action Button Footer (RN-06 / RF-11: Solo el rol Cocinero avanza estados de preparación) */}
         <div className="p-4 bg-[#ffffff] border-t border-[#e7dcdb]">
           {order.status === 'Pendiente' && (
-            <button
-              onClick={() => updateOrderStatus(order.id, 'En preparación')}
-              className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <Flame className="w-4 h-4" />
-              Iniciar Preparación
-            </button>
+            isCook ? (
+              <button
+                onClick={() => updateOrderStatus(order.id, 'En preparación')}
+                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Flame className="w-4 h-4" />
+                Iniciar Preparación
+              </button>
+            ) : (
+              <div className="text-center py-1.5 px-3 rounded-xl bg-[#fdedea]/60 text-[11px] font-medium text-[#74514b]">
+                En espera de inicio por Cocina (RN-06)
+              </div>
+            )
           )}
 
           {order.status === 'En preparación' && (
-            <button
-              onClick={() => updateOrderStatus(order.id, 'Listo')}
-              className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#34c771] hover:opacity-95 text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Marcar como Listo al Pase
-            </button>
+            isCook ? (
+              <button
+                onClick={() => updateOrderStatus(order.id, 'Listo')}
+                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#34c771] hover:opacity-95 text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Marcar como Listo al Pase
+              </button>
+            ) : (
+              <div className="text-center py-1.5 px-3 rounded-xl bg-[#f5ffbb]/70 text-[11px] font-medium text-[#360802]">
+                En preparación por Cocina (RN-06)
+              </div>
+            )
           )}
 
           {order.status === 'Listo' && (

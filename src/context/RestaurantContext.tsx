@@ -325,12 +325,13 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setDraftCart([]);
   }, []);
 
-  // 1. Cargar datos del catálogo y pedidos desde los microservicios
+  // 1. Cargar datos del catálogo y pedidos desde los microservicios respetando permisos por rol (RF-17)
   const refreshData = useCallback(async () => {
     try {
+      const canQueryTables = !currentUser || currentUser.role === 'administrador' || currentUser.role === 'mesero';
       const [prodRes, mesasRes, pedidosRes] = await Promise.allSettled([
         api.productos.listar(),
-        api.mesas.listar(),
+        canQueryTables ? api.mesas.listar() : Promise.resolve({ mesas: [] }),
         api.pedidos.listar(),
       ]);
 
@@ -352,16 +353,19 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         );
       }
 
-      if (mesasRes.status === 'fulfilled' && mesasRes.value.mesas) {
+      const tableNumMap = new Map<number, number>();
+      if (mesasRes.status === 'fulfilled' && mesasRes.value.mesas && mesasRes.value.mesas.length > 0) {
         const areas: Table['area'][] = ['Salón Principal', 'Terraza Gourmet', 'Zona VIP'];
-        setTables(
-          mesasRes.value.mesas.map((m, idx) => ({
+        const mappedTables = mesasRes.value.mesas.map((m, idx) => {
+          tableNumMap.set(m.id_mesa, m.numero_mesa);
+          return {
             id: m.id_mesa,
             tableNumber: m.numero_mesa,
             capacity: idx % 3 === 0 ? 6 : idx % 2 === 0 ? 4 : 2,
             area: areas[idx % areas.length],
-          }))
-        );
+          };
+        });
+        setTables(mappedTables);
       }
 
       if (pedidosRes.status === 'fulfilled' && pedidosRes.value.pedidos) {
@@ -369,7 +373,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           pedidosRes.value.pedidos.map((o) => ({
             id: o.id_pedido,
             tableId: o.id_mesa,
-            tableNumber: o.id_mesa,
+            tableNumber: tableNumMap.get(o.id_mesa) || o.id_mesa,
             userId: o.id_usuario,
             waiterName: `Usuario #${o.id_usuario}`,
             createdAt: o.fecha_pedido,
@@ -562,18 +566,32 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       await refreshData();
       return { success: true, orderId: res.pedido.id_pedido };
     } catch (err: any) {
+      // RF-07: Si el precio de un plato cambió en el catálogo mientras se armaba el pedido (409), refrescar precios
+      if (err instanceof ApiError && err.status === 409) {
+        await refreshData();
+      }
       const msg = err instanceof ApiError ? err.message : 'Error al registrar pedido';
       showToast(msg, 'error');
       return { success: false, error: msg };
     }
   };
 
-  // Actualización optimista (Optimistic UI) con reversión automática si falla el servidor
+  // Actualización optimista (Optimistic UI) con validación de máquina de estados (RN-05/RN-06) y reversión automática si falla
   const updateOrderStatus = async (
     orderId: number,
     nextStatus: OrderStatus
   ): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser) return { success: false, error: 'Debe iniciar sesión.' };
+
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (targetOrder) {
+      const check = canTransitionOrderStatus(targetOrder.status, nextStatus, currentUser.role);
+      if (!check.allowed) {
+        const msg = check.reason || 'Transición de estado no permitida.';
+        showToast(msg, 'error');
+        return { success: false, error: msg };
+      }
+    }
 
     const previousOrders = orders;
     setOrders((prev) =>
@@ -763,6 +781,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         nombre_usuario: userData.username,
         rol: userData.role,
       });
+      if (userData.active === false) {
+        await api.usuarios.desactivar(id);
+      }
       showToast('Usuario actualizado.', 'success');
       await refreshData();
       return { success: true };
