@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { FoodPlate3D, PLATES_3D_CATALOG } from './FoodPlate3D.tsx';
+import React, { useState } from 'react';
+import { PLATES_CATALOG, PlateMeta } from '../../data/platesCatalog.ts';
+import { FoodPlateShowcase } from './FoodPlateShowcase.tsx';
 import { useRestaurant } from '../../context/RestaurantContext.tsx';
 import { calculateOrderTotal } from '../../domain/rules.ts';
 import { OptimizedImage } from '../ui/OptimizedImage.tsx';
@@ -17,14 +17,14 @@ import {
   Layers,
 } from 'lucide-react';
 
-interface Food3DModalProps {
+interface FoodDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialDishIndex?: number;
   onSelectDishCategory?: (category: string) => void;
 }
 
-export const Food3DModal: React.FC<Food3DModalProps> = ({
+export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
   isOpen,
   onClose,
   initialDishIndex = 0,
@@ -42,8 +42,8 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
     clearDraftCart,
     createOrder,
     currentUser,
-    login,
     setActiveView,
+    showToast,
   } = useRestaurant();
 
   const [selectedIdx, setSelectedIdx] = useState(initialDishIndex);
@@ -55,12 +55,12 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentPlate = PLATES_3D_CATALOG[selectedIdx] || PLATES_3D_CATALOG[0];
+  const currentPlate: PlateMeta = PLATES_CATALOG[selectedIdx] || PLATES_CATALOG[0];
 
-  // Exact products depicted on this 3D plate
+  // Productos exactos de la categoría seleccionada
   const plateProducts = products.filter((p) => p.category === currentPlate.category);
 
-  // Available tables for direct order dispatch
+  // Mesas disponibles
   const availableTables = tables.filter((t) => getTableStatus(t.id) === 'Disponible');
   const activeTable =
     selectedTableForOrder && getTableStatus(selectedTableForOrder.id) === 'Disponible'
@@ -75,13 +75,9 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
   const handleDirectOrderSubmit = async () => {
     if (draftCart.length === 0) return;
 
-    // If not logged in yet, auto-authenticate as waiter carlos_m so the flow is seamless
     if (!currentUser) {
-      setIsSubmitting(true);
-      await login('carlos_m', 'MeseroPass2026!');
-      setIsSubmitting(false);
+      showToast('Inicia sesión para registrar el pedido (tu selección se conserva).', 'info');
       onClose();
-      setActiveView('nuevo-pedido');
       return;
     }
 
@@ -108,9 +104,11 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
     }
   };
 
-  const handleGoToFullPOS = async () => {
+  const handleGoToFullPOS = () => {
     if (!currentUser) {
-      await login('carlos_m', 'MeseroPass2026!');
+      showToast('Inicia sesión para abrir la comanda en el POS.', 'info');
+      onClose();
+      return;
     }
     if (onSelectDishCategory) {
       onSelectDishCategory(currentPlate.category);
@@ -119,12 +117,12 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
     setActiveView('nuevo-pedido');
   };
 
-  const modalContent = (
+  return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-[#360802]/60 backdrop-blur-md overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-3d-title"
+      aria-labelledby="modal-food-title"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -136,48 +134,47 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
         }}
         className="relative w-full max-w-6xl my-auto bg-[#ffffff] rounded-[28px] border border-[#e7dcdb] overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[92vh] lg:max-h-[88vh]"
       >
-        {/* Close Button */}
+        {/* Botón de cierre */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-[#ffffff]/90 hover:bg-[#fdedea] text-[#360802] border border-[#e7dcdb] flex items-center justify-center transition-colors cursor-pointer"
-          aria-label="Cerrar inspección de plato 3D"
+          aria-label="Cerrar modal"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Column (5 cols): Interactive 3D Plate Viewport */}
+        {/* Columna Izquierda (5 columnas): Visor de Plato 2D */}
         <div
           style={{
             background:
               'linear-gradient(135deg, #f36c7b 0%, #f73b20 48%, #f88a63 82%, #f9b489 100%)',
           }}
-          className="lg:col-span-5 relative min-h-[260px] sm:min-h-[340px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden"
+          className="lg:col-span-5 relative min-h-[300px] sm:min-h-[380px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden"
         >
-          {/* Top Editorial Badge */}
+          {/* Badge superior */}
           <div className="p-6 z-20 flex items-center justify-between pointer-events-none">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-[0.03em]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Plato 3D #{currentPlate.id} de 5 · Interactivo</span>
+              <span>Plato #{currentPlate.id} de 5 · Menú de Autor</span>
             </div>
           </div>
 
-          {/* 3D Scene */}
-          <div className="absolute inset-0">
-            <FoodPlate3D
+          {/* Escaparate visual 2D */}
+          <div className="relative z-10 flex-1 flex items-center justify-center">
+            <FoodPlateShowcase
               variant="interactive"
               activeDishIndex={selectedIdx}
               onDishChange={(idx) => setSelectedIdx(idx)}
-              showControlsPill={false}
             />
           </div>
 
-          {/* Bottom 5-Plate Switcher inside 3D Viewport */}
-          <div className="relative z-20 p-5 bg-gradient-to-t from-[#360802]/65 via-[#360802]/25 to-transparent">
+          {/* Selector de platos 1 a 5 */}
+          <div className="relative z-20 p-5 bg-gradient-to-t from-[#360802]/70 via-[#360802]/30 to-transparent">
             <p className="text-[11px] uppercase tracking-[0.06em] text-white/80 mb-2 font-medium">
-              Selecciona otro plato 3D de la cascada:
+              Selecciona otro plato de la selección:
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {PLATES_3D_CATALOG.map((plate, idx) => (
+              {PLATES_CATALOG.map((plate, idx) => (
                 <button
                   key={plate.id}
                   onClick={() => setSelectedIdx(idx)}
@@ -194,10 +191,10 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
           </div>
         </div>
 
-        {/* Right Column (7 cols): Products on the Selected 3D Plate & Direct Order Integration */}
+        {/* Columna Derecha (7 columnas): Productos del Plato y Comanda Directa */}
         <div className="lg:col-span-7 p-5 sm:p-8 flex flex-col justify-between bg-[#ffffff] overflow-y-auto max-h-[58vh] lg:max-h-[88vh]">
           <div>
-            {/* Category Pill & Editorial Title */}
+            {/* Etiquetas y Título */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#fdedea] text-[#f73b20] tracking-[0.03em]">
                 <UtensilsCrossed className="w-3.5 h-3.5" />
@@ -205,12 +202,12 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#f5ffbb] text-[#360802] tracking-[0.03em]">
                 <Layers className="w-3.5 h-3.5" />
-                {plateProducts.length} productos en este modelo 3D
+                {plateProducts.length} productos disponibles
               </span>
             </div>
 
             <h2
-              id="modal-3d-title"
+              id="modal-food-title"
               className="text-2xl sm:text-4xl font-medium text-[#360802] tracking-[0.01em] leading-[1.02]"
             >
               {currentPlate.name}
@@ -220,11 +217,11 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
               {currentPlate.description}
             </p>
 
-            {/* List of Exact Products Depicted on this 3D Plate */}
+            {/* Listado de Productos */}
             <div className="mt-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs uppercase tracking-[0.05em] text-[#74514b] font-medium">
-                  Productos representados en este plato 3D (Clic para agregar al pedido)
+                  Productos de la categoría (Haz clic para agregar a la comanda)
                 </h3>
               </div>
 
@@ -244,60 +241,63 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <OptimizedImage
-                          src={product.image}
-                          alt={product.name}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 rounded-xl object-cover border border-[#e7dcdb] shrink-0"
-                        />
+                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-[#e7dcdb]">
+                          <OptimizedImage
+                            src={product.image}
+                            alt={product.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
                         <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-base font-medium text-[#360802]">{product.name}</h4>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#bcffbb] text-[#360802]">
-                              En escena 3D
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm sm:text-base font-medium text-[#360802]">
+                              {product.name}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Disponible
                             </span>
                           </div>
-                          <p className="text-xs text-[#74514b] mt-0.5 line-clamp-2">
+                          <p className="text-xs text-[#74514b] line-clamp-1 mt-0.5">
                             {product.description}
                           </p>
-                          <p className="text-sm font-medium text-[#f73b20] mt-1">
+                          <span className="text-sm font-semibold text-[#f73b20] mt-1 block">
                             ${product.price.toLocaleString('es-CO')}
-                          </p>
+                          </span>
                         </div>
                       </div>
 
-                      {/* Add / Stepper Controls */}
-                      <div className="flex items-center justify-end shrink-0">
-                        {qty === 0 ? (
-                          <button
-                            onClick={() => addToDraftCart(product, 1)}
-                            disabled={!product.available}
-                            className="px-4 py-2.5 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] disabled: opacity-50 text-white text-xs font-medium tracking-[0.02em] flex items-center gap-1.5 transition-all cursor-pointer"
-                          >
-                            <Plus className="w-4 h-4" />
-                            <span>Agregar al pedido</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-2 bg-[#ffffff] border border-[#f73b20] rounded-xl px-2 py-1">
+                      {/* Control de cantidad */}
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        {qty > 0 ? (
+                          <div className="flex items-center gap-2 bg-[#ffffff] p-1 rounded-xl border border-[#e7dcdb]">
                             <button
                               onClick={() => updateDraftQuantity(product.id, -1)}
-                              className="w-7 h-7 rounded-lg bg-[#fdedea] text-[#f73b20] flex items-center justify-center hover:bg-[#f73b20] hover:text-white transition-colors cursor-pointer"
-                              aria-label="Disminuir cantidad"
+                              className="w-8 h-8 rounded-lg bg-[#fdedea] hover:bg-[#f73b20] hover:text-white text-[#f73b20] flex items-center justify-center transition-colors cursor-pointer"
+                              aria-label="Disminuir"
                             >
-                              <Minus className="w-3.5 h-3.5" />
+                              <Minus className="w-4 h-4" />
                             </button>
-                            <span className="min-w-[24px] text-center text-sm font-medium text-[#360802]">
+                            <span className="w-7 text-center font-bold text-sm text-[#360802]">
                               {qty}
                             </span>
                             <button
                               onClick={() => updateDraftQuantity(product.id, 1)}
-                              className="w-7 h-7 rounded-lg bg-[#f73b20] text-white flex items-center justify-center hover:bg-[#f84d35] transition-colors cursor-pointer"
-                              aria-label="Aumentar cantidad"
+                              className="w-8 h-8 rounded-lg bg-[#fdedea] hover:bg-[#f73b20] hover:text-white text-[#f73b20] flex items-center justify-center transition-colors cursor-pointer"
+                              aria-label="Aumentar"
                             >
-                              <Plus className="w-3.5 h-3.5" />
+                              <Plus className="w-4 h-4" />
                             </button>
                           </div>
+                        ) : (
+                          <button
+                            onClick={() => addToDraftCart(product, 1)}
+                            className="px-4 py-2 rounded-xl bg-[#fdedea] hover:bg-[#f73b20] text-[#f73b20] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Agregar al pedido</span>
+                          </button>
                         )}
                       </div>
                     </div>
@@ -307,70 +307,73 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
             </div>
           </div>
 
-          {/* Bottom Order Flow Integration Bar */}
-          <div className="mt-6 pt-5 border-t border-[#e7dcdb]">
-            {/* Table Selection + Cart Status */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 p-3.5 rounded-2xl bg-[#fdedea]/70 border border-[#e7dcdb]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#f73b20] text-white flex items-center justify-center shrink-0">
-                  <ShoppingBag className="w-5 h-5" />
-                </div>
+          {/* Barra inferior: Comanda y Envío a Mesa */}
+          <div className="mt-6 pt-5 border-t border-[#e7dcdb] space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-[#fdedea]/45 rounded-2xl border border-[#f73b20]/20">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-[#f73b20] text-white">
+                  <ShoppingBag className="w-4 h-4" />
+                </span>
                 <div>
-                  <p className="text-xs text-[#74514b]">
-                    Pedido activo ({totalDraftItems} {totalDraftItems === 1 ? 'producto' : 'productos'})
-                  </p>
-                  <p className="text-lg font-medium text-[#360802]">
+                  <div className="text-xs text-[#74514b]">
+                    Pedido activo ({totalDraftItems} productos)
+                  </div>
+                  <div className="text-base font-bold text-[#360802]">
                     Total: ${totalDraftAmount.toLocaleString('es-CO')}
-                  </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Table Selector */}
+              {/* Selector de Mesa */}
               <div className="flex items-center gap-2">
-                <label htmlFor="modal-table-select" className="text-xs font-medium text-[#360802]">
+                <label htmlFor="mesa-select-modal" className="text-xs text-[#74514b] font-medium whitespace-nowrap">
                   Mesa destino:
                 </label>
                 <select
-                  id="modal-table-select"
+                  id="mesa-select-modal"
                   value={activeTable?.id || ''}
                   onChange={(e) => {
-                    const tbl = tables.find((t) => t.id === Number(e.target.value)) || null;
-                    setSelectedTableForOrder(tbl);
+                    const found = tables.find((t) => t.id === Number(e.target.value));
+                    if (found) setSelectedTableForOrder(found);
                   }}
-                  className="px-3 py-2 rounded-xl bg-[#ffffff] border border-[#e7dcdb] text-xs font-medium text-[#360802] focus:outline-none focus:border-[#f73b20]"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-[#e7dcdb] bg-white text-[#360802] focus:outline-none focus:ring-2 focus:ring-[#f73b20]"
                 >
-                  {availableTables.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      Mesa #{t.tableNumber} ({t.area})
-                    </option>
-                  ))}
+                  {availableTables.length > 0 ? (
+                    availableTables.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        Mesa #{t.tableNumber} ({t.area})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Sin mesas disponibles</option>
+                  )}
                 </select>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={handleDirectOrderSubmit}
                 disabled={draftCart.length === 0 || isSubmitting}
-                className="flex-1 py-3.5 px-5 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] disabled:opacity-45 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="py-3 px-4 rounded-xl bg-[#f73b20] hover:bg-[#e02f17] disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
               >
                 <Send className="w-4 h-4" />
                 <span>
                   {isSubmitting
-                    ? 'Procesando pedido...'
+                    ? 'Registrando...'
                     : activeTable
                     ? `Registrar Pedido en Mesa #${activeTable.tableNumber}`
-                    : 'Continuar con el Pedido'}
+                    : 'Registrar Pedido'}
                 </span>
               </button>
 
               <button
                 onClick={handleGoToFullPOS}
-                className="py-3.5 px-5 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] text-[#360802] border border-[#e7dcdb] font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="py-3 px-4 rounded-xl bg-white hover:bg-[#fdedea] text-[#360802] border border-[#e7dcdb] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4 text-[#f73b20]" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Abrir Comanda en POS</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
               </button>
             </div>
           </div>
@@ -378,6 +381,7 @@ export const Food3DModal: React.FC<Food3DModalProps> = ({
       </div>
     </div>
   );
-
-  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };
+
+// Aliases para retrocompatibilidad total
+export const Food3DModal = FoodDetailModal;

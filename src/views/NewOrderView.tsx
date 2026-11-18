@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { ProductCategory } from '../types/index.ts';
 import { calculateOrderTotal } from '../domain/rules.ts';
-import { Food3DModal } from '../components/3d/Food3DModal.tsx';
-import { PLATES_3D_CATALOG } from '../components/3d/FoodPlate3D.tsx';
+import { FoodDetailModal } from '../components/showcase/FoodDetailModal.tsx';
+import { PLATES_CATALOG } from '../data/platesCatalog.ts';
 import { useDebounce } from '../hooks/useDebounce.ts';
 import { OptimizedImage } from '../components/ui/OptimizedImage.tsx';
 import {
@@ -164,7 +164,7 @@ export const NewOrderView: React.FC = () => {
           </button>
           <div>
             <span className="inline-block text-xs uppercase tracking-[0.05em] text-[#f73b20] font-medium mb-1">
-              Comanda Interactiva · Sincronizada con Platos 3D
+              Comanda Interactiva · Sincronizada con Menú de Autor
             </span>
             <h1 className="text-3xl sm:text-5xl font-medium text-[#360802] tracking-[0.01em] leading-[0.98]">
               Nuevo Pedido
@@ -184,7 +184,7 @@ export const NewOrderView: React.FC = () => {
             className="px-4 py-2 rounded-full text-xs font-medium bg-[#f73b20] text-white hover:bg-[#f84d35] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Explorar Platos 3D</span>
+            <span>Explorar Platos del Menú</span>
           </button>
         </div>
       </div>
@@ -250,7 +250,7 @@ export const NewOrderView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {filteredProducts.map((prod) => {
               const inCart = draftCart.find((i) => i.product.id === prod.id);
-              const matchingPlateIdx = PLATES_3D_CATALOG.findIndex((pl) => pl.category === prod.category);
+              const matchingPlateIdx = PLATES_CATALOG.findIndex((pl) => pl.category === prod.category);
 
               return (
                 <div
@@ -287,10 +287,10 @@ export const NewOrderView: React.FC = () => {
                           setIs3DModalOpen(true);
                         }}
                         className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#f73b20] text-white flex items-center gap-1 hover:bg-[#f84d35] transition-colors cursor-pointer"
-                        title="Ver este producto en su modelo de plato 3D"
+                        title="Ver este producto en su categoría de autor"
                       >
                         <Sparkles className="w-3 h-3" />
-                        <span>Plato 3D</span>
+                        <span>Ver Plato</span>
                       </button>
                     )}
 
@@ -605,8 +605,8 @@ export const NewOrderView: React.FC = () => {
         </div>
       )}
 
-      {/* 3D Dishes Modal */}
-      <Food3DModal
+      {/* Modal de Detalle de Platos */}
+      <FoodDetailModal
         isOpen={is3DModalOpen}
         initialDishIndex={active3DDishIdx}
         onClose={() => setIs3DModalOpen(false)}

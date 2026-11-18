@@ -70,6 +70,9 @@ export async function request<T>(path: string, options: RequestConfig = {}): Pro
     if (path.startsWith('/api/pedidos')) {
       invalidateApiCache('/api/mesas');
     }
+    if (path.startsWith('/api/snapshots') && path.endsWith('/rollback')) {
+      invalidateApiCache('/api/');
+    }
   }
 
   // 2. Retornar desde caché en cliente si está vigente
@@ -228,5 +231,52 @@ export const api = {
       ),
     avanzar: (id: number, estado: Estado) =>
       request(`/api/pedidos/${id}/estado`, { method: 'PATCH', body: json({ estado }) }),
+  },
+  versionamiento: {
+    git: () =>
+      request<{
+        branch: string;
+        headHash: string;
+        commits: { hash: string; author: string; date: string; message: string }[];
+      }>('/api/versionamiento/git', { cacheTtlMs: 10000 }),
+    listarSnapshots: () =>
+      request<{
+        snapshots: {
+          id: string;
+          versionTag: string;
+          branch: string;
+          commitHash: string;
+          author: string;
+          authorRole: string;
+          timestamp: string;
+          description: string;
+          type: 'git_release' | 'audit_snapshot' | 'recovery_point';
+        }[];
+      }>('/api/snapshots', { cacheTtlMs: 3000 }),
+    crearSnapshot: (
+      descripcion: string,
+      version_tag?: string,
+      tipo?: 'git_release' | 'audit_snapshot' | 'recovery_point'
+    ) =>
+      request<{
+        snapshot: {
+          id: string;
+          versionTag: string;
+          branch: string;
+          commitHash: string;
+          author: string;
+          authorRole: string;
+          timestamp: string;
+          description: string;
+          type: 'git_release' | 'audit_snapshot' | 'recovery_point';
+        };
+      }>('/api/snapshots', {
+        method: 'POST',
+        body: json({ descripcion, ...(version_tag ? { version_tag } : {}), ...(tipo ? { tipo } : {}) }),
+      }),
+    rollback: (id: string) =>
+      request<{ ok: true; versionTag: string; id: string }>(`/api/snapshots/${id}/rollback`, {
+        method: 'POST',
+      }),
   },
 };

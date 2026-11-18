@@ -1,7 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
-import { FoodPlate3D, PLATES_3D_CATALOG, Plate3DMeta } from './3d/FoodPlate3D.tsx';
-import { Food3DModal } from './3d/Food3DModal.tsx';
+import { FoodPlateShowcase } from './showcase/FoodPlateShowcase.tsx';
+import { FoodDetailModal } from './showcase/FoodDetailModal.tsx';
+import { PLATES_CATALOG, PlateMeta } from '../data/platesCatalog.ts';
 import { OptimizedImage } from './ui/OptimizedImage.tsx';
 import {
   Shield,
@@ -72,7 +73,7 @@ export const LoginView: React.FC = () => {
     }
   };
 
-  const handlePlate3DClick = (idx: number, _plate: Plate3DMeta) => {
+  const handlePlate3DClick = (idx: number, _plate: PlateMeta) => {
     setSelectedPlateIdx(idx);
     setIs3DModalOpen(true);
   };
@@ -81,7 +82,7 @@ export const LoginView: React.FC = () => {
     () => draftCart.reduce((acc, i) => acc + i.quantity, 0),
     [draftCart]
   );
-  const activePlate = PLATES_3D_CATALOG[selectedPlateIdx] || PLATES_3D_CATALOG[0];
+  const activePlate = PLATES_CATALOG[selectedPlateIdx] || PLATES_CATALOG[0];
   const activePlateProducts = useMemo(
     () => products.filter((p) => p.category === activePlate.category),
     [products, activePlate.category]
@@ -100,14 +101,13 @@ export const LoginView: React.FC = () => {
           }}
           className="relative w-full min-h-[86vh] rounded-[28px] overflow-hidden flex flex-col justify-between p-7 sm:p-10 lg:p-12 select-none"
         >
-          {/* Full-Bleed 3D Cascading Food Plates Scene */}
+          {/* 2D Food Plates Showcase */}
           <div className="absolute inset-0 z-10">
-            <FoodPlate3D
+            <FoodPlateShowcase
               variant="hero"
               activeDishIndex={selectedPlateIdx}
               onDishChange={(idx) => setSelectedPlateIdx(idx)}
               onPlateClick={handlePlate3DClick}
-              showControlsPill={false}
               className="w-full h-full"
             />
           </div>
@@ -120,7 +120,7 @@ export const LoginView: React.FC = () => {
               </span>
               <span className="hidden md:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
                 <MousePointerClick className="w-3.5 h-3.5" />
-                Haz clic en cualquier plato 3D para ver sus productos
+                Haz clic en cualquier plato para ver sus productos
               </span>
             </div>
 
@@ -145,7 +145,7 @@ export const LoginView: React.FC = () => {
           </header>
 
           {/* Lower-Middle Oversized Editorial Headline + Right Subcopy */}
-          <div className="relative z-20 mt-auto pt-40 sm:pt-52 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-none">
+          <div className="relative z-20 mt-auto pt-52 sm:pt-64 lg:pt-72 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-none">
             <div className="lg:col-span-7">
               <h1
                 style={{
@@ -163,7 +163,7 @@ export const LoginView: React.FC = () => {
 
             <div className="lg:col-span-5 lg:pl-10 space-y-5 pointer-events-auto">
               <p className="text-white/95 text-lg sm:text-xl font-normal leading-[1.3] max-w-xs">
-                Un solo sistema para tus pedidos, mesas y platos en 3D.
+                Un solo sistema para tus pedidos, mesas y platos de autor.
               </p>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -202,10 +202,10 @@ export const LoginView: React.FC = () => {
             </button>
 
             <nav
-              aria-label="Selección de platos 3D"
+              aria-label="Selección de platos"
               className="flex items-center gap-1 p-1.5 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto"
             >
-              {PLATES_3D_CATALOG.map((plate, idx) => (
+              {PLATES_CATALOG.map((plate, idx) => (
                 <button
                   key={plate.id}
                   type="button"
@@ -248,7 +248,7 @@ export const LoginView: React.FC = () => {
             <div>
               <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-[#f73b20] font-medium mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
-                Catálogo Sincronizado con Escena 3D
+                Catálogo de Platos Seleccionados
               </span>
               <h2 className="text-3xl sm:text-5xl font-medium text-[#360802] tracking-tight leading-tight">
                 {activePlate.name}
@@ -256,7 +256,7 @@ export const LoginView: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              {PLATES_3D_CATALOG.map((plate, idx) => (
+              {PLATES_CATALOG.map((plate, idx) => (
                 <button
                   key={plate.id}
                   type="button"
@@ -318,7 +318,7 @@ export const LoginView: React.FC = () => {
                       onClick={() => setIs3DModalOpen(true)}
                       className="text-xs font-medium text-[#74514b] hover:text-[#f73b20] transition-colors cursor-pointer"
                     >
-                      Ver en 3D
+                      Ver Detalle
                     </button>
 
                     {qty === 0 ? (
@@ -547,7 +547,7 @@ export const LoginView: React.FC = () => {
         </div>
       )}
 
-      <Food3DModal
+      <FoodDetailModal
         isOpen={is3DModalOpen}
         onClose={() => setIs3DModalOpen(false)}
         initialDishIndex={selectedPlateIdx}

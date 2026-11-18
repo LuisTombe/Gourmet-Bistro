@@ -25,7 +25,7 @@ const app = express();
 app.disable('x-powered-by');
 app.use(otelTraceMiddleware('ms-pedidos'));
 app.use(compressionAndCacheMiddleware);
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '2mb' }));
 
 const createSchema = z
   .object({
@@ -120,6 +120,125 @@ app.get(
       [parseId(req)]
     );
     res.json({ hasHistory: !!r });
+  })
+);
+
+app.get(
+  '/internal/pedidos/export',
+  internalOnly,
+  asyncRoute(async (_req, res) => {
+    const [pedidosRes, detallesRes] = await Promise.all([
+      db.query(
+        'SELECT id_pedido, id_mesa, id_usuario, fecha_pedido, estado, total FROM pedidos ORDER BY id_pedido ASC'
+      ),
+      db.query(
+        'SELECT id_detalle, id_pedido, id_producto, nombre_producto, cantidad, precio_unitario, subtotal FROM detalle_pedido ORDER BY id_detalle ASC'
+      ),
+    ]);
+    const pedidos = pedidosRes[0];
+    const detalles = detallesRes[0];
+    res.json({
+      pedidos: pedidos.map((p) => ({ ...p, total: Number(p.total) })),
+      detalle_pedido: detalles.map((d) => ({
+        ...d,
+        precio_unitario: Number(d.precio_unitario),
+        subtotal: Number(d.subtotal),
+      })),
+    });
+  })
+);
+
+app.post(
+  '/internal/pedidos/restore',
+  internalOnly,
+  asyncRoute(async (req, res) => {
+    const payload = z
+      .object({
+        pedidos: z.array(
+          z.object({
+            id_pedido: z.number().int().positive(),
+            id_mesa: z.number().int().positive(),
+            id_usuario: z.number().int().positive(),
+            fecha_pedido: z.union([z.string(), z.date()]),
+            estado: z.string().max(30),
+            total: z.number().finite().positive(),
+          })
+        ),
+        detalle_pedido: z.array(
+          z.object({
+            id_detalle: z.number().int().positive(),
+            id_pedido: z.number().int().positive(),
+            id_producto: z.number().int().positive(),
+            nombre_producto: z.string().min(1).max(100),
+            cantidad: z.number().int().positive(),
+            precio_unitario: z.number().finite().positive(),
+            subtotal: z.number().finite().positive(),
+          })
+        ),
+      })
+      .parse(req.body);
+
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query('DELETE FROM detalle_pedido');
+      await conn.query('DELETE FROM pedidos');
+
+      if (payload.pedidos.length > 0) {
+        const placeholders = payload.pedidos.map(() => '(?,?,?,?,?,?)').join(',');
+        const values = [];
+        for (const p of payload.pedidos) {
+          values.push(
+            p.id_pedido,
+            p.id_mesa,
+            p.id_usuario,
+            new Date(p.fecha_pedido),
+            p.estado,
+            p.total
+          );
+        }
+        await conn.query(
+          `INSERT INTO pedidos(id_pedido, id_mesa, id_usuario, fecha_pedido, estado, total) VALUES ${placeholders}`,
+          values
+        );
+      }
+
+      if (payload.detalle_pedido.length > 0) {
+        const placeholders = payload.detalle_pedido.map(() => '(?,?,?,?,?,?,?)').join(',');
+        const values = [];
+        for (const d of payload.detalle_pedido) {
+          values.push(
+            d.id_detalle,
+            d.id_pedido,
+            d.id_producto,
+            d.nombre_producto,
+            d.cantidad,
+            d.precio_unitario,
+            d.subtotal
+          );
+        }
+        await conn.query(
+          `INSERT INTO detalle_pedido(id_detalle, id_pedido, id_producto, nombre_producto, cantidad, precio_unitario, subtotal) VALUES ${placeholders}`,
+          values
+        );
+      }
+
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+
+    cacheInvalidatePrefix('orders:');
+    res.json({
+      ok: true,
+      restored: {
+        pedidos: payload.pedidos.length,
+        detalle_pedido: payload.detalle_pedido.length,
+      },
+    });
   })
 );
 

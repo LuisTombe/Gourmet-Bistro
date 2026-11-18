@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gourmet Bistro — Video Interactivo 10s (Figma & Stitch Ready)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #FCF3EF;
+      --brand-orange: #F73B20;
+      --brand-coral: #FF7A59;
+      --ink-roast: #2F0F07;
+      --ink-muted: #7D5C52;
+      --border-warm: #EED9D1;
+      --mint-ready: #107844;
+      --mint-bg: #E8F9EF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #140704;
+      color: var(--ink-roast);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    .studio-bar {
+      width: min(1280px, 96vw);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: #FFF7F4;
+      flex-wrap: wrap;
+    }
+    .studio-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .badge-live {
+      background: var(--brand-orange);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .studio-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-studio {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-studio:hover {
+      background: var(--brand-orange);
+      border-color: var(--brand-orange);
+    }
+    .btn-studio.primary {
+      background: var(--brand-orange);
+      border-color: var(--brand-orange);
+    }
+
+    /* 1280x720 Interactive Video Stage */
+    .video-stage {
+      position: relative;
+      width: min(1280px, 96vw);
+      height: 720px;
+      border-radius: 32px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #F73B20 0%, #FF6B4A 52%, #FFB088 100%);
+      box-shadow: 0 32px 90px rgba(247, 59, 32, 0.38);
+      border: 1px solid rgba(255,255,255,0.22);
+      user-select: none;
+    }
+
+    /* Top Pill Navbar inside Video */
+    .top-nav {
+      position: absolute;
+      top: 24px;
+      left: 36px;
+      right: 36px;
+      height: 54px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 20;
+      box-shadow: 0 12px 32px rgba(47, 15, 7, 0.12);
+    }
+    .brand-logo {
+      font-weight: 800;
+      font-size: 17px;
+      color: var(--ink-roast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .phase-pills {
+      display: flex;
+      gap: 6px;
+    }
+    .phase-pill {
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .phase-pill.active {
+      background: var(--brand-orange);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(247, 59, 32, 0.35);
+    }
+    .author-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-orange);
+    }
+
+    /* Left Editorial Copy */
+    .hero-copy {
+      position: absolute;
+      left: 48px;
+      bottom: 88px;
+      z-index: 15;
+      max-width: 470px;
+      color: #fff;
+      pointer-events: none;
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.32);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+    }
+    .hero-copy h1 {
+      font-size: 72px;
+      line-height: 0.94;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      text-shadow: 0 12px 30px rgba(47, 15, 7, 0.18);
+    }
+    .hero-copy p {
+      font-size: 16px;
+      line-height: 1.45;
+      font-weight: 500;
+      opacity: 0.95;
+      margin-bottom: 18px;
+    }
+    .hero-cta-row {
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .hero-btn {
+      border: none;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-btn:hover { transform: translateY(-2px); }
+    .hero-btn.white {
+      background: #fff;
+      color: var(--brand-orange);
+      box-shadow: 0 10px 24px rgba(47, 15, 7, 0.18);
+    }
+    .hero-btn.glass {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    /* 3D Interactive Canvas Container */
+    #canvas-container {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      cursor: grab;
+    }
+    #canvas-container:active { cursor: grabbing; }
+
+    /* Interactive Floating Overlay Card (Changes dynamically across the 10s video OR on user click) */
+    .interactive-card {
+      position: absolute;
+      right: 36px;
+      bottom: 86px;
+      width: 440px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(20px);
+      border-radius: 26px;
+      padding: 22px 24px;
+      z-index: 18;
+      box-shadow: 0 24px 60px rgba(47, 15, 7, 0.22);
+      border: 1px solid var(--border-warm);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .card-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--brand-orange);
+      background: #FFF0EC;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--ink-roast);
+      margin-bottom: 6px;
+    }
+    .card-sub {
+      font-size: 12.5px;
+      color: var(--ink-muted);
+      margin-bottom: 14px;
+    }
+    .dish-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .dish-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-canvas);
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .dish-item button {
+      border: none;
+      background: var(--brand-orange);
+      color: #fff;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .dish-item button:hover { opacity: 0.9; }
+    .kds-Flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--mint-bg);
+      color: var(--mint-ready);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .kds-Flow button {
+      border: none;
+      background: var(--mint-ready);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Bottom 10-Second Interactive Timeline Scrubber */
+    .timeline-bar {
+      position: absolute;
+      left: 36px;
+      right: 36px;
+      bottom: 20px;
+      height: 48px;
+      background: rgba(25, 8, 4, 0.82);
+      backdrop-filter: blur(16px);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 20px;
+      z-index: 25;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+    .play-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--brand-orange);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .time-label {
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      min-width: 82px;
+    }
+    .scrubber-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .scrubber {
+      width: 100%;
+      accent-color: var(--brand-orange);
+      cursor: pointer;
+    }
+    .plate-selector-pills {
+      display: flex;
+      gap: 6px;
+    }
+    .plate-Btn {
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .plate-Btn.active {
+      background: #fff;
+      color: var(--brand-orange);
+      border-color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="studio-bar">
+    <div class="studio-title">
+      <span class="badge-live">VIDEO INTERACTIVO 10s · WEBGL + FIGMA MOTION</span>
+      <span>Gourmet Bistro v3.0 — Luis Yamit Tombe Cabrera (SENA ADSO)</span>
+    </div>
+    <div class="studio-actions">
+      <a class="btn-studio primary" href="https://www.figma.com/design/SgPTn2LiKxJ4zIritbtiyj" target="_blank" rel="noopener">Abrir Archivo Completo en Figma ↗</a>
+      <a class="btn-studio" href="https://www.figma.com/blobs/us/download/figma-media-exports-us-production/media_export/a8ce7694-dadc-4947-9f52-993792d7eeb2?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWCRABUPZ5K%2F20261115%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20261115T120000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=35952288eadc131529510a6cd78055bad97fff3957f396202518e00d4ae4a3f4" target="_blank" rel="noopener">⬇ Descargar Video MP4 Renderizado por Figma (10s)</a>
+      <button class="btn-studio" id="btnCopyStitch">Copiar HTML para Stitch (code.to.design)</button>
+      <a class="btn-studio" href="http://localhost:3000/" target="_blank" rel="noopener">Volver a la App en Vivo (:3000)</a>
+    </div>
+  </div>
+
+  <div class="video-stage" id="videoStage">
+    <!-- Top Navigation Bar -->
+    <div class="top-nav">
+      <div class="brand-logo">🔥 Gourmet Bistro · 3D POS & KDS</div>
+      <div class="phase-pills">
+        <button class="phase-pill active" data-time="0.5">00–02s · Portada 3D</button>
+        <button class="phase-pill" data-time="2.5">02–04s · Platos PBR</button>
+        <button class="phase-pill" data-time="4.5">04–06s · Pedido POS</button>
+        <button class="phase-pill" data-time="6.5">06–08s · Cocina KDS</button>
+        <button class="phase-pill" data-time="8.5">08–10s · Admin & Git</button>
+      </div>
+      <div class="author-tag">Luis Yamit Tombe Cabrera</div>
+    </div>
+
+    <!-- 3D WebGL Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Left Editorial Copy -->
+    <div class="hero-copy">
+      <div class="hero-kicker" id="stageKicker">✨ GIRA O HAZ CLIC EN CUALQUIER PLATO 3D EN TIEMPO REAL</div>
+      <h1 id="stageHeadline">One app<br>for all orders</h1>
+      <p id="stageDescription">Un solo sistema interactivo para tus pedidos, salón de mesas, cocina KDS y alta gastronomía en 3D con materiales PBR.</p>
+      <div class="hero-cta-row">
+        <button class="hero-btn white" id="btnInspectPlate">🍽️ Inspeccionar Plato 3D Activo</button>
+        <button class="hero-btn glass" id="btnAddQuickOrder">➕ Agregar al Pedido (<span id="orderCountBadge">3</span>)</button>
+      </div>
+    </div>
+
+    <!-- Right Interactive Card -->
+    <div class="interactive-card" id="interactiveCard">
+      <span class="card-badge" id="cardBadge">PLATO I · CARNES & GRILL A LA LEÑA</span>
+      <div class="card-title" id="cardTitle">Corte & Fuego en Escena 3D</div>
+      <div class="card-sub" id="cardSub">Haz clic en un plato 3D o usa los botones para interactuar durante el video de 10s:</div>
+      <div class="dish-list" id="dishList"></div>
+      <div class="kds-Flow">
+        <span id="kdsStatusText">Estado KDS (Mesa 04): <strong>En preparación</strong></span>
+        <button id="btnAdvanceKds">Avanzar Estado ➔</button>
+      </div>
+    </div>
+
+    <!-- Bottom 10s Video Scrubber & Plate Selector -->
+    <div class="timeline-bar">
+      <button class="play-btn" id="btnPlayPause" title="Pausar / Reproducir video interactivo de 10s">❚❚</button>
+      <span class="time-label"><span id="timeCurrent">00.0</span>s / 10.0s</span>
+      <div class="scrubber-wrap">
+        <input type="range" class="scrubber" id="timelineScrubber" min="0" max="10" step="0.05" value="0" />
+      </div>
+      <div class="plate-selector-pills" id="platePills">
+        <button class="plate-Btn active" data-plate="0">1. Carnes</button>
+        <button class="plate-Btn" data-plate="1">2. Pastas</button>
+        <button class="plate-Btn" data-plate="2">3. Entradas</button>
+        <button class="plate-Btn" data-plate="3">4. Postres</button>
+        <button class="plate-Btn" data-plate="4">5. Bebidas</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+
+    const PLATES_DATA = [
+      {
+        badge: "PLATO I · CARNES & GRILL A LA LEÑA",
+        title: "Cortes Madurados & Brasa PBR",
+        sub: "Sellado Maillard anisotrópico y reducción brillante de vino tinto.",
+        rimColor: 0xF73B20,
+        foodColor: 0x5A2314,
+        accentColor: 0xFF4522,
+        items: [
+          { name: "Ojo de Bife Angosto (400g)", price: "$89.000" },
+          { name: "Costillas de Cordero Patagónico", price: "$84.000" },
+          { name: "Salmón Austral Glaseado", price: "$72.000" }
+        ]
+      },
+      {
+        badge: "PLATO II · PASTAS & RISOTTOS ARTESANALES",
+        title: "Risotto ai Frutti di Mare & Trufa",
+        sub: "Grano Carnaroli cremoso con langostinos grillados y emulsión de azafrán.",
+        rimColor: 0xFF8B5E,
+        foodColor: 0xF5D487,
+        accentColor: 0xFF6B3D,
+        items: [
+          { name: "Risotto ai Frutti di Mare", price: "$68.000" },
+          { name: "Ravioli de Ossobuco Braseado", price: "$62.000" },
+          { name: "Pappardelle al Ragú de Cordero", price: "$59.000" }
+        ]
+      },
+      {
+        badge: "PLATO III · ENTRADAS DE AUTOR",
+        title: "Tartar de Atún Rojo & Burrata DOP",
+        sub: "Atún aleta azul con brillo especular húmedo, aguacate hass y brotes.",
+        rimColor: 0x107844,
+        foodColor: 0xB81D24,
+        accentColor: 0x229954,
+        items: [
+          { name: "Tartar de Atún Rojo & Aguacate", price: "$46.000" },
+          { name: "Burrata Pugliese & Tomates Heirloom", price: "$44.000" },
+          { name: "Carpaccio de Res con Parmesano 24m", price: "$42.000" }
+        ]
+      },
+      {
+        badge: "PLATO IV · ALTA REPOSTERÍA FRANCESA",
+        title: "Esfera Valrhona 70% & Frutos Rojos",
+        sub: "Glaseado espejo de cacao oscuro con polvo de oro comestible.",
+        rimColor: 0xE6C29F,
+        foodColor: 0x23110B,
+        accentColor: 0xF5CBA7,
+        items: [
+          { name: "Esfera de Chocolate Valrhona 70%", price: "$36.000" },
+          { name: "Milhojas Caramelizado de Vainilla", price: "$32.000" },
+          { name: "Tarta Tatin tibia con Helado", price: "$34.000" }
+        ]
+      },
+      {
+        badge: "PLATO V · COCTELERÍA & BAR DE AUTOR",
+        title: "Cristalería IOR 1.52 & Botánicos",
+        sub: "Refracción física en copa con infusión de frutos rojos y pistacho.",
+        rimColor: 0xE82A51,
+        foodColor: 0xD95B26,
+        accentColor: 0xFF5777,
+        items: [
+          { name: "Negroni Ahumado en Roble", price: "$38.000" },
+          { name: "Spritz Botánico de Rosas & Lichi", price: "$35.000" },
+          { name: "Mocktail Esmeralda de Matcha & Yuzu", price: "$28.000" }
+        ]
+      }
+    ];
+
+    const STAGE_PHASES = [
+      { maxT: 2.0, kicker: "✨ FASE 1 (00–02s) · PORTADA 3D & SALÓN DE MESAS", headline: "One app\nfor all orders" },
+      { maxT: 4.0, kicker: "🍽️ FASE 2 (02–04s) · VISOR 3D PBR CON PORTAL DOM", headline: "5 Platos 3D\nen Tiempo Real" },
+      { maxT: 6.0, kicker: "🧾 FASE 3 (04–06s) · TOMA DE PEDIDO POS (RF-06 a RF-09)", headline: "Comandas\nal Instante" },
+      { maxT: 8.0, kicker: "👨‍🍳 FASE 4 (06–08s) · TABLERO DE COCINA KDS (RF-10 y RF-11)", headline: "Sincronía\nSalón y Cocina" },
+      { maxT: 10.1, kicker: "🔐 FASE 5 (08–10s) · ADMIN RBAC (RF-14) & GIT QA", headline: "Arquitectura\nMicroservicios" }
+    ];
+
+    let activePlateIndex = 0;
+    let orderCount = 3;
+    const kdsStates = ["Pendiente", "En preparación", "Listo", "Entregado"];
+    let kdsIdx = 1;
+
+    const dishListEl = document.getElementById('dishList');
+    const cardBadgeEl = document.getElementById('cardBadge');
+    const cardTitleEl = document.getElementById('cardTitle');
+    const cardSubEl = document.getElementById('cardSub');
+    const orderCountBadge = document.getElementById('orderCountBadge');
+    const kdsStatusText = document.getElementById('kdsStatusText');
+    const plateBtns = document.querySelectorAll('.plate-Btn');
+    const phasePills = document.querySelectorAll('.phase-pill');
+
+    function renderPlateCard(idx) {
+      activePlateIndex = idx;
+      const data = PLATES_DATA[idx];
+      cardBadgeEl.textContent = data.badge;
+      cardTitleEl.textContent = data.title;
+      cardSubEl.textContent = data.sub;
+      dishListEl.innerHTML = '';
+      data.items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'dish-item';
+        row.innerHTML = `<span>${item.name} · <strong>${item.price}</strong></span><button>+ Agregar</button>`;
+        row.querySelector('button').addEventListener('click', () => {
+          orderCount++;
+          orderCountBadge.textContent = orderCount;
+        });
+        dishListEl.appendChild(row);
+      });
+      plateBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    }
+
+    renderPlateCard(0);
+
+    plateBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.plate);
+        userSelectedPlate = true;
+        renderPlateCard(idx);
+      });
+    });
+
+    document.getElementById('btnAddQuickOrder').addEventListener('click', () => {
+      orderCount++;
+      orderCountBadge.textContent = orderCount;
+    });
+
+    document.getElementById('btnInspectPlate').addEventListener('click', () => {
+      userSelectedPlate = true;
+      renderPlateCard((activePlateIndex + 1) % PLATES_DATA.length);
+    });
+
+    document.getElementById('btnAdvanceKds').addEventListener('click', () => {
+      kdsIdx = (kdsIdx + 1) % kdsStates.length;
+      kdsStatusText.innerHTML = `Estado KDS (Mesa 04): <strong>${kdsStates[kdsIdx]}</strong>`;
+    });
+
+    // Three.js Interactive 5-Plate Cascade Setup
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, 1280 / 720, 0.1, 100);
+    camera.position.set(0, 0.4, 9.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    container.appendChild(renderer.domElement);
+
+    const ambLight = new THREE.AmbientLight(0xffffff, 1.3);
+    scene.add(ambLight);
+    const keyLight = new THREE.DirectionalLight(0xfff4ec, 2.6);
+    keyLight.position.set(5, 8, 7);
+    scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0xff8c66, 1.8);
+    rimLight.position.set(-6, -4, 4);
+    scene.add(rimLight);
+
+    const cascadeGroup = new THREE.Group();
+    scene.add(cascadeGroup);
+
+    const plateMeshes = [];
+    const porcelainMat = new THREE.MeshPhysicalMaterial({
+      color: 0xFFFBF8,
+      roughness: 0.12,
+      metalness: 0.02,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.08
+    });
+
+    PLATES_DATA.forEach((p, idx) => {
+      const pGroup = new THREE.Group();
+      const baseX = -0.35 + idx * 0.82;
+      const baseY = -1.65 + idx * 0.82;
+      const baseZ = (4 - idx) * 0.28;
+      pGroup.position.set(baseX, baseY, baseZ);
+      pGroup.rotation.set(0.58, -0.38, -0.32);
+      pGroup.userData = { index: idx, baseX, baseY, baseZ };
+
+      // Ceramic base plate
+      const plateGeo = new THREE.CylinderGeometry(1.12, 0.78, 0.14, 48);
+      const plateMesh = new THREE.Mesh(plateGeo, porcelainMat);
+      pGroup.add(plateMesh);
+
+      // Colored rim torus
+      const rimGeo = new THREE.TorusGeometry(1.08, 0.045, 20, 64);
+      rimGeo.rotateX(Math.PI / 2);
+      const rimMat = new THREE.MeshStandardMaterial({ color: p.rimColor, roughness: 0.25, metalness: 0.2 });
+      const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+      rimMesh.position.y = 0.07;
+      pGroup.add(rimMesh);
+
+      // Main culinary center dome / medallion
+      const foodGeo = new THREE.CylinderGeometry(0.56, 0.62, 0.28, 40);
+      const foodMat = new THREE.MeshPhysicalMaterial({
+        color: p.foodColor,
+        roughness: 0.22,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.18
+      });
+      const foodMesh = new THREE.Mesh(foodGeo, foodMat);
+      foodMesh.position.y = 0.18;
+      pGroup.add(foodMesh);
+
+      // Culinary garnish sphere
+      const garnishGeo = new THREE.SphereGeometry(0.22, 32, 32);
+      const garnishMat = new THREE.MeshPhysicalMaterial({
+        color: p.accentColor,
+        roughness: 0.15,
+        clearcoat: 0.9
+      });
+      const garnishMesh = new THREE.Mesh(garnishGeo, garnishMat);
+      garnishMesh.position.set(0.28, 0.34, 0.18);
+      pGroup.add(garnishMesh);
+
+      cascadeGroup.add(pGroup);
+      plateMeshes.push(pGroup);
+    });
+
+    // Pointer drag & raycast click on 3D plates
+    let isDragging = false;
+    let prevX = 0, prevY = 0;
+    let dragRotY = 0, dragRotX = 0;
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    container.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(cascadeGroup.children, true);
+      if (hits.length > 0) {
+        let obj = hits[0].object;
+        while (obj.parent && obj.parent !== cascadeGroup) obj = obj.parent;
+        if (obj.userData && typeof obj.userData.index === 'number') {
+          userSelectedPlate = true;
+          renderPlateCard(obj.userData.index);
+        }
+      }
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      dragRotY += (e.clientX - prevX) * 0.007;
+      dragRotX += (e.clientY - prevY) * 0.005;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    });
+
+    window.addEventListener('pointerup', () => { isDragging = false; });
+
+    // 10-Second Interactive Timeline Engine
+    let isPlaying = true;
+    let timelineSec = 0;
+    let lastFrameTime = performance.now();
+    let userSelectedPlate = false;
+
+    const scrubber = document.getElementById('timelineScrubber');
+    const timeCurrentEl = document.getElementById('timeCurrent');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const stageKicker = document.getElementById('stageKicker');
+    const stageHeadline = document.getElementById('stageHeadline');
+
+    btnPlayPause.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      btnPlayPause.textContent = isPlaying ? '❚❚' : '▶';
+    });
+
+    scrubber.addEventListener('input', () => {
+      timelineSec = parseFloat(scrubber.value);
+      userSelectedPlate = false;
+      updateTimelineUI(timelineSec);
+    });
+
+    phasePills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        timelineSec = parseFloat(pill.dataset.time);
+        scrubber.value = timelineSec;
+        userSelectedPlate = false;
+        updateTimelineUI(timelineSec);
+      });
+    });
+
+    function updateTimelineUI(t) {
+      timeCurrentEl.textContent = t.toFixed(1).padStart(4, '0');
+      scrubber.value = t;
+      const phaseIdx = Math.min(4, Math.floor(t / 2));
+      phasePills.forEach((p, i) => p.classList.toggle('active', i === phaseIdx));
+      stageKicker.textContent = STAGE_PHASES[phaseIdx].kicker;
+      stageHeadline.innerHTML = STAGE_PHASES[phaseIdx].headline.replace('\n', '<br>');
+      if (!userSelectedPlate && activePlateIndex !== phaseIdx) {
+        renderPlateCard(phaseIdx);
+      }
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+
+      if (isPlaying) {
+        timelineSec = (timelineSec + dt) % 10.0;
+        updateTimelineUI(timelineSec);
+      }
+
+      const progress = timelineSec / 10.0;
+      cascadeGroup.rotation.y = Math.sin(progress * Math.PI * 2) * 0.25 + dragRotY;
+      cascadeGroup.rotation.x = Math.cos(progress * Math.PI * 2) * 0.1 + dragRotX;
+
+      plateMeshes.forEach((mesh, idx) => {
+        const isFocused = idx === activePlateIndex;
+        const targetScale = isFocused ? 1.18 : 0.96;
+        mesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+        mesh.rotation.y = progress * Math.PI * 2 + idx * 0.6;
+        mesh.position.y = mesh.userData.baseY + Math.sin(progress * Math.PI * 4 + idx) * 0.12;
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(animate);
+
+    // Copy HTML for Stitch (code.to.design) button
+    document.getElementById('btnCopyStitch').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(document.documentElement.outerHTML);
+      const btn = document.getElementById('btnCopyStitch');
+      btn.textContent = '✓ HTML Copiado para Stitch / Figma';
+      setTimeout(() => { btn.textContent = 'Copiar HTML para Stitch (code.to.design)'; }, 2500);
+    });
+  </script>
+</body>
+</html>

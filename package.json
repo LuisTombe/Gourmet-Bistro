@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
@@ -33,7 +32,6 @@
     "mysql2": "^3.24.6",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "three": "^0.187.0",
     "vite": "^8.3.0"
   },
   "devDependencies": {
