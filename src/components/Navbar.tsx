@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
-import { Food3DModal } from './3d/Food3DModal.tsx';
+import { FoodDetailModal } from './showcase/FoodDetailModal.tsx';
 import { OptimizedImage } from './ui/OptimizedImage.tsx';
 import {
   UtensilsCrossed,
@@ -19,6 +19,7 @@ import {
   Sliders,
   Settings,
   GitBranch,
+  Play,
 } from 'lucide-react';
 
 export const Navbar: React.FC = React.memo(() => {
@@ -202,15 +203,15 @@ export const Navbar: React.FC = React.memo(() => {
             )}
           </nav>
 
-          {/* Right: Quiet Secondary 3D Trigger + Profile Pill */}
+          {/* Right: Platos Menu Trigger + Profile Pill */}
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setIs3DModalOpen(true)}
               className="px-4 py-2 rounded-full bg-[#fdedea] hover:bg-[#f73b20] text-[#f73b20] hover:text-white border border-[#f73b20]/20 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Explorar platos gourmet en 3D interactivo"
+              title="Explorar platos gourmet del menú"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Platos 3D</span>
+              <span className="hidden sm:inline">Platos Menú</span>
             </button>
 
             <div className="relative" ref={dropdownRef}>
@@ -439,7 +440,7 @@ export const Navbar: React.FC = React.memo(() => {
 
       </header>
 
-      <Food3DModal isOpen={is3DModalOpen} onClose={() => setIs3DModalOpen(false)} />
+      <FoodDetailModal isOpen={is3DModalOpen} onClose={() => setIs3DModalOpen(false)} />
     </>
   );
 });

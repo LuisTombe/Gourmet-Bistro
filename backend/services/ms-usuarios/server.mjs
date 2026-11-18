@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
@@ -12,6 +14,8 @@ import {
   asyncRoute,
   apiError,
   internalOnly,
+  internalFetch,
+  baseUrl,
   otelTraceMiddleware,
   compressionAndCacheMiddleware,
   getServiceMetrics,
@@ -20,6 +24,10 @@ import {
   cacheInvalidatePrefix,
   enqueueJob,
 } from '../shared/infra.mjs';
+
+const execFileAsync = promisify(execFile);
+const catalogUrl = () => baseUrl('CATALOG_URL', 'http://127.0.0.1:4002');
+const ordersUrl = () => baseUrl('ORDERS_URL', 'http://127.0.0.1:4003');
 
 const db = poolFor('usuarios');
 const app = express();
@@ -305,6 +313,204 @@ app.patch(
     } finally {
       conn.release();
     }
+  })
+);
+
+let snapshotsTableReady = false;
+async function ensureSnapshotsTable() {
+  if (snapshotsTableReady) return;
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS system_snapshots (
+      id_snapshot VARCHAR(64) PRIMARY KEY,
+      version_tag VARCHAR(64) NOT NULL,
+      branch VARCHAR(64) NOT NULL,
+      commit_hash VARCHAR(64) NOT NULL,
+      autor_id INT NOT NULL,
+      autor_nombre VARCHAR(50) NOT NULL,
+      autor_rol VARCHAR(30) NOT NULL,
+      descripcion VARCHAR(255) NOT NULL,
+      tipo ENUM('git_release','audit_snapshot','recovery_point') NOT NULL DEFAULT 'recovery_point',
+      estado_json LONGTEXT NOT NULL,
+      creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX ix_snapshots_creado (creado_en DESC)
+    ) ENGINE=InnoDB
+  `);
+  snapshotsTableReady = true;
+}
+
+async function readGitInfo() {
+  try {
+    const [{ stdout: branchOut }, { stdout: hashOut }, { stdout: logOut }] = await Promise.all([
+      execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD']),
+      execFileAsync('git', ['rev-parse', '--short', 'HEAD']),
+      execFileAsync('git', ['log', '-n', '10', '--pretty=format:%h|%an|%aI|%s']),
+    ]);
+    const commits = logOut
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => {
+        const [hash, author, date, ...msg] = line.split('|');
+        return { hash, author, date, message: msg.join('|') };
+      });
+    return {
+      branch: branchOut.trim() || 'local',
+      headHash: hashOut.trim() || 'local',
+      commits,
+    };
+  } catch {
+    return { branch: 'local', headHash: 'local', commits: [] };
+  }
+}
+
+const snapshotCreateSchema = z
+  .object({
+    descripcion: z.string().trim().min(1).max(255),
+    version_tag: z.string().trim().min(1).max(64).optional(),
+    tipo: z.enum(['git_release', 'audit_snapshot', 'recovery_point']).optional(),
+  })
+  .strict();
+
+app.get(
+  '/api/versionamiento/git',
+  guard('administrador'),
+  asyncRoute(async (_req, res) => {
+    const info = await readGitInfo();
+    res.json(info);
+  })
+);
+
+app.get(
+  '/api/snapshots',
+  guard('administrador'),
+  asyncRoute(async (_req, res) => {
+    await ensureSnapshotsTable();
+    const [rows] = await db.query(
+      'SELECT id_snapshot, version_tag, branch, commit_hash, autor_id, autor_nombre, autor_rol, descripcion, tipo, creado_en FROM system_snapshots ORDER BY creado_en DESC LIMIT 50'
+    );
+    res.json({
+      snapshots: rows.map((r) => ({
+        id: r.id_snapshot,
+        versionTag: r.version_tag,
+        branch: r.branch,
+        commitHash: r.commit_hash,
+        author: r.autor_nombre,
+        authorRole: r.autor_rol,
+        timestamp: r.creado_en instanceof Date ? r.creado_en.toISOString() : String(r.creado_en),
+        description: r.descripcion,
+        type: r.tipo,
+      })),
+    });
+  })
+);
+
+app.post(
+  '/api/snapshots',
+  guard('administrador'),
+  asyncRoute(async (req, res) => {
+    await ensureSnapshotsTable();
+    const input = snapshotCreateSchema.parse(req.body);
+    const [gitInfo, [usuarios], catalogData, ordersData] = await Promise.all([
+      readGitInfo(),
+      db.query('SELECT id_usuario, nombre_usuario, rol, activo FROM usuarios ORDER BY id_usuario ASC'),
+      internalFetch(`${catalogUrl()}/internal/catalog/export`),
+      internalFetch(`${ordersUrl()}/internal/pedidos/export`),
+    ]);
+
+    const [[countRow]] = await db.query('SELECT COUNT(*) AS n FROM system_snapshots');
+    const idSnapshot = `snap-${Date.now()}`;
+    const versionTag = input.version_tag || `v1.${Number(countRow.n) + 1}.0-${gitInfo.branch}`;
+    const tipo = input.tipo || 'recovery_point';
+
+    const stateBackup = {
+      usuarios: usuarios.map(publicUser),
+      productos: catalogData.productos,
+      mesas: catalogData.mesas,
+      pedidos: ordersData.pedidos,
+      detalle_pedido: ordersData.detalle_pedido,
+    };
+
+    await db.execute(
+      'INSERT INTO system_snapshots(id_snapshot, version_tag, branch, commit_hash, autor_id, autor_nombre, autor_rol, descripcion, tipo, estado_json) VALUES(?,?,?,?,?,?,?,?,?,?)',
+      [
+        idSnapshot,
+        versionTag,
+        gitInfo.branch,
+        gitInfo.headHash,
+        req.actor.id_usuario,
+        req.actor.nombre_usuario,
+        req.actor.rol,
+        input.descripcion,
+        tipo,
+        JSON.stringify(stateBackup),
+      ]
+    );
+
+    res.status(201).json({
+      snapshot: {
+        id: idSnapshot,
+        versionTag,
+        branch: gitInfo.branch,
+        commitHash: gitInfo.headHash,
+        author: req.actor.nombre_usuario,
+        authorRole: req.actor.rol,
+        timestamp: new Date().toISOString(),
+        description: input.descripcion,
+        type: tipo,
+      },
+    });
+  })
+);
+
+app.post(
+  '/api/snapshots/:id/rollback',
+  guard('administrador'),
+  asyncRoute(async (req, res) => {
+    await ensureSnapshotsTable();
+    const snapId = z.string().trim().min(1).max(64).parse(req.params.id);
+    const [[row]] = await db.execute(
+      'SELECT id_snapshot, version_tag, estado_json FROM system_snapshots WHERE id_snapshot=? LIMIT 1',
+      [snapId]
+    );
+    if (!row) return res.status(404).json({ error: 'Punto de restauración no encontrado' });
+
+    const state = JSON.parse(row.estado_json);
+
+    // Restaurar catálogo y pedidos en sus respectivos microservicios (orden FK respetado internamente)
+    await Promise.all([
+      internalFetch(`${catalogUrl()}/internal/catalog/restore`, {
+        method: 'POST',
+        body: { productos: state.productos || [], mesas: state.mesas || [] },
+      }),
+      internalFetch(`${ordersUrl()}/internal/pedidos/restore`, {
+        method: 'POST',
+        body: { pedidos: state.pedidos || [], detalle_pedido: state.detalle_pedido || [] },
+      }),
+    ]);
+
+    // Restaurar roles/estado de usuarios existentes preservando contraseñas y la sesión actual del admin
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      for (const u of state.usuarios || []) {
+        const activo = u.id_usuario === req.actor.id_usuario ? 1 : u.activo ? 1 : 0;
+        const rol = u.id_usuario === req.actor.id_usuario ? req.actor.rol : u.rol;
+        await conn.execute('UPDATE usuarios SET nombre_usuario=?, rol=?, activo=? WHERE id_usuario=?', [
+          u.nombre_usuario,
+          rol,
+          activo,
+          u.id_usuario,
+        ]);
+      }
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+
+    cacheInvalidatePrefix('users:');
+    res.json({ ok: true, versionTag: row.version_tag, id: row.id_snapshot });
   })
 );
 

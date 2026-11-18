@@ -23,7 +23,7 @@ const app = express();
 app.disable('x-powered-by');
 app.use(otelTraceMiddleware('ms-catalogo'));
 app.use(compressionAndCacheMiddleware);
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: '2mb' }));
 
 const products = z
   .object({
@@ -85,6 +85,82 @@ app.post(
       return res.status(422).json({ error: 'Producto inexistente o no disponible' });
     }
     res.json({ mesa, productos: rows.map(repoProduct) });
+  })
+);
+
+app.get(
+  '/internal/catalog/export',
+  internalOnly,
+  asyncRoute(async (_req, res) => {
+    const [[productos], [mesas]] = await Promise.all([
+      db.query('SELECT id_producto, nombre, descripcion, precio, disponible FROM productos ORDER BY id_producto ASC'),
+      db.query('SELECT id_mesa, numero_mesa FROM mesas ORDER BY id_mesa ASC'),
+    ]);
+    res.json({ productos: productos.map(repoProduct), mesas });
+  })
+);
+
+app.post(
+  '/internal/catalog/restore',
+  internalOnly,
+  asyncRoute(async (req, res) => {
+    const payload = z
+      .object({
+        productos: z.array(
+          z.object({
+            id_producto: z.number().int().positive(),
+            nombre: z.string().trim().min(1).max(100),
+            descripcion: z.string().max(255).nullable().optional(),
+            precio: z.number().finite().positive(),
+            disponible: z.boolean(),
+          })
+        ),
+        mesas: z.array(
+          z.object({
+            id_mesa: z.number().int().positive(),
+            numero_mesa: z.number().int().positive(),
+          })
+        ),
+      })
+      .parse(req.body);
+
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query('DELETE FROM productos');
+      await conn.query('DELETE FROM mesas');
+
+      if (payload.productos.length > 0) {
+        const placeholders = payload.productos.map(() => '(?,?,?,?,?)').join(',');
+        const values = [];
+        for (const p of payload.productos) {
+          values.push(p.id_producto, p.nombre, p.descripcion ?? null, p.precio, p.disponible ? 1 : 0);
+        }
+        await conn.query(
+          `INSERT INTO productos(id_producto, nombre, descripcion, precio, disponible) VALUES ${placeholders}`,
+          values
+        );
+      }
+
+      if (payload.mesas.length > 0) {
+        const placeholders = payload.mesas.map(() => '(?,?)').join(',');
+        const values = [];
+        for (const m of payload.mesas) {
+          values.push(m.id_mesa, m.numero_mesa);
+        }
+        await conn.query(`INSERT INTO mesas(id_mesa, numero_mesa) VALUES ${placeholders}`, values);
+      }
+
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+
+    cacheInvalidatePrefix('catalog:');
+    res.json({ ok: true, restored: { productos: payload.productos.length, mesas: payload.mesas.length } });
   })
 );
 

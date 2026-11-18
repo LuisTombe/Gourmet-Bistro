@@ -5,8 +5,9 @@ import { TableCard } from '../components/TableCard.tsx';
 import { StatusBadge } from '../components/ui/StatusBadge.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { OptimizedImage } from '../components/ui/OptimizedImage.tsx';
-import { FoodPlate3D, PLATES_3D_CATALOG, Plate3DMeta } from '../components/3d/FoodPlate3D.tsx';
-import { Food3DModal } from '../components/3d/Food3DModal.tsx';
+import { FoodPlateShowcase } from '../components/showcase/FoodPlateShowcase.tsx';
+import { FoodDetailModal } from '../components/showcase/FoodDetailModal.tsx';
+import { PLATES_CATALOG, PlateMeta } from '../data/platesCatalog.ts';
 import {
   LayoutGrid,
   PlusCircle,
@@ -79,7 +80,7 @@ export const TablesFloorView: React.FC = () => {
     setInspectedOrderId(orderId);
   }, []);
 
-  const handlePlate3DClick = useCallback((idx: number, _plate: Plate3DMeta) => {
+  const handlePlate3DClick = useCallback((idx: number, _plate: PlateMeta) => {
     setSelectedPlateIdx(idx);
     setIs3DModalOpen(true);
   }, []);
@@ -98,7 +99,7 @@ export const TablesFloorView: React.FC = () => {
     [draftCart]
   );
 
-  const activePlate = PLATES_3D_CATALOG[selectedPlateIdx] || PLATES_3D_CATALOG[0];
+  const activePlate = PLATES_CATALOG[selectedPlateIdx] || PLATES_CATALOG[0];
   const activePlateProducts = useMemo(
     () => products.filter((p) => p.category === activePlate.category),
     [products, activePlate.category]
@@ -118,14 +119,13 @@ export const TablesFloorView: React.FC = () => {
         }}
         className="relative w-full min-h-[580px] lg:min-h-[650px] rounded-[28px] overflow-hidden flex flex-col justify-between p-7 sm:p-10 lg:p-12 select-none"
       >
-        {/* Background Full-Bleed 3D Cascading Food Plates Canvas */}
+        {/* Background 2D Food Showcase */}
         <div className="absolute inset-0 z-10">
-          <FoodPlate3D
+          <FoodPlateShowcase
             variant="hero"
             activeDishIndex={selectedPlateIdx}
             onDishChange={(idx) => setSelectedPlateIdx(idx)}
             onPlateClick={handlePlate3DClick}
-            showControlsPill={false}
             className="w-full h-full"
           />
         </div>
@@ -134,7 +134,7 @@ export const TablesFloorView: React.FC = () => {
         <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 pt-1 pointer-events-none">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-[0.02em]">
             <MousePointerClick className="w-3.5 h-3.5" />
-            <span>Haz clic en cualquier plato 3D para ver sus productos</span>
+            <span>Haz clic en cualquier plato para ver sus productos</span>
           </span>
 
           <div className="flex items-center gap-2.5 pointer-events-auto">
@@ -149,7 +149,7 @@ export const TablesFloorView: React.FC = () => {
         </div>
 
         {/* Middle Bottom Editorial Typography & Right Action Block */}
-        <div className="relative z-20 mt-auto pt-40 sm:pt-48 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-none">
+        <div className="relative z-20 mt-auto pt-52 sm:pt-60 lg:pt-64 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-none">
           <div className="lg:col-span-7">
             <h1
               style={{
@@ -167,7 +167,7 @@ export const TablesFloorView: React.FC = () => {
 
           <div className="lg:col-span-5 lg:pl-8 space-y-5 pointer-events-auto">
             <p className="text-white/95 text-base sm:text-lg font-normal leading-[1.35] max-w-sm">
-              Un solo sistema para tus pedidos, mesas y alta cocina en 3D.
+              Un solo sistema para tus pedidos, mesas y platos de autor.
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -176,7 +176,7 @@ export const TablesFloorView: React.FC = () => {
                 className="px-5 py-3 rounded-xl bg-white text-[#f73b20] hover:bg-[#fdedea] text-xs font-medium flex items-center gap-2 transition-all shadow-xs cursor-pointer"
               >
                 <UtensilsCrossed className="w-4 h-4" />
-                <span>Ver Productos del Plato 3D</span>
+                <span>Ver Productos del Plato</span>
               </button>
 
               <button
@@ -207,7 +207,7 @@ export const TablesFloorView: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-1 p-1.5 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto">
-            {PLATES_3D_CATALOG.map((plate, idx) => (
+            {PLATES_CATALOG.map((plate, idx) => (
               <button
                 key={plate.id}
                 onClick={() => {
@@ -242,7 +242,7 @@ export const TablesFloorView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#e7dcdb] pb-6">
           <div>
             <span className="inline-block text-xs uppercase tracking-[0.05em] text-[#f73b20] font-medium mb-2">
-              Productos en Escena 3D
+              Productos del Plato Seleccionado
             </span>
             <h2 className="text-3xl sm:text-4xl font-medium text-[#360802] tracking-tight leading-tight">
               {activePlate.name}
@@ -253,7 +253,7 @@ export const TablesFloorView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            {PLATES_3D_CATALOG.map((plate, idx) => (
+            {PLATES_CATALOG.map((plate, idx) => (
               <button
                 key={plate.id}
                 onClick={() => setSelectedPlateIdx(idx)}
@@ -572,8 +572,8 @@ export const TablesFloorView: React.FC = () => {
         </div>
       )}
 
-      {/* Interactive 3D Plate Products & Direct Order Modal */}
-      <Food3DModal
+      {/* Modal de Detalle de Productos y Comanda */}
+      <FoodDetailModal
         isOpen={is3DModalOpen}
         onClose={() => setIs3DModalOpen(false)}
         initialDishIndex={selectedPlateIdx}

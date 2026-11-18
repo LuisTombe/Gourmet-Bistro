@@ -234,11 +234,13 @@ export function clearSessionCookie() {
 }
 export function apiError(err, req, res, next) {
   if (res.headersSent) return next(err);
-  if (err instanceof ZodError)
+  if (err instanceof ZodError) {
+    console.error('[ZodError]', err.issues);
     return res.status(422).json({
       error: 'Datos inválidos',
       issues: err.issues.map((x) => ({ field: x.path.join('.'), message: x.message })),
     });
+  }
   if (err?.code === 'ER_DUP_ENTRY')
     return res.status(409).json({ error: 'Registro duplicado o mesa ocupada' });
   if (err?.code === 'ER_CHECK_CONSTRAINT_VIOLATED')

@@ -205,8 +205,16 @@ interface RestaurantContextType {
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   refreshData: () => Promise<void>;
   snapshots: SystemVersionSnapshot[];
-  createVersionSnapshot: (description: string, versionTag?: string) => { success: boolean; snapshot?: SystemVersionSnapshot };
-  rollbackToSnapshot: (snapshotId: string) => { success: boolean; message: string };
+  gitInfo: {
+    branch: string;
+    headHash: string;
+    commits: { hash: string; author: string; date: string; message: string }[];
+  };
+  createVersionSnapshot: (
+    description: string,
+    versionTag?: string
+  ) => Promise<{ success: boolean; snapshot?: SystemVersionSnapshot; error?: string }>;
+  rollbackToSnapshot: (snapshotId: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const INITIAL_SEEDED_PRODUCTS: Product[] = [
@@ -262,6 +270,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [draftCart, setDraftCart] = useState<DraftCartItem[]>([]);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>([]);
+  const [gitInfo, setGitInfo] = useState<{
+    branch: string;
+    headHash: string;
+    commits: { hash: string; author: string; date: string; message: string }[];
+  }>({ branch: 'local', headHash: 'local', commits: [] });
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -335,6 +348,13 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         api.pedidos.listar(),
       ]);
 
+      if (prodRes.status === 'rejected' || pedidosRes.status === 'rejected') {
+        const err = prodRes.status === 'rejected' ? prodRes.reason : (pedidosRes as PromiseRejectedResult).reason;
+        if (!(err instanceof ApiError && err.status === 401)) {
+          showToast('Sin conexión con los microservicios o MySQL. Verifica que XAMPP MySQL esté activo.', 'error');
+        }
+      }
+
       if (prodRes.status === 'fulfilled' && prodRes.value.productos) {
         setProducts(
           prodRes.value.productos.map((p) => {
@@ -392,9 +412,13 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         );
       }
 
-      // Si el usuario es administrador, consultar también la lista de empleados
+      // Si el usuario es administrador, consultar empleados, snapshots y estado Git real
       if (currentUser?.role === 'administrador') {
-        const usersRes = await api.usuarios.listar().catch(() => null);
+        const [usersRes, snapsRes, gitRes] = await Promise.all([
+          api.usuarios.listar().catch(() => null),
+          api.versionamiento.listarSnapshots().catch(() => null),
+          api.versionamiento.git().catch(() => null),
+        ]);
         if (usersRes?.usuarios) {
           setUsers(
             usersRes.usuarios.map((u) => ({
@@ -407,11 +431,17 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }))
           );
         }
+        if (snapsRes?.snapshots) {
+          setSnapshots(snapsRes.snapshots);
+        }
+        if (gitRes) {
+          setGitInfo(gitRes);
+        }
       }
     } catch (err) {
       console.warn('Error refrescando datos de microservicios:', err);
     }
-  }, [currentUser?.role]);
+  }, [currentUser?.role, showToast]);
 
   // 2. Validación de sesión inicial mediante cookie HttpOnly contra ms-usuarios
   useEffect(() => {
@@ -455,25 +485,28 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       api.pedidos.listar().then((res) => {
         if (res.pedidos) {
           setOrders(
-            res.pedidos.map((o) => ({
-              id: o.id_pedido,
-              tableId: o.id_mesa,
-              tableNumber: o.id_mesa,
-              userId: o.id_usuario,
-              waiterName: `Usuario #${o.id_usuario}`,
-              createdAt: o.fecha_pedido,
-              updatedAt: o.fecha_pedido,
-              status: o.estado as OrderStatus,
-              total: Number(o.total),
-              items: (o.detalles || []).map((d) => ({
-                id: d.id_detalle,
-                productId: d.id_producto,
-                productName: d.nombre_producto,
-                quantity: d.cantidad,
-                unitPrice: Number(d.precio_unitario),
-                subtotal: Number(d.subtotal),
-              })),
-            }))
+            res.pedidos.map((o) => {
+              const matchedTable = tables.find((t) => t.id === o.id_mesa);
+              return {
+                id: o.id_pedido,
+                tableId: o.id_mesa,
+                tableNumber: matchedTable ? matchedTable.tableNumber : o.id_mesa,
+                userId: o.id_usuario,
+                waiterName: `Usuario #${o.id_usuario}`,
+                createdAt: o.fecha_pedido,
+                updatedAt: o.fecha_pedido,
+                status: o.estado as OrderStatus,
+                total: Number(o.total),
+                items: (o.detalles || []).map((d) => ({
+                  id: d.id_detalle,
+                  productId: d.id_producto,
+                  productName: d.nombre_producto,
+                  quantity: d.cantidad,
+                  unitPrice: Number(d.precio_unitario),
+                  subtotal: Number(d.subtotal),
+                })),
+              };
+            })
           );
         }
       }).catch(() => {});
@@ -497,7 +530,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setCurrentUser(userObj);
       setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
       showToast(`Bienvenido al sistema, ${user.nombre_usuario}`, 'success');
-      refreshData();
       return { success: true };
     } catch (err: any) {
       const msg = err instanceof ApiError ? err.message : 'Error al conectar con el servidor de autenticación';
@@ -811,45 +843,31 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  // --- Versionamiento & Rollback (Fase 1 / Admin) ---
-  const createVersionSnapshot = (description: string, versionTag?: string) => {
-    const nextTag = versionTag || `v1.${snapshots.length + 1}.0-dev`;
-    const newSnapshot: SystemVersionSnapshot = {
-      id: `snap-${Date.now()}`,
-      versionTag: nextTag,
-      branch: 'Dev',
-      commitHash: Math.random().toString(16).substring(2, 9),
-      author: currentUser?.name || 'Administrador',
-      authorRole: currentUser?.role || 'administrador',
-      timestamp: new Date().toISOString(),
-      description: description || 'Punto de restauración del sistema',
-      type: 'recovery_point',
-      stateBackup: {
-        users: JSON.parse(JSON.stringify(users)),
-        products: JSON.parse(JSON.stringify(products)),
-        tables: JSON.parse(JSON.stringify(tables)),
-        orders: JSON.parse(JSON.stringify(orders)),
-      },
-    };
-    setSnapshots((prev) => [newSnapshot, ...prev]);
-    showToast(`Punto de versión "${newSnapshot.versionTag}" creado correctamente.`, 'success');
-    return { success: true, snapshot: newSnapshot };
+  // --- Versionamiento & Rollback (RF-20 / Admin persistente en MySQL) ---
+  const createVersionSnapshot = async (description: string, versionTag?: string) => {
+    try {
+      const res = await api.versionamiento.crearSnapshot(description, versionTag);
+      setSnapshots((prev) => [res.snapshot, ...prev]);
+      showToast(`Punto de versión "${res.snapshot.versionTag}" guardado en MySQL.`, 'success');
+      return { success: true, snapshot: res.snapshot };
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Error al guardar el snapshot';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const rollbackToSnapshot = (snapshotId: string) => {
-    const snap = snapshots.find((s) => s.id === snapshotId);
-    if (!snap) {
-      showToast('Punto de restauración no encontrado.', 'error');
-      return { success: false, message: 'Snapshot no encontrado' };
+  const rollbackToSnapshot = async (snapshotId: string) => {
+    try {
+      const res = await api.versionamiento.rollback(snapshotId);
+      await refreshData();
+      showToast(`Sistema revertido en MySQL a la versión ${res.versionTag}.`, 'success');
+      return { success: true, message: `Revertido a ${res.versionTag}` };
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Error al ejecutar rollback';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
     }
-    if (snap.stateBackup) {
-      setUsers(snap.stateBackup.users);
-      setProducts(snap.stateBackup.products);
-      setTables(snap.stateBackup.tables);
-      setOrders(snap.stateBackup.orders);
-    }
-    showToast(`Sistema revertido con éxito a la versión ${snap.versionTag}.`, 'success');
-    return { success: true, message: `Revertido a ${snap.versionTag}` };
   };
 
   return (
@@ -892,6 +910,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         showToast,
         refreshData,
         snapshots,
+        gitInfo,
         createVersionSnapshot,
         rollbackToSnapshot,
       }}

@@ -21,6 +21,7 @@ export const VersionControlAdminView: React.FC = () => {
   const {
     currentUser,
     snapshots,
+    gitInfo,
     createVersionSnapshot,
     rollbackToSnapshot,
     users,
@@ -33,6 +34,7 @@ export const VersionControlAdminView: React.FC = () => {
   const [newDescription, setNewDescription] = useState('');
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(null);
   const [isConfirmingRollback, setIsConfirmingRollback] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'git_release' | 'recovery_point'>('all');
 
   // Solo rol Administrador puede ver o interactuar con este módulo
@@ -50,16 +52,23 @@ export const VersionControlAdminView: React.FC = () => {
     );
   }
 
-  const handleCreateSnapshot = (e: React.FormEvent) => {
+  const handleCreateSnapshot = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDescription.trim()) return;
+    if (!newDescription.trim() || isSubmitting) return;
 
-    createVersionSnapshot(
-      newDescription.trim(),
-      newVersionTag.trim() || undefined
-    );
-    setNewVersionTag('');
-    setNewDescription('');
+    setIsSubmitting(true);
+    try {
+      const res = await createVersionSnapshot(
+        newDescription.trim(),
+        newVersionTag.trim() || undefined
+      );
+      if (res.success) {
+        setNewVersionTag('');
+        setNewDescription('');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleTriggerRollback = (id: string) => {
@@ -67,11 +76,15 @@ export const VersionControlAdminView: React.FC = () => {
     setIsConfirmingRollback(true);
   };
 
-  const executeRollback = () => {
-    if (selectedSnapshotId) {
-      rollbackToSnapshot(selectedSnapshotId);
+  const executeRollback = async () => {
+    if (!selectedSnapshotId || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await rollbackToSnapshot(selectedSnapshotId);
       setIsConfirmingRollback(false);
       setSelectedSnapshotId(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,12 +126,12 @@ export const VersionControlAdminView: React.FC = () => {
             <GitBranch className="w-4 h-4 text-emerald-400" />
             <span>Rama activa:</span>
             <span className="font-mono text-emerald-300 font-bold bg-slate-800 px-2 py-0.5 rounded">
-              Dev
+              {gitInfo.branch}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Sincronizado con origin/Dev</span>
+            <span>HEAD: {gitInfo.headHash}</span>
           </div>
         </div>
       </div>
@@ -231,10 +244,11 @@ export const VersionControlAdminView: React.FC = () => {
           <div className="md:col-span-2 flex items-end">
             <button
               type="submit"
-              className="w-full py-2.5 px-4 bg-[#f73b20] hover:bg-[#e02f17] text-white font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm min-h-[44px] cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full py-2.5 px-4 bg-[#f73b20] hover:bg-[#e02f17] disabled:opacity-60 text-white font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm min-h-[44px] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              Guardar Snapshot
+              {isSubmitting ? 'Guardando...' : 'Guardar Snapshot'}
             </button>
           </div>
         </form>
