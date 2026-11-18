@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { User, UserRole } from '../types/index.ts';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
 import {
   Users,
   Plus,
@@ -22,6 +23,7 @@ export const UsersAdminView: React.FC = () => {
 
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('mesero');
   const [active, setActive] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export const UsersAdminView: React.FC = () => {
     setEditingUser(null);
     setUsername('');
     setName('');
+    setPassword('');
     setRole('mesero');
     setActive(true);
     setFormError(null);
@@ -40,13 +43,14 @@ export const UsersAdminView: React.FC = () => {
     setEditingUser(u);
     setUsername(u.username);
     setName(u.name);
+    setPassword('');
     setRole(u.role);
     setActive(u.active);
     setFormError(null);
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -58,9 +62,13 @@ export const UsersAdminView: React.FC = () => {
       setFormError('El nombre completo es obligatorio.');
       return;
     }
+    if (!editingUser && password.trim().length < 8) {
+      setFormError('La contraseña es obligatoria y debe tener al menos 8 caracteres (RF-14).');
+      return;
+    }
 
     if (editingUser) {
-      const res = updateUser(editingUser.id, {
+      const res = await updateUser(editingUser.id, {
         username: username.trim().toLowerCase(),
         name: name.trim(),
         role,
@@ -69,9 +77,10 @@ export const UsersAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar usuario.');
     } else {
-      const res = addUser({
+      const res = await addUser({
         username: username.trim().toLowerCase(),
         name: name.trim(),
+        password: password.trim(),
         role,
         active,
         avatar:
@@ -87,34 +96,28 @@ export const UsersAdminView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Personal & Control de Acceso
-            </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {users.length} cuentas
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Gestione empleados, asigne roles autorizados y controle la activación de accesos.
-          </p>
-        </div>
-
-        <button
-          onClick={handleOpenAdd}
-          className="min-h-[44px] px-4 py-2.5 bg-[#EA580C] hover:bg-[#CC4900] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar Empleado
-        </button>
-      </div>
+      <PageHeader
+        title="Personal & Control de Acceso"
+        subtitle="Gestione empleados, asigne roles autorizados y controle la activación de accesos."
+        badge={`${users.length} cuentas`}
+        action={
+          <button
+            onClick={handleOpenAdd}
+            className="min-h-[44px] px-4 py-2.5 bg-[#f73b20] hover:bg-[#e02f17] active:scale-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Registrar Empleado
+          </button>
+        }
+      />
 
       {/* Users Table */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div
+        style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+        className="bg-white rounded-2xl border border-[#e7dcdb] overflow-hidden"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -252,7 +255,7 @@ export const UsersAdminView: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="ej. mesero3, chef2"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -266,10 +269,30 @@ export const UsersAdminView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ej. Andrés Gómez"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
+
+              {!editingUser && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Contraseña de Acceso (Mín. 8 caracteres) *
+                  </label>
+                  <div className="relative">
+                    <Key className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Mínimo 8 caracteres (se encripta con bcrypt)"
+                      minLength={8}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -278,7 +301,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 >
                   <option value="mesero">Mesero (Toma pedidos & entrega)</option>
                   <option value="cocinero">Cocinero (KDS cocina & preparación)</option>
@@ -293,7 +316,7 @@ export const UsersAdminView: React.FC = () => {
                 <select
                   value={active ? 'active' : 'inactive'}
                   onChange={(e) => setActive(e.target.value === 'active')}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 >
                   <option value="active">Activo (Puede iniciar sesión)</option>
                   <option value="inactive">Desactivado (Acceso revocado)</option>
@@ -310,7 +333,7 @@ export const UsersAdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EA580C] hover:bg-[#CC4900] text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#f73b20] hover:bg-[#e02f17] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
                 >
                   {editingUser ? 'Guardar Cambios' : 'Registrar Cuenta'}
                 </button>

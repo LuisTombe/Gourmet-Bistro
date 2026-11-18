@@ -1,18 +1,48 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { RestaurantProvider, useRestaurant } from './context/RestaurantContext.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { LoginView } from './components/LoginView.tsx';
 import { ToastContainer } from './components/ToastContainer.tsx';
-import { TablesFloorView } from './views/TablesFloorView.tsx';
-import { NewOrderView } from './views/NewOrderView.tsx';
-import { KitchenKDSView } from './views/KitchenKDSView.tsx';
-import { OrdersListView } from './views/OrdersListView.tsx';
-import { MenuAdminView } from './views/MenuAdminView.tsx';
-import { TablesAdminView } from './views/TablesAdminView.tsx';
-import { UsersAdminView } from './views/UsersAdminView.tsx';
+import { ViewSkeleton } from './components/ui/Skeleton.tsx';
+
+// Code-splitting por vista para minimizar el bundle inicial y acelerar FCP/LCP
+const TablesFloorView = lazy(() =>
+  import('./views/TablesFloorView.tsx').then((m) => ({ default: m.TablesFloorView }))
+);
+const NewOrderView = lazy(() =>
+  import('./views/NewOrderView.tsx').then((m) => ({ default: m.NewOrderView }))
+);
+const KitchenKDSView = lazy(() =>
+  import('./views/KitchenKDSView.tsx').then((m) => ({ default: m.KitchenKDSView }))
+);
+const OrdersListView = lazy(() =>
+  import('./views/OrdersListView.tsx').then((m) => ({ default: m.OrdersListView }))
+);
+const MenuAdminView = lazy(() =>
+  import('./views/MenuAdminView.tsx').then((m) => ({ default: m.MenuAdminView }))
+);
+const TablesAdminView = lazy(() =>
+  import('./views/TablesAdminView.tsx').then((m) => ({ default: m.TablesAdminView }))
+);
+const UsersAdminView = lazy(() =>
+  import('./views/UsersAdminView.tsx').then((m) => ({ default: m.UsersAdminView }))
+);
+const VersionControlAdminView = lazy(() =>
+  import('./views/VersionControlAdminView.tsx').then((m) => ({
+    default: m.VersionControlAdminView,
+  }))
+);
 
 const AppContent: React.FC = () => {
-  const { currentUser, activeView } = useRestaurant();
+  const { currentUser, isAuthLoading, activeView } = useRestaurant();
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#ffffff]">
+        <ViewSkeleton cards={8} />
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
@@ -39,16 +69,18 @@ const AppContent: React.FC = () => {
         return <TablesAdminView />;
       case 'usuarios':
         return <UsersAdminView />;
+      case 'versionamiento':
+        return <VersionControlAdminView />;
       default:
         return <TablesFloorView />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] text-[#131b2e] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#ffffff] text-[#360802] flex flex-col font-sans">
       <Navbar />
       <main className="flex-1">
-        {renderCurrentView()}
+        <Suspense fallback={<ViewSkeleton cards={8} />}>{renderCurrentView()}</Suspense>
       </main>
       <ToastContainer />
     </div>

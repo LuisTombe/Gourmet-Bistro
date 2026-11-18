@@ -325,3 +325,40 @@ export const INITIAL_ORDERS: Order[] = [
     total: 62000,
   },
 ];
+
+export const INITIAL_SNAPSHOTS: import('../types/index.ts').SystemVersionSnapshot[] = [
+  {
+    id: 'snap-001',
+    versionTag: 'v1.0.0-rc1',
+    branch: 'main',
+    commitHash: 'e95edec',
+    author: 'Luis Tombe',
+    authorRole: 'administrador',
+    timestamp: '2026-11-13T07:10:00.000Z',
+    description: 'Versión base funcional del prototipo interactivo (Mesas, KDS, Pedidos, Menú)',
+    type: 'git_release',
+  },
+  {
+    id: 'snap-002',
+    versionTag: 'v1.0.0-docs',
+    branch: 'main',
+    commitHash: 'affd3ec',
+    author: 'Luis Tombe',
+    authorRole: 'administrador',
+    timestamp: '2026-11-13T07:08:00.000Z',
+    description: 'Documentación técnica del sistema: SRS, PRD, TRD y User Flow',
+    type: 'git_release',
+  },
+  {
+    id: 'snap-003',
+    versionTag: 'v0.1.0-init',
+    branch: 'Dev',
+    commitHash: '01a744b',
+    author: 'Luis Tombe',
+    authorRole: 'administrador',
+    timestamp: '2026-11-13T07:05:00.000Z',
+    description: 'Initial commit: Configuración inicial del repositorio en rama Dev',
+    type: 'git_release',
+  },
+];
+

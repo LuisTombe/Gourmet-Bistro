@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Product, ProductCategory } from '../types/index.ts';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
+import { EmptyState } from '../components/ui/EmptyState.tsx';
+import { useDebounce } from '../hooks/useDebounce.ts';
+import { OptimizedImage } from '../components/ui/OptimizedImage.tsx';
 import {
   BookOpen,
   Plus,
@@ -49,18 +53,24 @@ export const MenuAdminView: React.FC = () => {
     'Bebidas & Bar',
   ];
 
-  const filtered = products.filter((p) => {
-    if (selectedCategory !== 'Todos' && p.category !== selectedCategory) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  const filtered = useMemo(
+    () =>
+      products.filter((p) => {
+        if (selectedCategory !== 'Todos' && p.category !== selectedCategory) return false;
+        if (debouncedSearch.trim()) {
+          const q = debouncedSearch.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q)
+          );
+        }
+        return true;
+      }),
+    [products, selectedCategory, debouncedSearch]
+  );
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
@@ -88,7 +98,7 @@ export const MenuAdminView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -102,7 +112,7 @@ export const MenuAdminView: React.FC = () => {
     }
 
     if (editingProduct) {
-      const res = updateProduct(editingProduct.id, {
+      const res = await updateProduct(editingProduct.id, {
         name: name.trim(),
         description: description.trim(),
         price: Number(price),
@@ -114,7 +124,7 @@ export const MenuAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar.');
     } else {
-      const res = addProduct({
+      const res = await addProduct({
         name: name.trim(),
         description: description.trim(),
         price: Number(price),
@@ -135,66 +145,63 @@ export const MenuAdminView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Administración de Menú & Catálogo
-            </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {products.length} platos
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Configure precios, disponibilidad por estación y platos gastronómicos vigentes.
-          </p>
-        </div>
-
-        <button
-          onClick={handleOpenAdd}
-          className="min-h-[44px] px-4 py-2.5 bg-[#EA580C] hover:bg-[#CC4900] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Nuevo Producto
-        </button>
-      </div>
+      <PageHeader
+        title="Administración de Menú & Catálogo"
+        subtitle="Configure precios, disponibilidad por estación y platos gastronómicos vigentes."
+        badge={`${products.length} platos`}
+        action={
+          <button
+            onClick={handleOpenAdd}
+            className="min-h-[44px] px-4 py-2.5 bg-[#f73b20] hover:bg-[#e02f17] active:scale-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Producto
+          </button>
+        }
+      />
 
       {/* Filter and Search */}
-      <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-[#E3E7EF] shadow-xs">
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
-                selectedCategory === cat
-                  ? 'bg-[#0F172A] text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? 'bg-[#f73b20] text-white shadow-xs'
+                    : 'bg-white border border-[#e7dcdb] text-[#74514b] hover:bg-[#fdedea] hover:text-[#360802]'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search */}
         <div className="relative min-w-[240px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#ababab] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por plato o ingrediente..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA580C]"
+            className="w-full pl-10 pr-4 py-2 bg-[#fdedea]/20 border border-[#e7dcdb] rounded-xl text-xs text-[#360802] placeholder-[#ababab] focus:outline-none focus:ring-2 focus:ring-[#f73b20]"
           />
         </div>
       </div>
 
       {/* Products Table */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div
+        style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+        className="bg-white rounded-2xl border border-[#e7dcdb] overflow-hidden"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -208,13 +215,26 @@ export const MenuAdminView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {filtered.map((prod) => (
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <EmptyState
+                      icon={<UtensilsCrossed className="w-7 h-7" />}
+                      title="No se encontraron productos"
+                      description="Pruebe cambiando el filtro de categoría o busque por otro término."
+                    />
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((prod) => (
                 <tr key={prod.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3.5 px-4 sm:px-6">
                     <div className="flex items-center gap-3">
-                      <img
+                      <OptimizedImage
                         src={prod.image}
                         alt={prod.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200"
                       />
                       <div>
@@ -280,7 +300,7 @@ export const MenuAdminView: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
@@ -316,7 +336,7 @@ export const MenuAdminView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej. Bife de Chorizo Madurado"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -330,7 +350,7 @@ export const MenuAdminView: React.FC = () => {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Ingredientes, términos o detalles para comensales..."
                   rows={2}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 />
               </div>
 
@@ -345,7 +365,7 @@ export const MenuAdminView: React.FC = () => {
                     onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="45000"
                     min="100"
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                     required
                   />
                 </div>
@@ -357,7 +377,7 @@ export const MenuAdminView: React.FC = () => {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as ProductCategory)}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   >
                     <option value="Entradas">Entradas</option>
                     <option value="Carnes & Grill">Carnes & Grill</option>
@@ -376,7 +396,7 @@ export const MenuAdminView: React.FC = () => {
                   <select
                     value={station}
                     onChange={(e) => setStation(e.target.value as any)}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   >
                     <option value="Cocina">Cocina General</option>
                     <option value="Parrilla">Parrilla / Grill</option>
@@ -392,7 +412,7 @@ export const MenuAdminView: React.FC = () => {
                   <select
                     value={available ? 'yes' : 'no'}
                     onChange={(e) => setAvailable(e.target.value === 'yes')}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   >
                     <option value="yes">Disponible para pedidos</option>
                     <option value="no">Agotado / No disponible</option>
@@ -409,7 +429,7 @@ export const MenuAdminView: React.FC = () => {
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                   placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 />
               </div>
 
@@ -423,7 +443,7 @@ export const MenuAdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EA580C] hover:bg-[#CC4900] text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#f73b20] hover:bg-[#e02f17] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
                 >
                   {editingProduct ? 'Actualizar Producto' : 'Guardar en Menú'}
                 </button>

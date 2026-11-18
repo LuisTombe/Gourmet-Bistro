@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { Table } from '../types/index.ts';
-import { StatusBadge } from '../components/StatusBadge.tsx';
+import { StatusBadge } from '../components/ui/StatusBadge.tsx';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
 import {
   UtensilsCrossed,
   Plus,
@@ -52,7 +53,7 @@ export const TablesAdminView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -66,7 +67,7 @@ export const TablesAdminView: React.FC = () => {
     }
 
     if (editingTable) {
-      const res = updateTable(editingTable.id, {
+      const res = await updateTable(editingTable.id, {
         tableNumber: Number(tableNumber),
         capacity: Number(capacity),
         area,
@@ -74,7 +75,7 @@ export const TablesAdminView: React.FC = () => {
       if (res.success) setModalOpen(false);
       else setFormError(res.error || 'Error al actualizar.');
     } else {
-      const res = addTable({
+      const res = await addTable({
         tableNumber: Number(tableNumber),
         capacity: Number(capacity),
         area,
@@ -85,34 +86,28 @@ export const TablesAdminView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Configuración de Mesas & Capacidad
-            </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {tables.length} mesas
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Defina la distribución física del restaurante por sectores y controle disponibilidad.
-          </p>
-        </div>
-
-        <button
-          onClick={handleOpenAdd}
-          className="min-h-[44px] px-4 py-2.5 bg-[#EA580C] hover:bg-[#CC4900] active:scale-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar Mesa
-        </button>
-      </div>
+      <PageHeader
+        title="Configuración de Mesas & Capacidad"
+        subtitle="Defina la distribución física del restaurante por sectores y controle disponibilidad."
+        badge={`${tables.length} mesas`}
+        action={
+          <button
+            onClick={handleOpenAdd}
+            className="min-h-[44px] px-4 py-2.5 bg-[#f73b20] hover:bg-[#e02f17] active:scale-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Registrar Mesa
+          </button>
+        }
+      />
 
       {/* Tables Table */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div
+        style={{ boxShadow: 'rgba(0, 0, 0, 0.05) 0px -4px 16px 0px' }}
+        className="bg-white rounded-2xl border border-[#e7dcdb] overflow-hidden"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -222,7 +217,7 @@ export const TablesAdminView: React.FC = () => {
                   onChange={(e) => setTableNumber(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="Ej. 1, 2, 3..."
                   min="1"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -238,7 +233,7 @@ export const TablesAdminView: React.FC = () => {
                   placeholder="Ej. 4"
                   min="1"
                   max="24"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                   required
                 />
               </div>
@@ -250,7 +245,7 @@ export const TablesAdminView: React.FC = () => {
                 <select
                   value={area}
                   onChange={(e) => setArea(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#EA580C]"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#f73b20]"
                 >
                   <option value="Salón Principal">Salón Principal</option>
                   <option value="Terraza Gourmet">Terraza Gourmet</option>
@@ -268,7 +263,7 @@ export const TablesAdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EA580C] hover:bg-[#CC4900] text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#f73b20] hover:bg-[#e02f17] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
                 >
                   {editingTable ? 'Actualizar Mesa' : 'Guardar Mesa'}
                 </button>

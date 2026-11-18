@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentación Ejecutiva — Gourmet Bistro (SRS IEEE 830, Arquitectura, Patrones, UML y Evolución)</title>
+  <style>
+    :root {
+      --bg: #140806;
+      --accent: #f73b20;
+      --card: #1f110e;
+      --text: #fff8f6;
+      --muted: #d5b8b2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      height: 58px;
+      background: rgba(31, 17, 14, 0.95);
+      border-bottom: 1px solid rgba(247, 59, 32, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    button, select {
+      background: #2c1814;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:hover, select:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      position: relative;
+    }
+    .slide-frame {
+      max-width: 100%;
+      max-height: calc(100vh - 115px);
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #fdf8f6;
+    }
+    .slide-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(20, 8, 6, 0.9);
+    }
+    .progress-bar {
+      position: fixed;
+      bottom: 36px;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      transition: width 0.2s ease;
+    }
+    @media print {
+      body { height: auto; overflow: visible; background: #fff; }
+      header, footer, .progress-bar { display: none; }
+      main { display: block; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="badge">Gourmet Bistro · SENA ADSO</span>
+      <span id="slideTitle">01. Portada Ejecutiva — Gourmet Bistro & SRS IEEE 830</span>
+    </div>
+    <div class="controls">
+      <select id="slideSelect" aria-label="Seleccionar diapositiva">
+        <option value="0">01. Portada Ejecutiva — Gourmet Bistro & SRS IEEE 830</option><option value="1">02. Planteamiento del Problema, Justificación y Alcance MVP</option><option value="2">03. Evolución del Proyecto (De la v1.0 al Cierre del Sprint v3.0)</option><option value="3">04. Lenguajes de Programación: Al Comienzo vs. Al Final del Sprint</option><option value="4">05. Arquitectura de Software: 3 Microservicios + Frontend 3D + MySQL 8.0</option><option value="5">06. Modelo Conceptual de Dominio y Matriz de Permisos (RBAC)</option><option value="6">07. Patrones de Diseño Arquitectónicos, de Dominio y Frontend</option><option value="7">08. Requerimientos Funcionales (RF-01 a RF-20) e Historias (HU-01 a HU-12)</option><option value="8">09. Requerimientos No Funcionales (RNF-01..12) y Reglas de Negocio (RN-01..16)</option><option value="9">10. Diagrama UML General de Casos de Uso del Sistema (CU-01 a CU-12)</option><option value="10">11. Diagramas UML por Módulo: Acceso (M1) y Menú & Platos 3D (M2)</option><option value="11">12. Diagramas UML por Módulo: Pedidos y Comedor (M3) y Cocina KDS (M4)</option><option value="12">13. Diagramas UML por Módulo: Administración (M5) y Casos CU-11 / CU-12</option><option value="13">14. Modelo de Datos y Diagrama Entidad-Relación (ERD MySQL 8.0)</option><option value="14">15. Diagrama de Clases UML y Sistema de Platos 3D Fotorrealistas (Three.js PBR)</option><option value="15">16. Control de Calidad (QA), Pruebas Verificadas y Conclusiones</option>
+      </select>
+      <button id="prevBtn" type="button">← Anterior</button>
+      <span id="counter" style="font-size:13px;font-weight:600;min-width:64px;text-align:center;">1 / 16</span>
+      <button id="nextBtn" type="button">Siguiente →</button>
+      <button id="fsBtn" type="button">Pantalla Completa (F)</button>
+    </div>
+  </header>
+  <main>
+    <div class="slide-frame">
+      <img id="slideImg" src="slides/slide_01.png" alt="Diapositiva activa" />
+    </div>
+  </main>
+  <div id="progressBar" class="progress-bar" style="width: 6.25%;"></div>
+  <footer>
+    <span>Usa las teclas ← / → o Espacio para cambiar de diapositiva</span>
+    <span>Repositorio: github.com/LuisTombe/Gourmet-Bistro (Rama QA / Dev)</span>
+  </footer>
+  <script>
+    const titles = ["01. Portada Ejecutiva — Gourmet Bistro & SRS IEEE 830","02. Planteamiento del Problema, Justificación y Alcance MVP","03. Evolución del Proyecto (De la v1.0 al Cierre del Sprint v3.0)","04. Lenguajes de Programación: Al Comienzo vs. Al Final del Sprint","05. Arquitectura de Software: 3 Microservicios + Frontend 3D + MySQL 8.0","06. Modelo Conceptual de Dominio y Matriz de Permisos (RBAC)","07. Patrones de Diseño Arquitectónicos, de Dominio y Frontend","08. Requerimientos Funcionales (RF-01 a RF-20) e Historias (HU-01 a HU-12)","09. Requerimientos No Funcionales (RNF-01..12) y Reglas de Negocio (RN-01..16)","10. Diagrama UML General de Casos de Uso del Sistema (CU-01 a CU-12)","11. Diagramas UML por Módulo: Acceso (M1) y Menú & Platos 3D (M2)","12. Diagramas UML por Módulo: Pedidos y Comedor (M3) y Cocina KDS (M4)","13. Diagramas UML por Módulo: Administración (M5) y Casos CU-11 / CU-12","14. Modelo de Datos y Diagrama Entidad-Relación (ERD MySQL 8.0)","15. Diagrama de Clases UML y Sistema de Platos 3D Fotorrealistas (Three.js PBR)","16. Control de Calidad (QA), Pruebas Verificadas y Conclusiones"];
+    let idx = 0;
+    const img = document.getElementById('slideImg');
+    const titleEl = document.getElementById('slideTitle');
+    const counterEl = document.getElementById('counter');
+    const selectEl = document.getElementById('slideSelect');
+    const barEl = document.getElementById('progressBar');
+
+    function render(newIdx) {
+      idx = (newIdx + titles.length) % titles.length;
+      const num = String(idx + 1).padStart(2, '0');
+      img.src = 'slides/slide_' + num + '.png';
+      titleEl.textContent = titles[idx];
+      counterEl.textContent = (idx + 1) + ' / ' + titles.length;
+      selectEl.value = String(idx);
+      barEl.style.width = (((idx + 1) / titles.length) * 100) + '%';
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => render(idx - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => render(idx + 1));
+    selectEl.addEventListener('change', (e) => render(Number(e.target.value)));
+    document.getElementById('fsBtn').addEventListener('click', () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') render(idx + 1);
+      if (e.key === 'ArrowLeft') render(idx - 1);
+      if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>

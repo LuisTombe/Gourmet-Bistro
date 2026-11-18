@@ -1,11 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Order, OrderItem, OrderStatus, Product, Table, TableStatus, User, UserRole } from '../types/index.ts';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
-  INITIAL_USERS,
-  INITIAL_PRODUCTS,
-  INITIAL_TABLES,
-  INITIAL_ORDERS,
-} from '../data/mockData.ts';
+  Order,
+  OrderItem,
+  OrderStatus,
+  Product,
+  ProductCategory,
+  Table,
+  TableStatus,
+  User,
+  UserRole,
+  SystemVersionSnapshot,
+} from '../types/index.ts';
+import { api, ApiError } from '../services/apiClient.ts';
 import {
   calculateOrderTotal,
   calculateSubtotal,
@@ -15,6 +21,139 @@ import {
   computeTableStatus,
 } from '../domain/rules.ts';
 
+export interface DraftCartItem {
+  product: Product;
+  quantity: number;
+  notes?: string;
+}
+
+function classifyProductMeta(name: string, description: string): {
+  category: ProductCategory;
+  station: Product['station'];
+  image: string;
+} {
+  const text = `${name} ${description}`.toLowerCase();
+
+  if (
+    text.includes('bife') ||
+    text.includes('cordero') ||
+    text.includes('salmón') ||
+    text.includes('salmon') ||
+    text.includes('costilla') ||
+    text.includes('corte') ||
+    text.includes('parrilla') ||
+    text.includes('lomo') && !text.includes('carpaccio')
+  ) {
+    if (text.includes('salmón') || text.includes('salmon')) {
+      return {
+        category: 'Carnes & Grill',
+        station: 'Parrilla',
+        image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    if (text.includes('cordero') || text.includes('costilla')) {
+      return {
+        category: 'Carnes & Grill',
+        station: 'Parrilla',
+        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Carnes & Grill',
+      station: 'Parrilla',
+      image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('risotto') ||
+    text.includes('ravioli') ||
+    text.includes('pappardelle') ||
+    text.includes('pasta') ||
+    text.includes('tagliatelle')
+  ) {
+    if (text.includes('risotto')) {
+      return {
+        category: 'Pastas & Risottos',
+        station: 'Cocina',
+        image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Pastas & Risottos',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('tiramis') ||
+    text.includes('chocolate') ||
+    text.includes('esfera') ||
+    text.includes('postre') ||
+    text.includes('helado') ||
+    text.includes('mousse')
+  ) {
+    if (text.includes('tiramis')) {
+      return {
+        category: 'Postres',
+        station: 'Pastelería',
+        image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Postres',
+      station: 'Pastelería',
+      image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (
+    text.includes('cóctel') ||
+    text.includes('coctel') ||
+    text.includes('old fashioned') ||
+    text.includes('gin') ||
+    text.includes('limonada') ||
+    text.includes('vino') ||
+    text.includes('malbec') ||
+    text.includes('bourbon')
+  ) {
+    if (text.includes('limonada')) {
+      return {
+        category: 'Bebidas & Bar',
+        station: 'Bar',
+        image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=700&q=80',
+      };
+    }
+    return {
+      category: 'Bebidas & Bar',
+      station: 'Bar',
+      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  if (text.includes('burrata')) {
+    return {
+      category: 'Entradas',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+  if (text.includes('atún') || text.includes('atun') || text.includes('tartar')) {
+    return {
+      category: 'Entradas',
+      station: 'Cocina',
+      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=700&q=80',
+    };
+  }
+
+  return {
+    category: 'Entradas',
+    station: 'Cocina',
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+  };
+}
+
 interface ToastNotification {
   id: string;
   type: 'success' | 'error' | 'info';
@@ -23,162 +162,391 @@ interface ToastNotification {
 
 interface RestaurantContextType {
   currentUser: User | null;
+  isAuthLoading: boolean;
   users: User[];
   products: Product[];
   tables: Table[];
   orders: Order[];
   activeView: string;
   selectedTableForOrder: Table | null;
+  draftCart: DraftCartItem[];
   toasts: ToastNotification[];
   setActiveView: (view: string) => void;
   setSelectedTableForOrder: (table: Table | null) => void;
-  login: (username: string) => { success: boolean; message?: string };
-  logout: () => void;
-  switchUser: (userId: number) => void;
+  addToDraftCart: (product: Product, quantity?: number) => void;
+  updateDraftQuantity: (productId: number, delta: number) => void;
+  removeFromDraftCart: (productId: number) => void;
+  updateDraftItemNote: (productId: number, notes: string) => void;
+  clearDraftCart: () => void;
+  login: (username: string, password?: string) => Promise<{ success: boolean; message?: string }>;
+  logout: () => Promise<void>;
   createOrder: (
     tableId: number,
     items: { productId: number; quantity: number; notes?: string }[],
     notes?: string
-  ) => { success: boolean; orderId?: number; error?: string };
+  ) => Promise<{ success: boolean; orderId?: number; error?: string }>;
   updateOrderStatus: (
     orderId: number,
     nextStatus: OrderStatus
-  ) => { success: boolean; error?: string };
-  addProduct: (product: Omit<Product, 'id'>) => { success: boolean; error?: string };
-  updateProduct: (id: number, product: Partial<Product>) => { success: boolean; error?: string };
-  toggleProductAvailability: (id: number) => void;
-  deleteProduct: (id: number) => { success: boolean; error?: string };
-  addTable: (table: Omit<Table, 'id'>) => { success: boolean; error?: string };
-  updateTable: (id: number, table: Partial<Table>) => { success: boolean; error?: string };
-  deleteTable: (id: number) => { success: boolean; error?: string };
-  addUser: (user: Omit<User, 'id'>) => { success: boolean; error?: string };
-  updateUser: (id: number, user: Partial<User>) => { success: boolean; error?: string };
-  toggleUserActive: (id: number) => void;
+  ) => Promise<{ success: boolean; error?: string }>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<{ success: boolean; error?: string }>;
+  updateProduct: (id: number, product: Partial<Product>) => Promise<{ success: boolean; error?: string }>;
+  toggleProductAvailability: (id: number) => Promise<void>;
+  deleteProduct: (id: number) => Promise<{ success: boolean; error?: string }>;
+  addTable: (table: Omit<Table, 'id'>) => Promise<{ success: boolean; error?: string }>;
+  updateTable: (id: number, table: Partial<Table>) => Promise<{ success: boolean; error?: string }>;
+  deleteTable: (id: number) => Promise<{ success: boolean; error?: string }>;
+  addUser: (user: Omit<User, 'id'> & { password?: string }) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (id: number, user: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  toggleUserActive: (id: number) => Promise<void>;
   getTableStatus: (tableId: number) => TableStatus;
   getActiveOrder: (tableId: number) => Order | undefined;
   dismissToast: (id: string) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
-  resetToDefaults: () => void;
+  refreshData: () => Promise<void>;
+  snapshots: SystemVersionSnapshot[];
+  gitInfo: {
+    branch: string;
+    headHash: string;
+    commits: { hash: string; author: string; date: string; message: string }[];
+  };
+  createVersionSnapshot: (
+    description: string,
+    versionTag?: string
+  ) => Promise<{ success: boolean; snapshot?: SystemVersionSnapshot; error?: string }>;
+  rollbackToSnapshot: (snapshotId: string) => Promise<{ success: boolean; message: string }>;
 }
+
+const INITIAL_SEEDED_PRODUCTS: Product[] = [
+  ['Carpaccio de Res Trufado', 'Láminas de lomo con aceite de trufa y parmesano reggiano.', 38000],
+  ['Burrata Pugliese con Higos', 'Burrata fresca sobre rúcula silvestre e higos caramelizados.', 34000],
+  ['Tartar de Atún Rojo & Palta', 'Atún fresco con aderezo ponzu y emulsión de aguacate.', 42000],
+  ['Ojo de Bife Angosto (400g)', 'Corte madurado 28 días terminado a la leña.', 89000],
+  ['Costillas de Cordero Patagónico', 'Costillas al romero y puré rústico.', 84000],
+  ['Salmón Austral Glaseado', 'Filete de salmón salvaje con glaseado teriyaki.', 72000],
+  ['Risotto ai Frutti di Mare', 'Arroz carnaroli con langostinos, calamares y mejillones.', 62000],
+  ['Ravioli de Ossobuco Braseado', 'Pasta artesanal bañada en reducción al vino tinto.', 56000],
+  ['Pappardelle al Ragu de Jabalí', 'Cintas caseras con ragú toscano cocinado 8 horas.', 54000],
+  ['Tiramisú Tradizionale', 'Savoiardi con café espresso y crema mascarpone.', 24000],
+  ['Esfera de Chocolate Valrhona', 'Mousse de avellana con baño de cacao amargo.', 28000],
+  ['Cóctel Smoked Old Fashioned', 'Bourbon añejo con piel de naranja y humo de roble.', 36000],
+  ['Gin Tonic Botánico', 'Ginebra artesanal con frutos rojos y enebro fresco.', 32000],
+  ['Limonada de Hierbabuena & Jengibre', 'Extracto natural de limón y hierbabuena fresca.', 14000],
+].map(([name, description, price], index) => {
+  const meta = classifyProductMeta(String(name), String(description));
+  return {
+    id: index + 1,
+    name: String(name),
+    description: String(description),
+    price: Number(price),
+    category: meta.category,
+    available: true,
+    image: meta.image,
+    station: meta.station,
+  };
+});
+
+const INITIAL_SEEDED_TABLES: Table[] = Array.from({ length: 9 }, (_, idx) => {
+  const areas: Table['area'][] = ['Salón Principal', 'Terraza Gourmet', 'Zona VIP'];
+  return {
+    id: idx + 1,
+    tableNumber: idx + 1,
+    capacity: idx % 3 === 0 ? 6 : idx % 2 === 0 ? 4 : 2,
+    area: areas[idx % areas.length],
+  };
+});
 
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
 
-const STORAGE_KEYS = {
-  USERS: 'bistro_pos_users',
-  PRODUCTS: 'bistro_pos_products',
-  TABLES: 'bistro_pos_tables',
-  ORDERS: 'bistro_pos_orders',
-  CURRENT_USER_ID: 'bistro_pos_current_user_id',
-};
-
 export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.USERS);
-    return saved ? JSON.parse(saved) : INITIAL_USERS;
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [tables, setTables] = useState<Table[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TABLES);
-    return saved ? JSON.parse(saved) : INITIAL_TABLES;
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
-
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
-    if (savedId) {
-      const found = INITIAL_USERS.find((u) => u.id === Number(savedId));
-      if (found && found.active) return found;
-    }
-    // Default to mesero so user can test POS immediately, or null if on login
-    return INITIAL_USERS[1]; // Carlos Mendoza (mesero)
-  });
-
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>(INITIAL_SEEDED_PRODUCTS);
+  const [tables, setTables] = useState<Table[]>(INITIAL_SEEDED_TABLES);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [activeView, setActiveView] = useState<string>('mesas');
   const [selectedTableForOrder, setSelectedTableForOrder] = useState<Table | null>(null);
+  const [draftCart, setDraftCart] = useState<DraftCartItem[]>([]);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [snapshots, setSnapshots] = useState<SystemVersionSnapshot[]>([]);
+  const [gitInfo, setGitInfo] = useState<{
+    branch: string;
+    headHash: string;
+    commits: { hash: string; author: string; date: string; message: string }[];
+  }>({ branch: 'local', headHash: 'local', commits: [] });
 
-  // Persist to local storage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TABLES, JSON.stringify(tables));
-  }, [tables]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, String(currentUser.id));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
-    }
-  }, [currentUser]);
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
-      dismissToast(id);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4500);
-  };
+  }, []);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const login = (username: string) => {
-    const user = users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-    if (!user) {
-      return { success: false, message: 'Usuario no encontrado. Ingrese admin, mesero o cocina.' };
+  // --- Carrito borrador compartido entre Platos 3D y Nuevo Pedido ---
+  const addToDraftCart = useCallback((product: Product, quantity = 1) => {
+    if (!product.available) {
+      showToast(`"${product.name}" no está disponible actualmente.`, 'error');
+      return;
     }
-    if (!user.active) {
-      return { success: false, message: 'Esta cuenta ha sido desactivada por el administrador.' };
-    }
-    setCurrentUser(user);
-    if (user.role === 'cocinero') {
-      setActiveView('cocina');
-    } else if (user.role === 'administrador') {
-      setActiveView('mesas');
-    } else {
-      setActiveView('mesas');
-    }
-    showToast(`Bienvenido al sistema, ${user.name}`, 'success');
-    return { success: true };
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-    setActiveView('login');
-    showToast('Sesión cerrada correctamente.', 'info');
-  };
-
-  const switchUser = (userId: number) => {
-    const user = users.find((u) => u.id === userId);
-    if (user && user.active) {
-      setCurrentUser(user);
-      if (user.role === 'cocinero') {
-        setActiveView('cocina');
-      } else {
-        if (activeView === 'cocina') setActiveView('mesas');
+    setDraftCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
       }
-      showToast(`Cambiado a rol: ${user.name} (${user.role})`, 'info');
+      return [...prev, { product, quantity }];
+    });
+    showToast(`+${quantity} ${product.name} añadido al pedido en curso`, 'success');
+  }, [showToast]);
+
+  const updateDraftQuantity = useCallback((productId: number, delta: number) => {
+    setDraftCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.product.id === productId) {
+            const nextQty = item.quantity + delta;
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+          }
+          return item;
+        })
+        .filter((item): item is DraftCartItem => item !== null)
+    );
+  }, []);
+
+  const removeFromDraftCart = useCallback((productId: number) => {
+    setDraftCart((prev) => prev.filter((item) => item.product.id !== productId));
+  }, []);
+
+  const updateDraftItemNote = useCallback((productId: number, notes: string) => {
+    setDraftCart((prev) =>
+      prev.map((item) =>
+        item.product.id === productId ? { ...item, notes: notes.trim() } : item
+      )
+    );
+  }, []);
+
+  const clearDraftCart = useCallback(() => {
+    setDraftCart([]);
+  }, []);
+
+  // 1. Cargar datos del catálogo y pedidos desde los microservicios respetando permisos por rol (RF-17)
+  const refreshData = useCallback(async () => {
+    try {
+      const canQueryTables = !currentUser || currentUser.role === 'administrador' || currentUser.role === 'mesero';
+      const [prodRes, mesasRes, pedidosRes] = await Promise.allSettled([
+        api.productos.listar(),
+        canQueryTables ? api.mesas.listar() : Promise.resolve({ mesas: [] }),
+        api.pedidos.listar(),
+      ]);
+
+      if (prodRes.status === 'rejected' || pedidosRes.status === 'rejected') {
+        const err = prodRes.status === 'rejected' ? prodRes.reason : (pedidosRes as PromiseRejectedResult).reason;
+        if (!(err instanceof ApiError && err.status === 401)) {
+          showToast('Sin conexión con los microservicios o MySQL. Verifica que XAMPP MySQL esté activo.', 'error');
+        }
+      }
+
+      if (prodRes.status === 'fulfilled' && prodRes.value.productos) {
+        setProducts(
+          prodRes.value.productos.map((p) => {
+            const meta = classifyProductMeta(p.nombre, p.descripcion || '');
+            return {
+              id: p.id_producto,
+              name: p.nombre,
+              description: p.descripcion || '',
+              price: Number(p.precio),
+              category: meta.category,
+              available: Boolean(p.disponible),
+              image: meta.image,
+              station: meta.station,
+            };
+          })
+        );
+      }
+
+      const tableNumMap = new Map<number, number>();
+      if (mesasRes.status === 'fulfilled' && mesasRes.value.mesas && mesasRes.value.mesas.length > 0) {
+        const areas: Table['area'][] = ['Salón Principal', 'Terraza Gourmet', 'Zona VIP'];
+        const mappedTables = mesasRes.value.mesas.map((m, idx) => {
+          tableNumMap.set(m.id_mesa, m.numero_mesa);
+          return {
+            id: m.id_mesa,
+            tableNumber: m.numero_mesa,
+            capacity: idx % 3 === 0 ? 6 : idx % 2 === 0 ? 4 : 2,
+            area: areas[idx % areas.length],
+          };
+        });
+        setTables(mappedTables);
+      }
+
+      if (pedidosRes.status === 'fulfilled' && pedidosRes.value.pedidos) {
+        setOrders(
+          pedidosRes.value.pedidos.map((o) => ({
+            id: o.id_pedido,
+            tableId: o.id_mesa,
+            tableNumber: tableNumMap.get(o.id_mesa) || o.id_mesa,
+            userId: o.id_usuario,
+            waiterName: `Usuario #${o.id_usuario}`,
+            createdAt: o.fecha_pedido,
+            updatedAt: o.fecha_pedido,
+            status: o.estado as OrderStatus,
+            total: Number(o.total),
+            items: (o.detalles || []).map((d) => ({
+              id: d.id_detalle,
+              productId: d.id_producto,
+              productName: d.nombre_producto,
+              quantity: d.cantidad,
+              unitPrice: Number(d.precio_unitario),
+              subtotal: Number(d.subtotal),
+            })),
+          }))
+        );
+      }
+
+      // Si el usuario es administrador, consultar empleados, snapshots y estado Git real
+      if (currentUser?.role === 'administrador') {
+        const [usersRes, snapsRes, gitRes] = await Promise.all([
+          api.usuarios.listar().catch(() => null),
+          api.versionamiento.listarSnapshots().catch(() => null),
+          api.versionamiento.git().catch(() => null),
+        ]);
+        if (usersRes?.usuarios) {
+          setUsers(
+            usersRes.usuarios.map((u) => ({
+              id: u.id_usuario,
+              username: u.nombre_usuario,
+              name: u.nombre_usuario,
+              role: u.rol,
+              active: Boolean(u.activo),
+              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+            }))
+          );
+        }
+        if (snapsRes?.snapshots) {
+          setSnapshots(snapsRes.snapshots);
+        }
+        if (gitRes) {
+          setGitInfo(gitRes);
+        }
+      }
+    } catch (err) {
+      console.warn('Error refrescando datos de microservicios:', err);
+    }
+  }, [currentUser?.role, showToast]);
+
+  // 2. Validación de sesión inicial mediante cookie HttpOnly contra ms-usuarios
+  useEffect(() => {
+    let isMounted = true;
+    async function checkSession() {
+      try {
+        const res = await api.auth.me();
+        if (isMounted && res.usuario) {
+          const userObj: User = {
+            id: res.usuario.id_usuario,
+            username: res.usuario.nombre_usuario,
+            name: res.usuario.nombre_usuario,
+            role: res.usuario.rol,
+            active: res.usuario.activo,
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+          };
+          setCurrentUser(userObj);
+          setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsAuthLoading(false);
+        }
+      }
+    }
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 3. Polling suave HTTP para mantener sincronizados pedidos y mesas entre clientes
+  useEffect(() => {
+    if (!currentUser) return;
+    refreshData();
+    const interval = setInterval(() => {
+      api.pedidos.listar().then((res) => {
+        if (res.pedidos) {
+          setOrders(
+            res.pedidos.map((o) => {
+              const matchedTable = tables.find((t) => t.id === o.id_mesa);
+              return {
+                id: o.id_pedido,
+                tableId: o.id_mesa,
+                tableNumber: matchedTable ? matchedTable.tableNumber : o.id_mesa,
+                userId: o.id_usuario,
+                waiterName: `Usuario #${o.id_usuario}`,
+                createdAt: o.fecha_pedido,
+                updatedAt: o.fecha_pedido,
+                status: o.estado as OrderStatus,
+                total: Number(o.total),
+                items: (o.detalles || []).map((d) => ({
+                  id: d.id_detalle,
+                  productId: d.id_producto,
+                  productName: d.nombre_producto,
+                  quantity: d.cantidad,
+                  unitPrice: Number(d.precio_unitario),
+                  subtotal: Number(d.subtotal),
+                })),
+              };
+            })
+          );
+        }
+      }).catch(() => {});
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [currentUser, refreshData]);
+
+  // --- Operaciones de Autenticación Real ---
+  const login = async (username: string, password = ''): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const res = await api.auth.login(username.trim(), password);
+      const user = res.usuario;
+      const userObj: User = {
+        id: user.id_usuario,
+        username: user.nombre_usuario,
+        name: user.nombre_usuario,
+        role: user.rol,
+        active: user.activo,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      };
+      setCurrentUser(userObj);
+      setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
+      showToast(`Bienvenido al sistema, ${user.nombre_usuario}`, 'success');
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al conectar con el servidor de autenticación';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.auth.logout();
+    } catch (err) {
+      console.warn('Logout remoto:', err);
+    } finally {
+      setCurrentUser(null);
+      setActiveView('login');
+      showToast('Sesión cerrada correctamente.', 'info');
     }
   };
 
@@ -192,329 +560,338 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
   };
 
-  const createOrder = (
+  // --- Operaciones de Pedidos (ms-pedidos) ---
+  const createOrder = async (
     tableId: number,
     items: { productId: number; quantity: number; notes?: string }[],
     notes?: string
-  ): { success: boolean; orderId?: number; error?: string } => {
-    if (!currentUser) {
-      return { success: false, error: 'Debe iniciar sesión para registrar pedidos.' };
-    }
+  ): Promise<{ success: boolean; orderId?: number; error?: string }> => {
+    if (!currentUser) return { success: false, error: 'Debe iniciar sesión para registrar pedidos.' };
 
-    // Check table exists
     const targetTable = tables.find((t) => t.id === tableId);
-    if (!targetTable) {
-      return { success: false, error: 'La mesa seleccionada no existe.' };
-    }
+    if (!targetTable) return { success: false, error: 'Mesa no encontrada.' };
 
-    // Check RN-04: At most 1 active order per table
-    const existingActive = getActiveOrder(tableId);
-    if (existingActive) {
-      return {
-        success: false,
-        error: `La Mesa ${targetTable.tableNumber} ya tiene un pedido activo (#${existingActive.id} - ${existingActive.status}).`,
-      };
-    }
+    if (items.length === 0) return { success: false, error: 'Debe agregar al menos un producto.' };
 
-    // Validate items > 0
-    if (!items || items.length === 0) {
-      return { success: false, error: 'El pedido debe incluir al menos un producto del menú.' };
-    }
-
-    // Validate products exist and are available, capture current price
     const orderItems: OrderItem[] = [];
     for (const item of items) {
-      if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-        return { success: false, error: 'Las cantidades deben ser números enteros mayores a cero.' };
-      }
       const prod = products.find((p) => p.id === item.productId);
-      if (!prod) {
-        return { success: false, error: `El producto ID ${item.productId} no existe en el catálogo.` };
+      if (!prod || !prod.available) {
+        return { success: false, error: `El producto ${prod ? prod.name : ''} no está disponible.` };
       }
-      if (!prod.available) {
-        return { success: false, error: `El producto '${prod.name}' no se encuentra disponible actualmente.` };
-      }
-
-      const subtotal = calculateSubtotal(item.quantity, prod.price);
       orderItems.push({
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: Date.now() + Math.random(),
         productId: prod.id,
         productName: prod.name,
         quantity: item.quantity,
         unitPrice: prod.price,
-        subtotal,
-        notes: item.notes,
+        subtotal: calculateSubtotal(item.quantity, prod.price),
       });
     }
 
     const total = calculateOrderTotal(orderItems);
-    const newOrderId = (orders.length > 0 ? Math.max(...orders.map((o) => o.id)) : 100) + 1;
 
-    const newOrder: Order = {
-      id: newOrderId,
-      tableId: targetTable.id,
-      tableNumber: targetTable.tableNumber,
-      userId: currentUser.id,
-      waiterName: currentUser.name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'Pendiente',
-      items: orderItems,
-      total,
-      notes,
-    };
-
-    setOrders((prev) => [newOrder, ...prev]);
-    showToast(`Pedido #${newOrderId} enviado a cocina para Mesa ${targetTable.tableNumber}`, 'success');
-    return { success: true, orderId: newOrderId };
+    try {
+      const payloadItems = items.map((i) => ({ id_producto: i.productId, cantidad: i.quantity }));
+      const res = await api.pedidos.crear(targetTable.id, payloadItems, total);
+      showToast(`Pedido #${res.pedido.id_pedido} enviado a cocina para Mesa ${targetTable.tableNumber}`, 'success');
+      await refreshData();
+      return { success: true, orderId: res.pedido.id_pedido };
+    } catch (err: any) {
+      // RF-07: Si el precio de un plato cambió en el catálogo mientras se armaba el pedido (409), refrescar precios
+      if (err instanceof ApiError && err.status === 409) {
+        await refreshData();
+      }
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar pedido';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const updateOrderStatus = (
+  // Actualización optimista (Optimistic UI) con validación de máquina de estados (RN-05/RN-06) y reversión automática si falla
+  const updateOrderStatus = async (
     orderId: number,
     nextStatus: OrderStatus
-  ): { success: boolean; error?: string } => {
-    if (!currentUser) {
-      return { success: false, error: 'Debe iniciar sesión para realizar esta acción.' };
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!currentUser) return { success: false, error: 'Debe iniciar sesión.' };
+
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (targetOrder) {
+      const check = canTransitionOrderStatus(targetOrder.status, nextStatus, currentUser.role);
+      if (!check.allowed) {
+        const msg = check.reason || 'Transición de estado no permitida.';
+        showToast(msg, 'error');
+        return { success: false, error: msg };
+      }
     }
 
-    const order = orders.find((o) => o.id === orderId);
-    if (!order) {
-      return { success: false, error: 'Pedido no encontrado.' };
-    }
-
-    const validation = canTransitionOrderStatus(order.status, nextStatus, currentUser.role);
-    if (!validation.allowed) {
-      showToast(validation.reason || 'Transición no permitida', 'error');
-      return { success: false, error: validation.reason };
-    }
-
+    const previousOrders = orders;
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: nextStatus,
-              updatedAt: new Date().toISOString(),
-            }
-          : o
+        o.id === orderId ? { ...o, status: nextStatus, updatedAt: new Date().toISOString() } : o
       )
     );
 
-    if (nextStatus === 'Entregado') {
-      showToast(`Pedido #${orderId} entregado. Mesa ${order.tableNumber} liberada.`, 'success');
-    } else if (nextStatus === 'Listo') {
-      showToast(`Pedido #${orderId} listo en el pase para Mesa ${order.tableNumber}`, 'success');
-    } else {
-      showToast(`Pedido #${orderId} en preparación para Mesa ${order.tableNumber}`, 'info');
+    try {
+      await api.pedidos.avanzar(orderId, nextStatus);
+      showToast(`Pedido #${orderId} actualizado a '${nextStatus}'`, 'success');
+      return { success: true };
+    } catch (err: any) {
+      setOrders(previousOrders);
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar estado del pedido';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-
-    return { success: true };
   };
 
-  const addProduct = (productData: Omit<Product, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Menú / Catálogo (ms-catalogo) ---
+  const addProduct = async (productData: Omit<Product, 'id'>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede agregar productos.' };
     }
-    if (!productData.name.trim()) {
-      return { success: false, error: 'El nombre del producto es obligatorio.' };
+    try {
+      await api.productos.crear({
+        nombre: productData.name.trim(),
+        descripcion: productData.description || null,
+        precio: productData.price,
+      });
+      showToast(`Producto '${productData.name}' creado exitosamente.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar producto';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (productData.price <= 0) {
-      return { success: false, error: 'El precio debe ser mayor a cero.' };
-    }
-
-    const newId = (products.length > 0 ? Math.max(...products.map((p) => p.id)) : 0) + 1;
-    const newProduct: Product = { ...productData, id: newId };
-    setProducts((prev) => [...prev, newProduct]);
-    showToast(`Producto '${newProduct.name}' creado exitosamente.`, 'success');
-    return { success: true };
   };
 
-  const updateProduct = (
-    id: number,
-    productData: Partial<Product>
-  ): { success: boolean; error?: string } => {
+  const updateProduct = async (id: number, productData: Partial<Product>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede modificar productos.' };
     }
-    if (productData.name !== undefined && !productData.name.trim()) {
-      return { success: false, error: 'El nombre del producto no puede estar vacío.' };
-    }
-    if (productData.price !== undefined && productData.price <= 0) {
-      return { success: false, error: 'El precio debe ser mayor a cero.' };
-    }
+    const current = products.find((p) => p.id === id);
+    if (!current) return { success: false, error: 'Producto no encontrado' };
 
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...productData } : p)));
-    showToast('Producto actualizado correctamente.', 'success');
-    return { success: true };
+    try {
+      await api.productos.editar(id, {
+        nombre: productData.name !== undefined ? productData.name.trim() : current.name,
+        descripcion: productData.description !== undefined ? productData.description : current.description,
+        precio: productData.price !== undefined ? productData.price : current.price,
+      });
+      showToast('Producto actualizado correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar producto';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const toggleProductAvailability = (id: number) => {
+  // Actualización optimista de disponibilidad de producto con reversión si falla
+  const toggleProductAvailability = async (id: number) => {
     if (!currentUser || currentUser.role !== 'administrador') {
       showToast('Acción no permitida.', 'error');
       return;
     }
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, available: !p.available } : p))
-    );
     const prod = products.find((p) => p.id === id);
-    if (prod) {
-      showToast(
-        `Producto '${prod.name}' ahora está ${!prod.available ? 'Disponible' : 'No disponible'}.`,
-        'info'
-      );
+    if (!prod) return;
+
+    const previousProducts = products;
+    const nextAvailable = !prod.available;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, available: nextAvailable } : p))
+    );
+
+    try {
+      await api.productos.disponibilidad(id, nextAvailable);
+      showToast(`Producto '${prod.name}' ahora está ${nextAvailable ? 'Disponible' : 'No disponible'}.`, 'info');
+    } catch (err: any) {
+      setProducts(previousProducts);
+      showToast(err.message || 'Error al cambiar disponibilidad', 'error');
     }
   };
 
-  const deleteProduct = (id: number): { success: boolean; error?: string } => {
+  const deleteProduct = async (id: number): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede eliminar productos.' };
     }
-    const check = canDeleteProduct(id, orders);
-    if (!check.allowed) {
-      showToast(check.reason || 'No se puede eliminar.', 'error');
-      return { success: false, error: check.reason };
-    }
+    const previousProducts = products;
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    showToast('Producto eliminado del menú.', 'success');
-    return { success: true };
+
+    try {
+      await api.productos.eliminar(id);
+      showToast('Producto eliminado del menú.', 'success');
+      return { success: true };
+    } catch (err: any) {
+      setProducts(previousProducts);
+      const msg = err instanceof ApiError ? err.message : 'No se pudo eliminar el producto.';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const addTable = (tableData: Omit<Table, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Mesas (ms-catalogo) ---
+  const addTable = async (tableData: Omit<Table, 'id'>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede registrar mesas.' };
     }
-    if (tableData.tableNumber <= 0 || !Number.isInteger(tableData.tableNumber)) {
-      return { success: false, error: 'El número de mesa debe ser un entero positivo.' };
+    try {
+      await api.mesas.crear(tableData.tableNumber);
+      showToast(`Mesa #${tableData.tableNumber} creada exitosamente.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar mesa';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (tables.some((t) => t.tableNumber === tableData.tableNumber)) {
-      return { success: false, error: `Ya existe una mesa con el número ${tableData.tableNumber}.` };
-    }
-
-    const newId = (tables.length > 0 ? Math.max(...tables.map((t) => t.id)) : 0) + 1;
-    const newTable: Table = { ...tableData, id: newId };
-    setTables((prev) => [...prev, newTable]);
-    showToast(`Mesa ${newTable.tableNumber} creada exitosamente.`, 'success');
-    return { success: true };
   };
 
-  const updateTable = (id: number, tableData: Partial<Table>): { success: boolean; error?: string } => {
+  const updateTable = async (id: number, tableData: Partial<Table>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede modificar mesas.' };
     }
-    if (tableData.tableNumber !== undefined) {
-      if (tableData.tableNumber <= 0 || !Number.isInteger(tableData.tableNumber)) {
-        return { success: false, error: 'El número de mesa debe ser un entero positivo.' };
-      }
-      if (tables.some((t) => t.id !== id && t.tableNumber === tableData.tableNumber)) {
-        return { success: false, error: `Ya existe otra mesa con el número ${tableData.tableNumber}.` };
-      }
-    }
+    const current = tables.find((t) => t.id === id);
+    if (!current) return { success: false, error: 'Mesa no encontrada' };
 
-    setTables((prev) => prev.map((t) => (t.id === id ? { ...t, ...tableData } : t)));
-    showToast('Mesa actualizada correctamente.', 'success');
-    return { success: true };
+    try {
+      await api.mesas.editar(id, tableData.tableNumber || current.tableNumber);
+      showToast('Mesa actualizada correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar mesa';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
   };
 
-  const deleteTable = (id: number): { success: boolean; error?: string } => {
+  const deleteTable = async (id: number): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede eliminar mesas.' };
     }
-    const check = canDeleteTable(id, orders);
-    if (!check.allowed) {
-      showToast(check.reason || 'No se puede eliminar.', 'error');
-      return { success: false, error: check.reason };
+    try {
+      await api.mesas.eliminar(id);
+      showToast('Mesa eliminada correctamente.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'No se pudo eliminar la mesa.';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    setTables((prev) => prev.filter((t) => t.id !== id));
-    showToast('Mesa eliminada correctamente.', 'success');
-    return { success: true };
   };
 
-  const addUser = (userData: Omit<User, 'id'>): { success: boolean; error?: string } => {
+  // --- Operaciones de Usuarios (ms-usuarios) ---
+  const addUser = async (userData: Omit<User, 'id'> & { password?: string }): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede registrar usuarios.' };
     }
-    if (!userData.username.trim()) {
-      return { success: false, error: 'El nombre de usuario es obligatorio.' };
+    try {
+      await api.usuarios.crear({
+        nombre_usuario: userData.username.trim(),
+        contrasena: userData.password || 'Empleado2026!',
+        rol: userData.role,
+      });
+      showToast(`Usuario '${userData.username}' registrado con éxito.`, 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al registrar usuario';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-    if (users.some((u) => u.username.toLowerCase() === userData.username.trim().toLowerCase())) {
-      return { success: false, error: `El usuario '${userData.username}' ya existe.` };
-    }
-
-    const newId = (users.length > 0 ? Math.max(...users.map((u) => u.id)) : 0) + 1;
-    const newUser: User = {
-      ...userData,
-      id: newId,
-      username: userData.username.trim().toLowerCase(),
-    };
-    setUsers((prev) => [...prev, newUser]);
-    showToast(`Usuario '${newUser.username}' registrado.`, 'success');
-    return { success: true };
   };
 
-  const updateUser = (id: number, userData: Partial<User>): { success: boolean; error?: string } => {
+  const updateUser = async (id: number, userData: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser || currentUser.role !== 'administrador') {
       return { success: false, error: 'Solo el administrador puede editar usuarios.' };
     }
-    if (userData.username !== undefined) {
-      if (!userData.username.trim()) {
-        return { success: false, error: 'El nombre de usuario no puede estar vacío.' };
+    try {
+      await api.usuarios.editar(id, {
+        nombre_usuario: userData.username,
+        rol: userData.role,
+      });
+      if (userData.active === false) {
+        await api.usuarios.desactivar(id);
       }
-      if (
-        users.some((u) => u.id !== id && u.username.toLowerCase() === userData.username!.trim().toLowerCase())
-      ) {
-        return { success: false, error: `El usuario '${userData.username}' ya existe.` };
-      }
+      showToast('Usuario actualizado.', 'success');
+      await refreshData();
+      return { success: true };
+    } catch (err: any) {
+      const msg = err instanceof ApiError ? err.message : 'Error al actualizar usuario';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
     }
-
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...userData } : u)));
-    showToast('Usuario actualizado.', 'success');
-    return { success: true };
   };
 
-  const toggleUserActive = (id: number) => {
+  const toggleUserActive = async (id: number) => {
     if (!currentUser || currentUser.role !== 'administrador') {
       showToast('Acción no permitida.', 'error');
       return;
     }
-    if (id === currentUser.id) {
-      showToast('No puede desactivar su propia cuenta activa.', 'error');
-      return;
-    }
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u))
-    );
-    const u = users.find((user) => user.id === id);
-    if (u) {
-      showToast(`Usuario '${u.username}' ${!u.active ? 'activado' : 'desactivado'}.`, 'info');
+    const previousUsers = users;
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, active: false } : u)));
+
+    try {
+      await api.usuarios.desactivar(id);
+      showToast('Cuenta de usuario desactivada.', 'info');
+    } catch (err: any) {
+      setUsers(previousUsers);
+      showToast(err.message || 'Error al desactivar usuario', 'error');
     }
   };
 
-  const resetToDefaults = () => {
-    setUsers(INITIAL_USERS);
-    setProducts(INITIAL_PRODUCTS);
-    setTables(INITIAL_TABLES);
-    setOrders(INITIAL_ORDERS);
-    setCurrentUser(INITIAL_USERS[1]);
-    setActiveView('mesas');
-    showToast('Datos restaurados al estado inicial.', 'info');
+  // --- Versionamiento & Rollback (RF-20 / Admin persistente en MySQL) ---
+  const createVersionSnapshot = async (description: string, versionTag?: string) => {
+    try {
+      const res = await api.versionamiento.crearSnapshot(description, versionTag);
+      setSnapshots((prev) => [res.snapshot, ...prev]);
+      showToast(`Punto de versión "${res.snapshot.versionTag}" guardado en MySQL.`, 'success');
+      return { success: true, snapshot: res.snapshot };
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Error al guardar el snapshot';
+      showToast(msg, 'error');
+      return { success: false, error: msg };
+    }
+  };
+
+  const rollbackToSnapshot = async (snapshotId: string) => {
+    try {
+      const res = await api.versionamiento.rollback(snapshotId);
+      await refreshData();
+      showToast(`Sistema revertido en MySQL a la versión ${res.versionTag}.`, 'success');
+      return { success: true, message: `Revertido a ${res.versionTag}` };
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : 'Error al ejecutar rollback';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
+    }
   };
 
   return (
     <RestaurantContext.Provider
       value={{
         currentUser,
+        isAuthLoading,
         users,
         products,
         tables,
         orders,
         activeView,
         selectedTableForOrder,
+        draftCart,
         toasts,
         setActiveView,
         setSelectedTableForOrder,
+        addToDraftCart,
+        updateDraftQuantity,
+        removeFromDraftCart,
+        updateDraftItemNote,
+        clearDraftCart,
         login,
         logout,
-        switchUser,
         createOrder,
         updateOrderStatus,
         addProduct,
@@ -531,7 +908,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         getActiveOrder,
         dismissToast,
         showToast,
-        resetToDefaults,
+        refreshData,
+        snapshots,
+        gitInfo,
+        createVersionSnapshot,
+        rollbackToSnapshot,
       }}
     >
       {children}

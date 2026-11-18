@@ -1,0 +1,118 @@
+/* =====================================================================
+   Gourmet-Bistro Style Tokens — Jeton Editorial Design System
+   Paleta: Signal Orange (#f73b20), Ink Roast (#360802), Paper White (#ffffff)
+   Nota importante para Tailwind v4: No sobrescribir --spacing-* numérico
+   dentro de @theme para preservar la escala estándar (1 unidad = 0.25rem = 4px).
+   ===================================================================== */
+
+@theme {
+  /* Colors */
+  --color-signal-orange: #f73b20;
+  --color-brand-orange-tint: #f84d35;
+  --color-ink-roast: #360802;
+  --color-paper-white: #ffffff;
+  --color-carbon-black: #000000;
+  --color-ash-grey: #ababab;
+  --color-sand-wash: #e7dcdb;
+  --color-linen-blush: #fdedea;
+  --color-citrus-wash: #f5ffbb;
+  --color-mint-wash: #bcffbb;
+  --color-coral-red: #fb2d54;
+  --color-cobalt-blue: #477ee9;
+  --color-emerald-green: #34c771;
+
+  /* Typography */
+  --font-sequel-sans: 'Plus Jakarta Sans', 'Sequel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  /* Jeton Base Colors */
+  --color-signal-orange: #f73b20;
+  --color-brand-orange-tint: #f84d35;
+  --color-ink-roast: #360802;
+  --color-paper-white: #ffffff;
+  --color-carbon-black: #000000;
+  --color-ash-grey: #ababab;
+  --color-sand-wash: #e7dcdb;
+  --color-linen-blush: #fdedea;
+  --color-citrus-wash: #f5ffbb;
+  --color-mint-wash: #bcffbb;
+  --color-coral-red: #fb2d54;
+  --color-cobalt-blue: #477ee9;
+  --color-emerald-green: #34c771;
+
+  /* Escala de espaciado de referencia Jeton */
+  --jeton-space-4: 4px;
+  --jeton-space-8: 8px;
+  --jeton-space-12: 12px;
+  --jeton-space-16: 16px;
+  --jeton-space-20: 20px;
+  --jeton-space-24: 24px;
+  --jeton-space-32: 32px;
+  --jeton-space-48: 48px;
+  --jeton-space-56: 56px;
+  --jeton-space-160: 160px;
+
+  /* Mapeo del Sistema Gourmet Bistro al Estilo Jeton */
+  --gb-brand: #f73b20;
+  --gb-brand-hover: #e02f17;
+  --gb-brand-soft: #fdedea;
+  --gb-brand-subtle: #fff6f4;
+  --gb-bg: #ffffff;
+  --gb-surface: #ffffff;
+  --gb-surface-muted: #fdedea;
+  --gb-ink: #360802;
+  --gb-ink-muted: #74514b;
+  --gb-ink-light: #ababab;
+  --gb-border: #e7dcdb;
+  --gb-border-focus: #f73b20;
+
+  /* Estados Semánticos Operativos */
+  --gb-success: #34c771;
+  --gb-success-bg: #bcffbb;
+  --gb-warning: #f84d35;
+  --gb-warning-bg: #fdedea;
+  --gb-danger: #fb2d54;
+  --gb-danger-bg: #ffebee;
+  --gb-info: #477ee9;
+  --gb-info-bg: #eaf0ff;
+
+  /* Radios */
+  --gb-radius-sm: 8px;
+  --gb-radius-md: 12px;
+  --gb-radius-lg: 16px;
+  --gb-radius-full: 9999px;
+
+  /* Sombras distintivas Jeton (Inverted upward lift shadow) */
+  --gb-shadow-card: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.04);
+  --gb-shadow-card-hover: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
+  --gb-focus: 0 0 0 3px rgba(247, 59, 32, 0.22);
+}
+
+body {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-roast);
+  font-family: var(--font-sequel-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Clases Utilitarias Editorial Jeton */
+.jeton-hero-gradient {
+  background: linear-gradient(135deg, #f73b20 0%, #f84d35 32%, #ff8c79 68%, #ffd4cc 100%);
+}
+
+.jeton-inverted-shadow {
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
+}
+
+.jeton-card {
+  background-color: #ffffff;
+  border: 1px solid var(--color-sand-wash);
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jeton-card:hover {
+  box-shadow: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
+}
