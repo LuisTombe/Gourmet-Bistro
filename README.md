@@ -61,28 +61,24 @@ Gourmet-Bistro/
 
 ---
 
-## ⚙️ Puesta en Marcha
+## ⚙️ Puesta en Marcha Rápida (Para Clonar y Probar en Local)
 
 ### 1. Requisitos Previos
-- Node.js 18+ instalado.
-- XAMPP con **MySQL** activo en el puerto `3306`.
+- **Node.js 18+** instalado.
+- **XAMPP** instalado con el módulo **MySQL** encendido (puerto `3306`).
 
-### 2. Configuración de Base de Datos y Semilla
-Los scripts de creación y poblado se ejecutan directamente con:
+### 2. Clonar e Inicializar en 2 Comandos
 ```powershell
-# En la raíz o backend:
-cd backend
-npm install
-node services/ms-usuarios/seed-admin.mjs
-node services/ms-catalogo/seed-catalogo.mjs
-cd ..
+git clone https://github.com/LuisTombe/Gourmet-Bistro.git
+cd Gourmet-Bistro
+npm run setup
 ```
+`npm run setup` instala dependencias (raíz y `backend/`), genera `backend/.env`, crea automáticamente las 3 bases de datos y los usuarios de mínimo privilegio en XAMPP, y carga el catálogo y cuentas de prueba.
 
-### 3. Cuentas de Acceso Preconfiguradas en MySQL
-El sistema incluye las cuentas con hash seguro `bcrypt` para validar los 3 roles:
-- **Administrador:** Usuario: `admin` | Contraseña: `AdminPass2026!`
-- **Mesero:** Usuario: `carlos_m` | Contraseña: `MeseroPass2026!`
-- **Cocinero:** Usuario: `chef_mateo` | Contraseña: `CocinaPass2026!`
+### 3. Cuentas de Acceso Preconfiguradas
+- **Administrador:** Usuario `admin` | Contraseña definida en `backend/.env` (`ADMIN_PASSWORD`, por defecto `AdminPass2026!`)
+- **Mesero:** `carlos_m`
+- **Cocinero:** `chef_mateo`
 
 ---
 

@@ -34,7 +34,7 @@ export const PLATES_CATALOG: PlateMeta[] = [
     ],
     colorAccent: '#f73b20',
     badgeBg: '#fdedea',
-    image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80',
+    image: '/assets/dishes/carnes.jpg',
     station: 'Parrilla',
   },
   {
@@ -53,7 +53,7 @@ export const PLATES_CATALOG: PlateMeta[] = [
     ],
     colorAccent: '#f84d35',
     badgeBg: '#f5ffbb',
-    image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80',
+    image: '/assets/dishes/pastas.jpg',
     station: 'Cocina',
   },
   {
@@ -72,7 +72,7 @@ export const PLATES_CATALOG: PlateMeta[] = [
     ],
     colorAccent: '#fb2d54',
     badgeBg: '#fdedea',
-    image: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?auto=format&fit=crop&w=800&q=80',
+    image: '/assets/dishes/entradas.jpg',
     station: 'Cocina',
   },
   {
@@ -90,7 +90,7 @@ export const PLATES_CATALOG: PlateMeta[] = [
     ],
     colorAccent: '#360802',
     badgeBg: '#bcffbb',
-    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80',
+    image: '/assets/dishes/postres.jpg',
     station: 'Pastelería',
   },
   {
@@ -109,7 +109,7 @@ export const PLATES_CATALOG: PlateMeta[] = [
     ],
     colorAccent: '#477ee9',
     badgeBg: '#f5ffbb',
-    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80',
+    image: '/assets/dishes/bebidas.jpg',
     station: 'Bar',
   },
 ];

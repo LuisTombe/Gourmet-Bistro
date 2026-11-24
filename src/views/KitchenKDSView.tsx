@@ -17,7 +17,19 @@ import {
 export const KitchenKDSView: React.FC = () => {
   const { orders, updateOrderStatus, currentUser } = useRestaurant();
   const [now, setNow] = useState(Date.now());
-  const isCook = currentUser?.role === 'cocinero';
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const canPrepare = currentUser?.role === 'cocinero' || currentUser?.role === 'administrador';
+  const canDeliver = currentUser?.role === 'mesero' || currentUser?.role === 'administrador';
+
+  const handleAdvanceStatus = async (orderId: number, nextStatus: 'En preparación' | 'Listo' | 'Entregado') => {
+    if (updatingOrderId === orderId) return;
+    setUpdatingOrderId(orderId);
+    try {
+      await updateOrderStatus(orderId, nextStatus);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
   React.useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 15000);
@@ -136,13 +148,14 @@ export const KitchenKDSView: React.FC = () => {
         {/* Action Button Footer (RN-06 / RF-11: Solo el rol Cocinero avanza estados de preparación) */}
         <div className="p-4 bg-[#ffffff] border-t border-[#e7dcdb]">
           {order.status === 'Pendiente' && (
-            isCook ? (
+            canPrepare ? (
               <button
-                onClick={() => updateOrderStatus(order.id, 'En preparación')}
-                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
+                onClick={() => handleAdvanceStatus(order.id, 'En preparación')}
+                disabled={updatingOrderId === order.id}
+                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] disabled:opacity-60 text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <Flame className="w-4 h-4" />
-                Iniciar Preparación
+                {updatingOrderId === order.id ? 'Actualizando...' : 'Iniciar Preparación'}
               </button>
             ) : (
               <div className="text-center py-1.5 px-3 rounded-xl bg-[#fdedea]/60 text-[11px] font-medium text-[#74514b]">
@@ -152,13 +165,14 @@ export const KitchenKDSView: React.FC = () => {
           )}
 
           {order.status === 'En preparación' && (
-            isCook ? (
+            canPrepare ? (
               <button
-                onClick={() => updateOrderStatus(order.id, 'Listo')}
-                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#34c771] hover:opacity-95 text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
+                onClick={() => handleAdvanceStatus(order.id, 'Listo')}
+                disabled={updatingOrderId === order.id}
+                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#34c771] hover:opacity-95 disabled:opacity-60 text-white font-medium text-xs tracking-[0.02em] flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Marcar como Listo al Pase
+                {updatingOrderId === order.id ? 'Actualizando...' : 'Marcar como Listo al Pase'}
               </button>
             ) : (
               <div className="text-center py-1.5 px-3 rounded-xl bg-[#f5ffbb]/70 text-[11px] font-medium text-[#360802]">
@@ -168,12 +182,26 @@ export const KitchenKDSView: React.FC = () => {
           )}
 
           {order.status === 'Listo' && (
-            <div className="text-center py-1">
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#360802] bg-[#bcffbb] px-4 py-1.5 rounded-full">
-                <Check className="w-3.5 h-3.5 text-[#34c771]" />
-                Listo en el pase · Esperando entrega
-              </span>
-            </div>
+            canDeliver ? (
+              <button
+                onClick={() => handleAdvanceStatus(order.id, 'Entregado')}
+                disabled={updatingOrderId === order.id}
+                className="w-full min-h-[46px] py-3 px-4 rounded-xl bg-[#34c771] hover:bg-[#28a75a] active:scale-[0.99] disabled:opacity-60 text-white font-semibold text-sm tracking-[0.02em] flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                {updatingOrderId === order.id ? 'Entregando...' : 'Confirmar Entrega en Mesa'}
+              </button>
+            ) : (
+              <div className="text-center py-1 space-y-1">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#360802] bg-[#bcffbb] px-4 py-1.5 rounded-full">
+                  <Check className="w-3.5 h-3.5 text-[#34c771]" />
+                  Listo en el pase · Esperando entrega
+                </span>
+                <p className="text-[10px] text-[#74514b]">
+                  Entrega confirmada por Mesero o Administrador (RN-06)
+                </p>
+              </div>
+            )
           )}
         </div>
       </div>

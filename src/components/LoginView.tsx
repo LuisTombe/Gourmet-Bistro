@@ -4,6 +4,7 @@ import { FoodPlateShowcase } from './showcase/FoodPlateShowcase.tsx';
 import { FoodDetailModal } from './showcase/FoodDetailModal.tsx';
 import { PLATES_CATALOG, PlateMeta } from '../data/platesCatalog.ts';
 import { OptimizedImage } from './ui/OptimizedImage.tsx';
+import { BrandLogo } from './ui/BrandLogo.tsx';
 import {
   Shield,
   UserCheck,
@@ -115,9 +116,7 @@ export const LoginView: React.FC = () => {
           {/* Top Navigation Bar inside Hero with Balanced Breathing Room */}
           <header className="relative z-20 flex items-center justify-between gap-4 pt-1 pointer-events-none">
             <div className="flex items-center gap-4 pointer-events-auto">
-              <span className="text-3xl sm:text-4xl font-medium tracking-tight text-white">
-                Jeton
-              </span>
+              <BrandLogo variant="light" />
               <span className="hidden md:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
                 <MousePointerClick className="w-3.5 h-3.5" />
                 Haz clic en cualquier plato para ver sus productos
@@ -139,7 +138,7 @@ export const LoginView: React.FC = () => {
                 disabled={isSubmitting}
                 className="px-5 py-2.5 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] text-[#f73b20] text-xs font-medium transition-all shadow-xs cursor-pointer"
               >
-                {isSubmitting ? 'Entrando...' : 'Entrar al POS'}
+                Entrar al Sistema
               </button>
             </div>
           </header>
@@ -155,9 +154,9 @@ export const LoginView: React.FC = () => {
                 }}
                 className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)]"
               >
-                One app
+                Todo en uno
                 <br />
-                for all needs
+                para tu cocina
               </h1>
             </div>
 

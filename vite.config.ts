@@ -30,6 +30,7 @@ export default defineConfig(() => {
     },
     server: {
       port: 3000,
+      host: '0.0.0.0',
       proxy: {
         '/api/auth': { target: 'http://127.0.0.1:4001', changeOrigin: true },
         '/api/usuarios': { target: 'http://127.0.0.1:4001', changeOrigin: true },

@@ -74,18 +74,18 @@ export function canTransitionOrderStatus(
 
   // Pendiente -> En preparación
   if (current === 'Pendiente' && next === 'En preparación') {
-    if (role === 'cocinero') {
+    if (role === 'cocinero' || role === 'administrador') {
       return { allowed: true };
     }
-    return { allowed: false, reason: 'Solo el personal de cocina puede iniciar la preparación del pedido.' };
+    return { allowed: false, reason: 'Solo el personal de cocina o administrador puede iniciar la preparación del pedido.' };
   }
 
   // En preparación -> Listo
   if (current === 'En preparación' && next === 'Listo') {
-    if (role === 'cocinero') {
+    if (role === 'cocinero' || role === 'administrador') {
       return { allowed: true };
     }
-    return { allowed: false, reason: 'Solo el personal de cocina puede marcar el pedido como listo.' };
+    return { allowed: false, reason: 'Solo el personal de cocina o administrador puede marcar el pedido como listo.' };
   }
 
   // Listo -> Entregado

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRestaurant } from '../context/RestaurantContext.tsx';
 import { FoodDetailModal } from './showcase/FoodDetailModal.tsx';
 import { OptimizedImage } from './ui/OptimizedImage.tsx';
+import { BrandLogo } from './ui/BrandLogo.tsx';
 import {
   UtensilsCrossed,
   ChefHat,
@@ -90,12 +91,7 @@ export const Navbar: React.FC = React.memo(() => {
               className="flex items-center gap-3 text-left group focus:outline-none cursor-pointer"
               title="Ir a la portada principal"
             >
-              <div className="w-9 h-9 rounded-full bg-[#f73b20] flex items-center justify-center text-white group-hover:scale-105 transition-transform shrink-0">
-                <Flame className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-medium text-xl tracking-tight text-[#360802]">
-                Jeton<span className="text-[#f73b20]">Bistro</span>
-              </span>
+              <BrandLogo />
             </button>
 
             <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-[#e7dcdb] text-xs text-[#74514b]">
@@ -227,7 +223,7 @@ export const Navbar: React.FC = React.memo(() => {
               >
                 <div className="w-7 h-7 rounded-full overflow-hidden border border-[#e7dcdb] shrink-0">
                   <OptimizedImage
-                    src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
+                    src={currentUser.avatar || '/assets/dishes/avatar.svg'}
                     alt={currentUser.name}
                     width={28}
                     height={28}
@@ -256,7 +252,7 @@ export const Navbar: React.FC = React.memo(() => {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-[#f73b20]/30 shrink-0">
                         <OptimizedImage
-                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
+                          src={currentUser.avatar || '/assets/dishes/avatar.svg'}
                           alt={currentUser.name}
                           width={40}
                           height={40}

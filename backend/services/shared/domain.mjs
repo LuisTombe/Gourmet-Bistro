@@ -2,8 +2,8 @@ export const ACTIVE_STATES = ['Pendiente', 'En preparación', 'Listo'];
 export const ALL_STATES = [...ACTIVE_STATES, 'Entregado'];
 export const ROLES = ['administrador', 'mesero', 'cocinero'];
 export function transitionAllowed(from, to, role) {
-  return (role === 'cocinero' && from === 'Pendiente' && to === 'En preparación') ||
-    (role === 'cocinero' && from === 'En preparación' && to === 'Listo') ||
+  return (['cocinero', 'administrador'].includes(role) && from === 'Pendiente' && to === 'En preparación') ||
+    (['cocinero', 'administrador'].includes(role) && from === 'En preparación' && to === 'Listo') ||
     (['mesero', 'administrador'].includes(role) && from === 'Listo' && to === 'Entregado');
 }
 export function asCents(value) {

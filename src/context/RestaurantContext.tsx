@@ -48,20 +48,20 @@ function classifyProductMeta(name: string, description: string): {
       return {
         category: 'Carnes & Grill',
         station: 'Parrilla',
-        image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=700&q=80',
+        image: '/assets/dishes/salmon.jpg',
       };
     }
     if (text.includes('cordero') || text.includes('costilla')) {
       return {
         category: 'Carnes & Grill',
         station: 'Parrilla',
-        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+        image: '/assets/dishes/cordero.jpg',
       };
     }
     return {
       category: 'Carnes & Grill',
       station: 'Parrilla',
-      image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/carnes.jpg',
     };
   }
 
@@ -76,13 +76,13 @@ function classifyProductMeta(name: string, description: string): {
       return {
         category: 'Pastas & Risottos',
         station: 'Cocina',
-        image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=700&q=80',
+        image: '/assets/dishes/pastas.jpg',
       };
     }
     return {
       category: 'Pastas & Risottos',
       station: 'Cocina',
-      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/pastas.jpg',
     };
   }
 
@@ -98,13 +98,13 @@ function classifyProductMeta(name: string, description: string): {
       return {
         category: 'Postres',
         station: 'Pastelería',
-        image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=700&q=80',
+        image: '/assets/dishes/postres.jpg',
       };
     }
     return {
       category: 'Postres',
       station: 'Pastelería',
-      image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/postres.jpg',
     };
   }
 
@@ -122,13 +122,13 @@ function classifyProductMeta(name: string, description: string): {
       return {
         category: 'Bebidas & Bar',
         station: 'Bar',
-        image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=700&q=80',
+        image: '/assets/dishes/bebidas.jpg',
       };
     }
     return {
       category: 'Bebidas & Bar',
       station: 'Bar',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/bebidas.jpg',
     };
   }
 
@@ -136,21 +136,21 @@ function classifyProductMeta(name: string, description: string): {
     return {
       category: 'Entradas',
       station: 'Cocina',
-      image: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/entradas.jpg',
     };
   }
   if (text.includes('atún') || text.includes('atun') || text.includes('tartar')) {
     return {
       category: 'Entradas',
       station: 'Cocina',
-      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=700&q=80',
+      image: '/assets/dishes/entradas.jpg',
     };
   }
 
   return {
     category: 'Entradas',
     station: 'Cocina',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=80',
+    image: '/assets/dishes/entradas.jpg',
   };
 }
 
@@ -427,7 +427,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               name: u.nombre_usuario,
               role: u.rol,
               active: Boolean(u.activo),
-              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+              avatar: '/assets/dishes/avatar.svg',
             }))
           );
         }
@@ -456,7 +456,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             name: res.usuario.nombre_usuario,
             role: res.usuario.rol,
             active: res.usuario.activo,
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+            avatar: '/assets/dishes/avatar.svg',
           };
           setCurrentUser(userObj);
           setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');
@@ -525,7 +525,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         name: user.nombre_usuario,
         role: user.rol,
         active: user.activo,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        avatar: '/assets/dishes/avatar.svg',
       };
       setCurrentUser(userObj);
       setActiveView(userObj.role === 'cocinero' ? 'cocina' : 'mesas');

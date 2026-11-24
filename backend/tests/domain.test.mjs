@@ -23,6 +23,6 @@ test('PU-04 máquina de estados por rol',()=>{
 test('PU-05 roles aceptados según acción',()=>{
   assert.equal(transitionAllowed('Listo','Entregado','administrador'),true);
   assert.equal(transitionAllowed('Listo','Entregado','mesero'),true);
-  assert.equal(transitionAllowed('En preparación','Listo','administrador'),false);
+  assert.equal(transitionAllowed('En preparación','Listo','administrador'),true);
   assert.deepEqual(ACTIVE_STATES,['Pendiente','En preparación','Listo']);
 });

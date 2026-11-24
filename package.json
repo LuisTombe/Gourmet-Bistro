@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "setup:env": "node backend/scripts/init-env.mjs",
+    "setup:db": "node backend/scripts/init-db.mjs",
+    "setup": "npm install && npm --prefix backend install && npm run setup:env && npm run setup:db && node backend/services/ms-usuarios/seed-admin.mjs && node backend/services/ms-catalogo/seed-catalogo.mjs",
     "dev": "concurrently -n \"SERVICES,FRONTEND\" -c \"cyan,green\" \"npm run services\" \"npm run dev:frontend\"",
     "dev:backend": "node --watch backend/src/server.js",
     "dev:frontend": "vite --port=3000 --host=0.0.0.0",

@@ -55,9 +55,9 @@ test('PU-04: canTransitionOrderStatus allows strictly authorized step progressio
   assert.equal(canTransitionOrderStatus('Pendiente', 'En preparación', 'cocinero').allowed, true);
   assert.equal(canTransitionOrderStatus('En preparación', 'Listo', 'cocinero').allowed, true);
 
-  // Mesero or Admin cannot advance kitchen preparation states
+  // Mesero cannot advance kitchen preparation states; Admin can supervise/advance for full testing
   assert.equal(canTransitionOrderStatus('Pendiente', 'En preparación', 'mesero').allowed, false);
-  assert.equal(canTransitionOrderStatus('En preparación', 'Listo', 'administrador').allowed, false);
+  assert.equal(canTransitionOrderStatus('En preparación', 'Listo', 'administrador').allowed, true);
 
   // Mesero or Admin can deliver a ready order
   assert.equal(canTransitionOrderStatus('Listo', 'Entregado', 'mesero').allowed, true);

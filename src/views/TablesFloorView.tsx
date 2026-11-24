@@ -159,9 +159,9 @@ export const TablesFloorView: React.FC = () => {
               }}
               className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)]"
             >
-              One app
+              Todo en uno
               <br />
-              for all orders
+              para tus pedidos
             </h1>
           </div>
 

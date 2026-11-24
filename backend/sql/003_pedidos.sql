@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 CREATE DATABASE IF NOT EXISTS restaurante_pedidos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE restaurante_pedidos;
 CREATE TABLE IF NOT EXISTS pedidos (

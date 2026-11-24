@@ -1,8 +1,12 @@
-import 'dotenv/config';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 import crypto from 'node:crypto';
 import zlib from 'node:zlib';
 import mysql from 'mysql2/promise';
 import { ZodError } from 'zod';
+
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env'), override: true });
 
 const port = Number(process.env.MYSQL_PORT) || 3306;
 const pools = new Map();
@@ -34,6 +38,7 @@ export function poolFor(service) {
     keepAliveInitialDelay: 10000,
     connectTimeout: 5000,
     decimalNumbers: false,
+    charset: 'utf8mb4',
   });
   pools.set(service, pool);
   return pool;

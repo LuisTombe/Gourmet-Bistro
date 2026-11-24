@@ -79,7 +79,7 @@ export const MenuAdminView: React.FC = () => {
     setPrice('');
     setCategory('Carnes & Grill');
     setStation('Cocina');
-    setImage('https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&h=400&q=80');
+    setImage('/assets/dishes/entradas.svg');
     setAvailable(true);
     setFormError(null);
     setModalOpen(true);
@@ -132,7 +132,7 @@ export const MenuAdminView: React.FC = () => {
         station,
         image:
           image.trim() ||
-          'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&h=400&q=80',
+          '/assets/dishes/entradas.svg',
         available,
       });
       if (res.success) setModalOpen(false);
