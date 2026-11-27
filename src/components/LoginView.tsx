@@ -100,10 +100,10 @@ export const LoginView: React.FC = () => {
             background:
               'linear-gradient(132deg, #f36878 0%, #f66a55 34%, #f87d56 68%, #f8a27d 100%)',
           }}
-          className="relative w-full min-h-[86vh] rounded-[28px] overflow-hidden flex flex-col justify-between p-7 sm:p-10 lg:p-12 select-none"
+          className="relative w-full min-h-[86vh] rounded-[24px] sm:rounded-[28px] overflow-hidden flex flex-col justify-between p-5 sm:p-8 lg:p-12 select-none"
         >
-          {/* 2D Food Plates Showcase */}
-          <div className="absolute inset-0 z-10">
+          {/* 2D Food Plates Showcase - Activo en desktop en el tercio superior */}
+          <div className="hidden lg:block absolute inset-0 z-10">
             <FoodPlateShowcase
               variant="hero"
               activeDishIndex={selectedPlateIdx}
@@ -114,20 +114,20 @@ export const LoginView: React.FC = () => {
           </div>
 
           {/* Top Navigation Bar inside Hero with Balanced Breathing Room */}
-          <header className="relative z-20 flex items-center justify-between gap-4 pt-1 pointer-events-none">
-            <div className="flex items-center gap-4 pointer-events-auto">
+          <header className="relative z-20 flex items-center justify-between gap-3 pt-0.5 sm:pt-1">
+            <div className="flex items-center gap-3">
               <BrandLogo variant="light" />
-              <span className="hidden md:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
+              <span className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium">
                 <MousePointerClick className="w-3.5 h-3.5" />
                 Haz clic en cualquier plato para ver sus productos
               </span>
             </div>
 
-            <div className="flex items-center gap-2.5 pointer-events-auto">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsLoginModalOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-medium transition-all cursor-pointer"
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-medium transition-all cursor-pointer whitespace-nowrap"
               >
                 Iniciar Sesión
               </button>
@@ -136,31 +136,100 @@ export const LoginView: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickLogin('admin', 'AdminPass2026!')}
                 disabled={isSubmitting}
-                className="px-5 py-2.5 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] text-[#f73b20] text-xs font-medium transition-all shadow-xs cursor-pointer"
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] text-[#f73b20] text-xs font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap"
               >
                 Entrar al Sistema
               </button>
             </div>
           </header>
 
-          {/* Lower-Middle Oversized Editorial Headline + Right Subcopy */}
-          <div className="relative z-20 mt-auto pt-52 sm:pt-64 lg:pt-72 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pointer-events-none">
+          {/* Carrusel táctil de Platos en Mobile (situado arriba del texto para evitar solapamiento) */}
+          <div className="lg:hidden relative z-20 my-auto py-3 w-full">
+            <div className="flex items-center justify-between text-white/85 text-[11px] mb-2 px-1">
+              <span>Selecciona un plato de autor:</span>
+              <span className="font-semibold text-white">{activePlate.shortName}</span>
+            </div>
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x">
+              {PLATES_CATALOG.map((plate, idx) => {
+                const isActive = selectedPlateIdx === idx;
+                return (
+                  <button
+                    key={plate.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPlateIdx(idx);
+                      setIs3DModalOpen(true);
+                    }}
+                    className={`shrink-0 snap-center flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                      isActive ? 'scale-105' : 'opacity-85 hover:opacity-100'
+                    }`}
+                  >
+                    <div
+                      className={`relative rounded-full p-1 bg-white/20 backdrop-blur-md border border-white/40 ${
+                        isActive ? 'ring-3 ring-white shadow-lg' : ''
+                      }`}
+                    >
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-br from-[#ffffff] via-[#faf5f4] to-[#ece1df] shadow-inner flex items-center justify-center">
+                        <div className="w-full h-full rounded-full overflow-hidden border border-[#e7dcdb] bg-[#360802]/5">
+                          <OptimizedImage
+                            src={plate.image}
+                            alt={plate.name}
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${
+                        isActive
+                          ? 'bg-white text-[#f73b20] shadow-xs'
+                          : 'bg-white/25 text-white'
+                      }`}
+                    >
+                      {plate.shortName}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Lower-Middle Editorial Headline + Right Subcopy */}
+          <div className="relative z-20 mt-4 sm:mt-6 lg:mt-auto pt-2 lg:pt-64 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end">
             <div className="lg:col-span-7">
               <h1
-                style={{
-                  fontSize: 'clamp(3.3rem, 7vw, 6.5rem)',
-                  lineHeight: 0.92,
-                  letterSpacing: '-0.02em',
-                }}
-                className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)]"
+                className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)] text-3xl sm:text-5xl lg:text-[5.5rem] leading-[1.04] tracking-tight"
               >
                 Todo en uno
                 <br />
                 para tu cocina
               </h1>
+              <p className="text-white/95 text-sm sm:text-base lg:text-lg font-normal leading-[1.35] max-w-sm mt-3 lg:hidden">
+                Un solo sistema para tus pedidos, mesas y platos de autor.
+              </p>
+              <div className="flex items-center gap-2.5 mt-4 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setIs3DModalOpen(true)}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-white text-[#f73b20] text-xs font-medium flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <UtensilsCrossed className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Ver Platos & Pedir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Cambiar Rol</span>
+                </button>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 lg:pl-10 space-y-5 pointer-events-auto">
+            <div className="hidden lg:block lg:col-span-5 lg:pl-10 space-y-5 pointer-events-auto">
               <p className="text-white/95 text-lg sm:text-xl font-normal leading-[1.3] max-w-xs">
                 Un solo sistema para tus pedidos, mesas y platos de autor.
               </p>
@@ -188,21 +257,32 @@ export const LoginView: React.FC = () => {
           </div>
 
           {/* Bottom Bar inside Hero */}
-          <div className="relative z-20 mt-8 pt-2 flex flex-wrap items-center justify-between gap-4">
-            <button
-              type="button"
-              onClick={() =>
-                editorialSpreadRef.current?.scrollIntoView({ behavior: 'smooth' })
-              }
-              className="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <ArrowDown className="w-3.5 h-3.5" />
-              <span>Scroll</span>
-            </button>
+          <div className="relative z-20 mt-4 lg:mt-8 pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  editorialSpreadRef.current?.scrollIntoView({ behavior: 'smooth' })
+                }
+                className="px-3.5 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+                <span>Scroll</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIs3DModalOpen(true)}
+                className="sm:hidden px-3.5 py-1.5 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Pedido ({draftItemsCount})</span>
+              </button>
+            </div>
 
             <nav
               aria-label="Selección de platos"
-              className="flex items-center gap-1 p-1.5 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto"
+              className="flex items-center gap-1 p-1 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto no-scrollbar"
             >
               {PLATES_CATALOG.map((plate, idx) => (
                 <button
@@ -212,7 +292,7 @@ export const LoginView: React.FC = () => {
                     setSelectedPlateIdx(idx);
                     setIs3DModalOpen(true);
                   }}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                     selectedPlateIdx === idx
                       ? 'bg-white text-[#f73b20]'
                       : 'text-white/95 hover:bg-white/15'
@@ -226,7 +306,7 @@ export const LoginView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIs3DModalOpen(true)}
-              className="px-4 py-2 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer"
+              className="hidden sm:flex px-4 py-2 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium items-center gap-2 transition-all cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>Pedido ({draftItemsCount})</span>

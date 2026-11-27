@@ -91,8 +91,8 @@ export const FoodPlateShowcase: React.FC<FoodPlateShowcaseProps> = ({
         <div className="w-80 h-80 rounded-full bg-white/15 blur-3xl" />
       </div>
 
-      {/* Riel horizontal que distribuye los platos a lo largo del panel en la zona central despejada */}
-      <div className="relative w-full max-w-4xl -translate-y-12 sm:-translate-y-14 lg:-translate-y-16 flex items-center justify-between px-4 sm:px-8">
+      {/* Riel horizontal que distribuye los platos en el tercio superior despejado */}
+      <div className="relative w-full max-w-4xl -translate-y-20 lg:-translate-y-28 flex items-center justify-between px-4 sm:px-8">
         {PLATES_CATALOG.map((plate, idx) => {
           const isActive = idx === activeDishIndex;
           // Distribución horizontal con solapamiento armónico de anillos (-18% de solape visual)
