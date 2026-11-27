@@ -200,10 +200,10 @@ export const Navbar: React.FC = React.memo(() => {
           </nav>
 
           {/* Right: Platos Menu Trigger + Profile Pill */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <button
               onClick={() => setIs3DModalOpen(true)}
-              className="px-4 py-2 rounded-full bg-[#fdedea] hover:bg-[#f73b20] text-[#f73b20] hover:text-white border border-[#f73b20]/20 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              className="p-2 sm:px-4 sm:py-2 rounded-full bg-[#fdedea] hover:bg-[#f73b20] text-[#f73b20] hover:text-white border border-[#f73b20]/20 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
               title="Explorar platos gourmet del menú"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -246,7 +246,7 @@ export const Navbar: React.FC = React.memo(() => {
                     boxShadow:
                       'rgba(247, 59, 32, 0.1) 0px 12px 32px 0px, rgba(54, 8, 2, 0.06) 0px 2px 8px 0px',
                   }}
-                  className="absolute right-0 top-full mt-2.5 w-72 sm:w-80 max-h-[calc(100vh-5rem)] overflow-y-auto bg-[#ffffff] border border-[#e7dcdb] rounded-2xl z-[60] divide-y divide-[#e7dcdb]"
+                  className="absolute right-0 top-full mt-2.5 w-[calc(100vw-2rem)] sm:w-80 max-w-sm max-h-[calc(100vh-5rem)] overflow-y-auto bg-[#ffffff] border border-[#e7dcdb] rounded-2xl z-[60] divide-y divide-[#e7dcdb]"
                 >
                   <div className="p-4 bg-[#fdedea]/45">
                     <div className="flex items-center gap-3">
@@ -393,7 +393,7 @@ export const Navbar: React.FC = React.memo(() => {
       </div>
 
       {/* Mobile Navigation Sub-bar */}
-      <div className="md:hidden flex items-center justify-around bg-[#ffffff] border-t border-[#e7dcdb] px-3 py-2.5 text-xs overflow-x-auto gap-1">
+      <div className="md:hidden flex items-center justify-start sm:justify-around bg-[#ffffff] border-t border-[#e7dcdb] px-3 py-2 text-xs overflow-x-auto no-scrollbar gap-1.5">
         {(role === 'mesero' || role === 'administrador') && (
           <>
             <button

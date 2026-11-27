@@ -132,7 +132,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
           boxShadow:
             'rgba(247, 59, 32, 0.14) 0px 16px 48px 0px, rgba(54, 8, 2, 0.12) 0px 4px 16px 0px',
         }}
-        className="relative w-full max-w-6xl my-auto bg-[#ffffff] rounded-[28px] border border-[#e7dcdb] overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[92vh] lg:max-h-[88vh]"
+        className="relative w-full max-w-6xl my-auto bg-[#ffffff] rounded-[24px] sm:rounded-[28px] border border-[#e7dcdb] overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[94vh] lg:max-h-[88vh]"
       >
         {/* Botón de cierre */}
         <button
@@ -149,7 +149,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
             background:
               'linear-gradient(135deg, #f36c7b 0%, #f73b20 48%, #f88a63 82%, #f9b489 100%)',
           }}
-          className="lg:col-span-5 relative min-h-[300px] sm:min-h-[380px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden"
+          className="lg:col-span-5 relative min-h-[260px] sm:min-h-[340px] lg:min-h-[580px] flex flex-col justify-between overflow-hidden"
         >
           {/* Badge superior */}
           <div className="p-6 z-20 flex items-center justify-between pointer-events-none">

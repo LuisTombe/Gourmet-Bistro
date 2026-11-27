@@ -18,6 +18,7 @@ export const KitchenKDSView: React.FC = () => {
   const { orders, updateOrderStatus, currentUser } = useRestaurant();
   const [now, setNow] = useState(Date.now());
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [mobileLane, setMobileLane] = useState<'all' | 'pendientes' | 'preparacion' | 'listos'>('all');
   const canPrepare = currentUser?.role === 'cocinero' || currentUser?.role === 'administrador';
   const canDeliver = currentUser?.role === 'mesero' || currentUser?.role === 'administrador';
 
@@ -242,10 +243,54 @@ export const KitchenKDSView: React.FC = () => {
         </div>
       </div>
 
+      {/* Selector de carril en dispositivos móviles */}
+      <div className="md:hidden mt-6 flex items-center gap-1.5 p-1 rounded-full bg-[#fdedea] border border-[#e7dcdb] overflow-x-auto no-scrollbar">
+        <button
+          onClick={() => setMobileLane('all')}
+          className={`flex-1 min-w-[70px] py-1.5 px-3 rounded-full text-xs font-medium text-center transition-all ${
+            mobileLane === 'all'
+              ? 'bg-[#f73b20] text-white shadow-xs'
+              : 'text-[#360802] hover:bg-white/50'
+          }`}
+        >
+          Todos ({activeOrders.length})
+        </button>
+        <button
+          onClick={() => setMobileLane('pendientes')}
+          className={`flex-1 min-w-[85px] py-1.5 px-3 rounded-full text-xs font-medium text-center transition-all ${
+            mobileLane === 'pendientes'
+              ? 'bg-[#f73b20] text-white shadow-xs'
+              : 'text-[#360802] hover:bg-white/50'
+          }`}
+        >
+          Pendientes ({pendientes.length})
+        </button>
+        <button
+          onClick={() => setMobileLane('preparacion')}
+          className={`flex-1 min-w-[95px] py-1.5 px-3 rounded-full text-xs font-medium text-center transition-all ${
+            mobileLane === 'preparacion'
+              ? 'bg-[#f73b20] text-white shadow-xs'
+              : 'text-[#360802] hover:bg-white/50'
+          }`}
+        >
+          En Fuego ({enPreparacion.length})
+        </button>
+        <button
+          onClick={() => setMobileLane('listos')}
+          className={`flex-1 min-w-[75px] py-1.5 px-3 rounded-full text-xs font-medium text-center transition-all ${
+            mobileLane === 'listos'
+              ? 'bg-[#34c771] text-white shadow-xs'
+              : 'text-[#360802] hover:bg-white/50'
+          }`}
+        >
+          Listos ({listos.length})
+        </button>
+      </div>
+
       {/* 3 Lane Editorial Kanban Flow */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Lane 1: PENDIENTES */}
-        <div className="space-y-4">
+        <div className={`space-y-4 ${mobileLane !== 'all' && mobileLane !== 'pendientes' ? 'hidden md:block' : 'block'}`}>
           <div className="bg-[#fdedea] p-4 rounded-2xl border border-[#e7dcdb] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#f73b20]" />
@@ -272,7 +317,7 @@ export const KitchenKDSView: React.FC = () => {
         </div>
 
         {/* Lane 2: EN PREPARACIÓN */}
-        <div className="space-y-4">
+        <div className={`space-y-4 ${mobileLane !== 'all' && mobileLane !== 'preparacion' ? 'hidden md:block' : 'block'}`}>
           <div className="bg-[#f5ffbb] p-4 rounded-2xl border border-[#e7dcdb] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#360802]" />
@@ -299,7 +344,7 @@ export const KitchenKDSView: React.FC = () => {
         </div>
 
         {/* Lane 3: LISTOS AL PASE */}
-        <div className="space-y-4">
+        <div className={`space-y-4 ${mobileLane !== 'all' && mobileLane !== 'listos' ? 'hidden md:block' : 'block'}`}>
           <div className="bg-[#bcffbb] p-4 rounded-2xl border border-[#e7dcdb] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#34c771]" />

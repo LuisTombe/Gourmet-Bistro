@@ -374,6 +374,7 @@ export const NewOrderView: React.FC = () => {
 
         {/* Right: Pinned Live Ticket (Pure Jeton Editorial Light Card) */}
         <div
+          id="order-cart-panel"
           style={{
             boxShadow:
               'rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(247, 59, 32, 0.05) 0px 2px 8px 0px',
@@ -602,6 +603,30 @@ export const NewOrderView: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Barra flotante de acceso a comanda en móviles */}
+      {draftCart.length > 0 && (
+        <div className="lg:hidden fixed bottom-4 inset-x-4 z-40 bg-[#360802] text-white rounded-2xl p-3.5 shadow-[0_12px_36px_rgba(54,8,2,0.4)] border border-white/10 flex items-center justify-between animate-fadeIn">
+          <div>
+            <div className="text-xs text-white/80">
+              {draftCart.reduce((s, i) => s + i.quantity, 0)} {draftCart.reduce((s, i) => s + i.quantity, 0) === 1 ? 'producto' : 'productos'}
+            </div>
+            <div className="text-base font-semibold text-white tabular-nums">
+              ${total.toLocaleString('es-CO')}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const el = document.getElementById('order-cart-panel');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="px-4 py-2 rounded-xl bg-[#f73b20] hover:bg-[#f84d35] text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Ver Comanda</span>
+          </button>
         </div>
       )}
 

@@ -27,3 +27,12 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(247, 59, 32, 0.55);
 }
+
+/* Ocultar barra de desplazamiento manteniendo funcionalidad táctil */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
