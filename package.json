@@ -22,6 +22,8 @@
     "test:services": "node --test backend/tests/*.test.mjs",
     "check:services": "node --check backend/services/ms-usuarios/server.mjs && node --check backend/services/ms-catalogo/server.mjs && node --check backend/services/ms-pedidos/server.mjs",
     "test:e2e": "node backend/tests/e2e.test.js",
+    "test:sprint3": "node backend/tests/sprint3-integration.test.js",
+    "test:all": "npm run test && npm run test:services && npm run test:e2e && npm run test:sprint3",
     "lint": "tsc --noEmit",
     "db:migrate": "node database/migrate.js"
   },

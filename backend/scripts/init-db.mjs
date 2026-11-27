@@ -35,10 +35,10 @@ try {
     for (const hostScope of ['127.0.0.1', 'localhost']) {
       await conn.query('CREATE USER IF NOT EXISTS ?@? IDENTIFIED BY ?', [user, hostScope, pass]);
       await conn.query('ALTER USER ?@? IDENTIFIED BY ?', [user, hostScope, pass]);
-      await conn.query(`REVOKE ALL PRIVILEGES ON \`${dbName}\`.* FROM ?@?`, [user, hostScope]).catch(() => {});
-      await conn.query(`GRANT SELECT, INSERT, UPDATE, DELETE ON \`${dbName}\`.* TO ?@?`, [user, hostScope]);
+      await conn.query(`REVOKE ALL PRIVILEGES ON \`${dbName}\`.* FROM '${user}'@'${hostScope}'`).catch(() => {});
+      await conn.query(`GRANT SELECT, INSERT, UPDATE, DELETE ON \`${dbName}\`.* TO '${user}'@'${hostScope}'`);
       if (user === 'gb_usuarios') {
-        await conn.query('GRANT CREATE, ALTER ON restaurante_usuarios.system_snapshots TO ?@?', [user, hostScope]);
+        await conn.query(`GRANT CREATE, ALTER, DROP, INDEX ON \`restaurante_usuarios\`.* TO '${user}'@'${hostScope}'`);
       }
     }
     console.log(`Usuario mínimo privilegio listo: ${user} -> ${dbName}.*`);
