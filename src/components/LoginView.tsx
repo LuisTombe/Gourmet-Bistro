@@ -98,7 +98,7 @@ export const LoginView: React.FC = () => {
         <section
           style={{
             background:
-              'linear-gradient(132deg, #f36878 0%, #f66a55 34%, #f87d56 68%, #f8a27d 100%)',
+              'linear-gradient(132deg, #991B1B 0%, #C2410C 38%, #EA580C 72%, #F97316 100%)',
           }}
           className="relative w-full min-h-[86vh] rounded-[24px] sm:rounded-[28px] overflow-hidden flex flex-col justify-between p-5 sm:p-8 lg:p-12 select-none"
         >
@@ -136,7 +136,7 @@ export const LoginView: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickLogin('admin', 'AdminPass2026!')}
                 disabled={isSubmitting}
-                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] text-[#f73b20] text-xs font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap"
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#ffffff] hover:bg-[#FFF7ED] text-[#C2410C] text-xs font-semibold transition-all shadow-xs cursor-pointer whitespace-nowrap"
               >
                 Entrar al Sistema
               </button>
@@ -170,7 +170,7 @@ export const LoginView: React.FC = () => {
                       }`}
                     >
                       <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-br from-[#ffffff] via-[#faf5f4] to-[#ece1df] shadow-inner flex items-center justify-center">
-                        <div className="w-full h-full rounded-full overflow-hidden border border-[#e7dcdb] bg-[#360802]/5">
+                        <div className="w-full h-full rounded-full overflow-hidden border border-[#E7E5E4] bg-[#292524]/5">
                           <OptimizedImage
                             src={plate.image}
                             alt={plate.name}
@@ -184,7 +184,7 @@ export const LoginView: React.FC = () => {
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${
                         isActive
-                          ? 'bg-white text-[#f73b20] shadow-xs'
+                          ? 'bg-white text-[#C2410C] shadow-xs'
                           : 'bg-white/25 text-white'
                       }`}
                     >
@@ -200,7 +200,7 @@ export const LoginView: React.FC = () => {
           <div className="relative z-20 mt-4 sm:mt-6 lg:mt-auto pt-2 lg:pt-64 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end">
             <div className="lg:col-span-7">
               <h1
-                className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)] text-3xl sm:text-5xl lg:text-[5.5rem] leading-[1.04] tracking-tight"
+                className="font-medium text-white drop-shadow-[0_4px_24px_rgba(41,37,36,0.15)] text-3xl sm:text-5xl lg:text-[5.5rem] leading-[1.04] tracking-tight"
               >
                 Todo en uno
                 <br />
@@ -213,7 +213,7 @@ export const LoginView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIs3DModalOpen(true)}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-white text-[#f73b20] text-xs font-medium flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-white text-[#C2410C] text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <UtensilsCrossed className="w-4 h-4 shrink-0" />
                   <span className="truncate">Ver Platos & Pedir</span>
@@ -238,7 +238,7 @@ export const LoginView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIs3DModalOpen(true)}
-                  className="px-5 py-3 rounded-xl bg-white text-[#f73b20] hover:bg-[#fdedea] text-xs font-medium flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+                  className="px-5 py-3 rounded-xl bg-white text-[#C2410C] hover:bg-[#FFF7ED] text-xs font-semibold flex items-center gap-2 transition-all shadow-xs cursor-pointer"
                 >
                   <UtensilsCrossed className="w-4 h-4" />
                   <span>Ver Platos & Pedir</span>
@@ -273,7 +273,7 @@ export const LoginView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIs3DModalOpen(true)}
-                className="sm:hidden px-3.5 py-1.5 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                className="sm:hidden px-3.5 py-1.5 rounded-full bg-[#1C1917]/40 hover:bg-[#1C1917]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Pedido ({draftItemsCount})</span>
@@ -282,7 +282,7 @@ export const LoginView: React.FC = () => {
 
             <nav
               aria-label="Selección de platos"
-              className="flex items-center gap-1 p-1 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto no-scrollbar"
+              className="flex items-center gap-1 p-1 rounded-full bg-[#C2410C] text-white shadow-[0_8px_24px_rgba(194,65,12,0.35)] border border-white/20 max-w-full overflow-x-auto no-scrollbar"
             >
               {PLATES_CATALOG.map((plate, idx) => (
                 <button
@@ -294,7 +294,7 @@ export const LoginView: React.FC = () => {
                   }}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                     selectedPlateIdx === idx
-                      ? 'bg-white text-[#f73b20]'
+                      ? 'bg-white text-[#C2410C]'
                       : 'text-white/95 hover:bg-white/15'
                   }`}
                 >
@@ -306,7 +306,7 @@ export const LoginView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIs3DModalOpen(true)}
-              className="hidden sm:flex px-4 py-2 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium items-center gap-2 transition-all cursor-pointer"
+              className="hidden sm:flex px-4 py-2 rounded-full bg-[#1C1917]/40 hover:bg-[#1C1917]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium items-center gap-2 transition-all cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>Pedido ({draftItemsCount})</span>

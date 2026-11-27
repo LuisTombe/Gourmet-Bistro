@@ -1,81 +1,118 @@
 /* =====================================================================
-   Gourmet-Bistro Style Tokens — Jeton Editorial Design System
-   Paleta: Signal Orange (#f73b20), Ink Roast (#360802), Paper White (#ffffff)
-   Nota importante para Tailwind v4: No sobrescribir --spacing-* numérico
-   dentro de @theme para preservar la escala estándar (1 unidad = 0.25rem = 4px).
+   MesaLink — Sistema de Diseño UI/UX
+   Paleta: Primario Naranja (#C2410C / #EA580C), Borgoña Marca (#991B1B),
+   Marfil Canvas (#FAF8F5), Neutros (#292524 / #E7E5E4 / #FFFFFF).
    ===================================================================== */
 
 @theme {
-  /* Colors */
-  --color-signal-orange: #f73b20;
-  --color-brand-orange-tint: #f84d35;
-  --color-ink-roast: #360802;
-  --color-paper-white: #ffffff;
-  --color-carbon-black: #000000;
-  --color-ash-grey: #ababab;
-  --color-sand-wash: #e7dcdb;
-  --color-linen-blush: #fdedea;
-  --color-citrus-wash: #f5ffbb;
-  --color-mint-wash: #bcffbb;
-  --color-coral-red: #fb2d54;
-  --color-cobalt-blue: #477ee9;
-  --color-emerald-green: #34c771;
+  /* Marca Primaria (Naranja) */
+  --color-primary-50: #FFF7ED;
+  --color-primary-100: #FFEDD5;
+  --color-primary-300: #FDBA74;
+  --color-primary-500: #F97316;
+  --color-primary-600: #EA580C;
+  --color-primary-700: #C2410C;
+  --color-primary-800: #9A3412;
+  --color-primary-900: #7C2D12;
 
-  /* Typography */
-  --font-sequel-sans: 'Plus Jakarta Sans', 'Sequel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Marca Secundaria (Borgoña) */
+  --color-secondary-50: #FEF2F2;
+  --color-secondary-200: #FECACA;
+  --color-secondary-500: #EF4444;
+  --color-secondary-800: #991B1B;
+  --color-secondary-900: #7F1D1D;
+
+  /* Neutros Cálidos */
+  --color-neutral-white: #FFFFFF;
+  --color-neutral-canvas: #FAF8F5;
+  --color-neutral-100: #F5F5F4;
+  --color-neutral-200: #E7E5E4;
+  --color-neutral-300: #D6D3D1;
+  --color-neutral-400: #A8A29E;
+  --color-neutral-500: #78716C;
+  --color-neutral-600: #57534E;
+  --color-neutral-700: #44403C;
+  --color-neutral-800: #292524;
+  --color-neutral-900: #1C1917;
+  --color-neutral-950: #0C0A09;
+
+  /* Mapeos de compatibilidad Tailwind para la paleta MesaLink */
+  --color-signal-orange: #C2410C;
+  --color-brand-orange-tint: #EA580C;
+  --color-ink-roast: #292524;
+  --color-paper-white: #FAF8F5;
+  --color-carbon-black: #1C1917;
+  --color-ash-grey: #78716C;
+  --color-sand-wash: #E7E5E4;
+  --color-linen-blush: #FFF7ED;
+  --color-citrus-wash: #FEF3C7;
+  --color-mint-wash: #DCFCE7;
+  --color-coral-red: #B91C1C;
+  --color-cobalt-blue: #2563EB;
+  --color-emerald-green: #15803D;
+
+  /* Tipografía */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
-  /* Jeton Base Colors */
-  --color-signal-orange: #f73b20;
-  --color-brand-orange-tint: #f84d35;
-  --color-ink-roast: #360802;
-  --color-paper-white: #ffffff;
-  --color-carbon-black: #000000;
-  --color-ash-grey: #ababab;
-  --color-sand-wash: #e7dcdb;
-  --color-linen-blush: #fdedea;
-  --color-citrus-wash: #f5ffbb;
-  --color-mint-wash: #bcffbb;
-  --color-coral-red: #fb2d54;
-  --color-cobalt-blue: #477ee9;
-  --color-emerald-green: #34c771;
+  color-scheme: light;
 
-  /* Escala de espaciado de referencia Jeton */
-  --jeton-space-4: 4px;
-  --jeton-space-8: 8px;
-  --jeton-space-12: 12px;
-  --jeton-space-16: 16px;
-  --jeton-space-20: 20px;
-  --jeton-space-24: 24px;
-  --jeton-space-32: 32px;
-  --jeton-space-48: 48px;
-  --jeton-space-56: 56px;
-  --jeton-space-160: 160px;
+  /* Tokens Oficiales MesaLink */
+  --brand-primary: #EA580C;
+  --brand-secondary: #991B1B;
+  --background: #FAF8F5;
+  --surface: #FFFFFF;
+  --surface-elevated: #F5F5F4;
+  --border: #D6D3D1;
+  --border-interactive: #78716C;
+  --text-primary: #292524;
+  --text-secondary: #57534E;
+  --text-tertiary: #78716C;
+  --text-on-primary: #FFFFFF;
+  --primary: #C2410C;
+  --primary-hover: #9A3412;
+  --primary-active: #7C2D12;
+  --primary-soft: #FFF7ED;
+  --secondary-bg: #FFFFFF;
+  --secondary-text: #C2410C;
+  --secondary-hover: #FFF7ED;
+  --secondary-active: #FFEDD5;
+  --disabled-bg: #E7E5E4;
+  --disabled-text: #78716C;
+  --focus-ring: #C2410C;
+  --success: #166534;
+  --success-bg: #DCFCE7;
+  --warning: #92400E;
+  --warning-bg: #FEF3C7;
+  --error: #991B1B;
+  --error-bg: #FEE2E2;
+  --info: #1E40AF;
+  --info-bg: #DBEAFE;
 
-  /* Mapeo del Sistema Gourmet Bistro al Estilo Jeton */
-  --gb-brand: #f73b20;
-  --gb-brand-hover: #e02f17;
-  --gb-brand-soft: #fdedea;
-  --gb-brand-subtle: #fff6f4;
-  --gb-bg: #ffffff;
-  --gb-surface: #ffffff;
-  --gb-surface-muted: #fdedea;
-  --gb-ink: #360802;
-  --gb-ink-muted: #74514b;
-  --gb-ink-light: #ababab;
-  --gb-border: #e7dcdb;
-  --gb-border-focus: #f73b20;
+  /* Mapeo del Sistema Gourmet Bistro hacia Tokens MesaLink */
+  --gb-brand: #C2410C;
+  --gb-brand-hover: #9A3412;
+  --gb-brand-soft: #FFF7ED;
+  --gb-brand-subtle: #FFEDD5;
+  --gb-bg: #FAF8F5;
+  --gb-surface: #FFFFFF;
+  --gb-surface-muted: #F5F5F4;
+  --gb-ink: #292524;
+  --gb-ink-muted: #57534E;
+  --gb-ink-light: #78716C;
+  --gb-border: #E7E5E4;
+  --gb-border-focus: #C2410C;
 
   /* Estados Semánticos Operativos */
-  --gb-success: #34c771;
-  --gb-success-bg: #bcffbb;
-  --gb-warning: #f84d35;
-  --gb-warning-bg: #fdedea;
-  --gb-danger: #fb2d54;
-  --gb-danger-bg: #ffebee;
-  --gb-info: #477ee9;
-  --gb-info-bg: #eaf0ff;
+  --gb-success: #15803D;
+  --gb-success-bg: #DCFCE7;
+  --gb-warning: #D97706;
+  --gb-warning-bg: #FEF3C7;
+  --gb-danger: #B91C1C;
+  --gb-danger-bg: #FEE2E2;
+  --gb-info: #2563EB;
+  --gb-info-bg: #DBEAFE;
 
   /* Radios */
   --gb-radius-sm: 8px;
@@ -83,36 +120,40 @@
   --gb-radius-lg: 16px;
   --gb-radius-full: 9999px;
 
-  /* Sombras distintivas Jeton (Inverted upward lift shadow) */
-  --gb-shadow-card: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.04);
-  --gb-shadow-card-hover: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
-  --gb-focus: 0 0 0 3px rgba(247, 59, 32, 0.22);
+  /* Sombras cálidas MesaLink */
+  --gb-shadow-card: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(41, 37, 36, 0.04);
+  --gb-shadow-card-hover: rgba(194, 65, 12, 0.12) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
+  --gb-focus: 0 0 0 3px rgba(194, 65, 12, 0.22);
 }
 
 body {
-  background-color: var(--color-paper-white);
-  color: var(--color-ink-roast);
-  font-family: var(--font-sequel-sans);
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Clases Utilitarias Editorial Jeton */
+/* Gradiente Hero Oficial MesaLink (Borgoña gastronómico a Naranja interacción) */
+.mesalink-hero-gradient {
+  background: linear-gradient(132deg, #991B1B 0%, #C2410C 38%, #EA580C 72%, #F97316 100%);
+}
+
 .jeton-hero-gradient {
-  background: linear-gradient(135deg, #f73b20 0%, #f84d35 32%, #ff8c79 68%, #ffd4cc 100%);
+  background: linear-gradient(132deg, #991B1B 0%, #C2410C 38%, #EA580C 72%, #F97316 100%);
 }
 
 .jeton-inverted-shadow {
-  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(41, 37, 36, 0.03);
 }
 
 .jeton-card {
   background-color: #ffffff;
-  border: 1px solid var(--color-sand-wash);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(54, 8, 2, 0.03);
+  box-shadow: rgba(0, 0, 0, 0.04) 0px -2px 12px 0px, 0 4px 20px rgba(41, 37, 36, 0.03);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .jeton-card:hover {
-  box-shadow: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
+  box-shadow: rgba(194, 65, 12, 0.12) 0px 8px 24px 0px, rgba(0, 0, 0, 0.04) 0px -2px 12px 0px;
 }

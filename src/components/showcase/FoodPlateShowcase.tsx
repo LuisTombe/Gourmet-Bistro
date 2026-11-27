@@ -59,7 +59,7 @@ export const FoodPlateShowcase: React.FC<FoodPlateShowcaseProps> = ({
           </div>
 
           {/* Badge flotante al pasar el cursor */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/95 text-[#f73b20] text-[11px] font-semibold tracking-wide shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/95 text-[#C2410C] text-[11px] font-semibold tracking-wide shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
             <Eye className="w-3.5 h-3.5" />
             <span>Haz clic para explorar menú</span>
           </div>
@@ -126,8 +126,8 @@ export const FoodPlateShowcase: React.FC<FoodPlateShowcaseProps> = ({
                     />
 
                     {/* Overlay interactivo al hover */}
-                    <div className="absolute inset-0 bg-[#360802]/0 group-hover:bg-[#360802]/25 transition-colors flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 rounded-full bg-white/95 text-[#f73b20] text-[10px] font-bold shadow-md flex items-center gap-1">
+                    <div className="absolute inset-0 bg-[#292524]/0 group-hover:bg-[#292524]/25 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 rounded-full bg-white/95 text-[#C2410C] text-[10px] font-bold shadow-md flex items-center gap-1">
                         <Utensils className="w-2.5 h-2.5" />
                         Ver
                       </span>
@@ -139,8 +139,8 @@ export const FoodPlateShowcase: React.FC<FoodPlateShowcaseProps> = ({
                 <div
                   className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold whitespace-nowrap shadow-sm border transition-all ${
                     isActive
-                      ? 'bg-[#ffffff] text-[#f73b20] border-[#f73b20]/40'
-                      : 'bg-white/90 text-[#360802] border-white/70 group-hover:bg-white'
+                      ? 'bg-[#ffffff] text-[#C2410C] border-[#C2410C]/40'
+                      : 'bg-white/90 text-[#292524] border-white/70 group-hover:bg-white'
                   }`}
                 >
                   {plate.shortName}

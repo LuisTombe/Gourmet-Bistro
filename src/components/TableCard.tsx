@@ -29,24 +29,24 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
       <div
         className={`jeton-card p-6 flex flex-col justify-between transition-all ${
           status === 'Disponible'
-            ? 'border-[#e7dcdb] hover:border-[#f73b20]/60'
+            ? 'border-[#E7E5E4] hover:border-[#EA580C]/60'
             : isOverdue
-            ? 'border-[#fb2d54]/40 bg-[#ffebee]/20'
-            : 'border-[#f73b20]/30 bg-[#fdedea]/25'
+            ? 'border-[#B91C1C]/40 bg-[#FEE2E2]/30'
+            : 'border-[#EA580C]/30 bg-[#FFF7ED]/35'
         }`}
       >
         <div>
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2.5">
-                <span className="text-2xl font-medium tracking-tight text-[#360802]">
+                <span className="text-2xl font-medium tracking-tight text-[#1C1917]">
                   Mesa {table.tableNumber < 10 ? `0${table.tableNumber}` : table.tableNumber}
                 </span>
                 <StatusBadge status={status} size="sm" />
               </div>
-              <div className="flex items-center gap-2 mt-2 text-xs text-[#74514b]">
+              <div className="flex items-center gap-2 mt-2 text-xs text-[#78716C]">
                 <span className="inline-flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-[#f73b20]" />
+                  <Users className="w-3.5 h-3.5 text-[#C2410C]" />
                   {table.capacity || 4} personas
                 </span>
                 <span>·</span>
@@ -56,10 +56,10 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
 
             {status === 'Ocupada' && activeOrder && (
               <div className="text-right">
-                <div className="text-[11px] font-medium text-[#74514b]">
+                <div className="text-[11px] font-medium text-[#78716C]">
                   #{activeOrder.id}
                 </div>
-                <div className="text-base font-medium text-[#f73b20] mt-0.5 tabular-nums">
+                <div className="text-base font-medium text-[#C2410C] mt-0.5 tabular-nums">
                   ${activeOrder.total.toLocaleString('es-CO')}
                 </div>
               </div>
@@ -67,27 +67,27 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
           </div>
 
           {status === 'Ocupada' && activeOrder ? (
-            <div className="mt-5 pt-4 border-t border-[#e7dcdb]/80 space-y-2">
+            <div className="mt-5 pt-4 border-t border-[#E7E5E4]/80 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-[#74514b]">
-                  <Clock className="w-3.5 h-3.5 text-[#f73b20]" />
-                  <span className={isOverdue ? 'text-[#fb2d54] font-medium' : 'text-[#360802]'}>
+                <div className="flex items-center gap-1.5 text-[#78716C]">
+                  <Clock className="w-3.5 h-3.5 text-[#C2410C]" />
+                  <span className={isOverdue ? 'text-[#B91C1C] font-medium' : 'text-[#1C1917]'}>
                     {elapsed} min en servicio
                   </span>
                 </div>
                 <StatusBadge status={activeOrder.status} size="sm" />
               </div>
 
-              <div className="text-xs text-[#74514b] truncate">
-                <span className="text-[#360802] font-medium">
+              <div className="text-xs text-[#78716C] truncate">
+                <span className="text-[#1C1917] font-medium">
                   {activeOrder.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
                 </span>
               </div>
             </div>
           ) : (
-            <div className="mt-5 pt-4 border-t border-[#e7dcdb]/80 flex items-center justify-between text-xs text-[#74514b]">
-              <span className="inline-flex items-center gap-1.5 text-[#360802]">
-                <span className="w-2 h-2 rounded-full bg-[#34c771]" />
+            <div className="mt-5 pt-4 border-t border-[#E7E5E4]/80 flex items-center justify-between text-xs text-[#78716C]">
+              <span className="inline-flex items-center gap-1.5 text-[#1C1917]">
+                <span className="w-2 h-2 rounded-full bg-[#15803D]" />
                 Disponible para asignar
               </span>
             </div>
@@ -98,7 +98,7 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
           {status === 'Disponible' ? (
             <button
               onClick={() => onOpenOrder(table)}
-              className="w-full py-2.5 px-4 rounded-xl text-white bg-[#f73b20] hover:bg-[#f84d35] font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl text-white bg-[#C2410C] hover:bg-[#9A3412] font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Tomar Pedido</span>
@@ -107,9 +107,9 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onViewOrder(activeOrder!.id)}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-[#ffffff] hover:bg-[#fdedea] border border-[#e7dcdb] text-[#360802] font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 px-3 rounded-xl bg-[#ffffff] hover:bg-[#FFF7ED] border border-[#E7E5E4] text-[#292524] font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5 text-[#f73b20]" />
+                <Eye className="w-3.5 h-3.5 text-[#C2410C]" />
                 <span>Ver Comanda</span>
               </button>
 
@@ -118,7 +118,7 @@ export const TableCard: React.FC<TableCardProps> = React.memo(
                 (currentUser?.role === 'mesero' || currentUser?.role === 'administrador') && (
                   <button
                     onClick={() => updateOrderStatus(activeOrder.id, 'Entregado')}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-[#34c771] hover:opacity-95 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     title="Confirmar entrega de platos a los comensales"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />

@@ -38,7 +38,7 @@ const AppContent: React.FC = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[#ffffff]">
+      <div className="min-h-screen bg-[#FAF8F5]">
         <ViewSkeleton cards={8} />
       </div>
     );
@@ -77,7 +77,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#360802] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#292524] flex flex-col font-sans">
       <Navbar />
       <main className="flex-1">
         <Suspense fallback={<ViewSkeleton cards={8} />}>{renderCurrentView()}</Suspense>

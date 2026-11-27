@@ -113,9 +113,9 @@ export const TablesFloorView: React.FC = () => {
       <section
         style={{
           background:
-            'linear-gradient(132deg, #f36878 0%, #f66a55 34%, #f87d56 68%, #f8a27d 100%)',
+            'linear-gradient(132deg, #991B1B 0%, #C2410C 38%, #EA580C 72%, #F97316 100%)',
           boxShadow:
-            'rgba(247, 59, 32, 0.12) 0px 16px 40px 0px, rgba(54, 8, 2, 0.05) 0px 2px 10px 0px',
+            'rgba(194, 65, 12, 0.16) 0px 16px 40px 0px, rgba(41, 37, 36, 0.05) 0px 2px 10px 0px',
         }}
         className="relative w-full min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] rounded-[24px] sm:rounded-[28px] overflow-hidden flex flex-col justify-between p-5 sm:p-8 lg:p-12 select-none"
       >
@@ -135,7 +135,7 @@ export const TablesFloorView: React.FC = () => {
           <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-medium tracking-[0.02em]">
             <MousePointerClick className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden sm:inline">Haz clic en cualquier plato para ver sus productos</span>
-            <span className="sm:hidden">Platos Gourmet de Autor</span>
+            <span className="sm:hidden">Platos de Autor · MesaLink</span>
           </span>
 
           <div className="flex items-center gap-2 pointer-events-auto">
@@ -149,52 +149,12 @@ export const TablesFloorView: React.FC = () => {
           </div>
         </div>
 
-        {/* Middle Editorial Typography & Desktop Actions */}
-        <div className="relative z-20 mt-4 sm:mt-6 lg:mt-auto pt-2 lg:pt-60 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end">
-          <div className="lg:col-span-7">
-            <h1
-              className="font-medium text-white drop-shadow-[0_4px_24px_rgba(54,8,2,0.1)] text-3xl sm:text-5xl lg:text-[5.5rem] leading-[1.04] tracking-tight"
-            >
-              Todo en uno
-              <br />
-              para tus pedidos
-            </h1>
-            <p className="text-white/95 text-sm sm:text-base lg:text-lg font-normal leading-[1.35] max-w-sm mt-3 lg:hidden">
-              Un solo sistema para tus pedidos, mesas y platos de autor.
-            </p>
+        {/* Mobile / Tablet Carousel de Platos - Fila interactiva táctil situada arriba del titular para evitar solapamiento visual */}
+        <div className="lg:hidden relative z-20 my-auto py-2 w-full">
+          <div className="flex items-center justify-between text-white/85 text-[11px] mb-2 px-1">
+            <span>Selecciona un plato de autor:</span>
+            <span className="font-semibold text-white">{activePlate.shortName}</span>
           </div>
-
-          <div className="hidden lg:block lg:col-span-5 lg:pl-8 space-y-5 pointer-events-auto">
-            <p className="text-white/95 text-base sm:text-lg font-normal leading-[1.35] max-w-sm">
-              Un solo sistema para tus pedidos, mesas y platos de autor.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setIs3DModalOpen(true)}
-                className="px-5 py-3 rounded-xl bg-white text-[#f73b20] hover:bg-[#fdedea] text-xs font-medium flex items-center gap-2 transition-all shadow-xs cursor-pointer"
-              >
-                <UtensilsCrossed className="w-4 h-4" />
-                <span>Ver Productos del Plato</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const firstAvailable = tables.find((t) => getTableStatus(t.id) === 'Disponible');
-                  if (firstAvailable) handleOpenOrder(firstAvailable);
-                  else setActiveView('nuevo-pedido');
-                }}
-                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/40 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Tomar Pedido</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile / Tablet Carousel de Platos - Fila interactiva táctil independiente que no se solapa con el texto */}
-        <div className="lg:hidden relative z-20 my-3 w-full">
           <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x">
             {PLATES_CATALOG.map((plate, idx) => {
               const isActive = selectedPlateIdx === idx;
@@ -216,7 +176,7 @@ export const TablesFloorView: React.FC = () => {
                     }`}
                   >
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-br from-[#ffffff] via-[#faf5f4] to-[#ece1df] shadow-inner flex items-center justify-center">
-                      <div className="w-full h-full rounded-full overflow-hidden border border-[#e7dcdb] bg-[#360802]/5">
+                      <div className="w-full h-full rounded-full overflow-hidden border border-[#E7E5E4] bg-[#292524]/5">
                         <OptimizedImage
                           src={plate.image}
                           alt={plate.name}
@@ -230,7 +190,7 @@ export const TablesFloorView: React.FC = () => {
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${
                       isActive
-                        ? 'bg-white text-[#f73b20] shadow-xs'
+                        ? 'bg-white text-[#C2410C] shadow-xs'
                         : 'bg-white/25 text-white'
                     }`}
                   >
@@ -240,31 +200,77 @@ export const TablesFloorView: React.FC = () => {
               );
             })}
           </div>
+        </div>
 
-          {/* Botones de acción directos en mobile */}
-          <div className="flex items-center gap-2.5 mt-3 pt-1">
-            <button
-              onClick={() => setIs3DModalOpen(true)}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-white text-[#f73b20] text-xs font-medium flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+        {/* Middle Editorial Typography & Actions */}
+        <div className="relative z-20 mt-4 sm:mt-6 lg:mt-auto pt-2 lg:pt-60 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end">
+          <div className="lg:col-span-7">
+            <h1
+              className="font-medium text-white drop-shadow-[0_4px_24px_rgba(41,37,36,0.15)] text-3xl sm:text-5xl lg:text-[5.5rem] leading-[1.04] tracking-tight"
             >
-              <UtensilsCrossed className="w-4 h-4 shrink-0" />
-              <span className="truncate">Ver Productos</span>
-            </button>
-            <button
-              onClick={() => {
-                const firstAvailable = tables.find((t) => getTableStatus(t.id) === 'Disponible');
-                if (firstAvailable) handleOpenOrder(firstAvailable);
-                else setActiveView('nuevo-pedido');
-              }}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4 shrink-0" />
-              <span className="truncate">Tomar Pedido</span>
-            </button>
+              Todo en uno
+              <br />
+              para tus pedidos
+            </h1>
+            <p className="text-white/95 text-sm sm:text-base lg:text-lg font-normal leading-[1.35] max-w-sm mt-3 lg:hidden">
+              Un solo sistema para tus pedidos, mesas y platos de autor.
+            </p>
+
+            {/* Botones de acción directos en mobile situados debajo del texto */}
+            <div className="flex items-center gap-2.5 mt-4 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setIs3DModalOpen(true)}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-white text-[#C2410C] text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <UtensilsCrossed className="w-4 h-4 shrink-0" />
+                <span className="truncate">Ver Productos</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const firstAvailable = tables.find((t) => getTableStatus(t.id) === 'Disponible');
+                  if (firstAvailable) handleOpenOrder(firstAvailable);
+                  else setActiveView('nuevo-pedido');
+                }}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4 shrink-0" />
+                <span className="truncate">Tomar Pedido</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden lg:block lg:col-span-5 lg:pl-8 space-y-5 pointer-events-auto">
+            <p className="text-white/95 text-base sm:text-lg font-normal leading-[1.35] max-w-sm">
+              Un solo sistema para tus pedidos, mesas y platos de autor.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setIs3DModalOpen(true)}
+                className="px-5 py-3 rounded-xl bg-white text-[#C2410C] hover:bg-[#FFF7ED] text-xs font-semibold flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              >
+                <UtensilsCrossed className="w-4 h-4" />
+                <span>Ver Productos del Plato</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const firstAvailable = tables.find((t) => getTableStatus(t.id) === 'Disponible');
+                  if (firstAvailable) handleOpenOrder(firstAvailable);
+                  else setActiveView('nuevo-pedido');
+                }}
+                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/40 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Tomar Pedido</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Bottom Bar inside Hero: Scroll (Left) | Jeton #f73b20 Dock (Center) | Pedido Counter (Right) */}
+        {/* Bottom Bar inside Hero: Scroll (Left) | MesaLink #C2410C Dock (Center) | Pedido Counter (Right) */}
         <div className="relative z-20 mt-4 lg:mt-8 pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center justify-between sm:justify-start gap-2">
             <button
@@ -279,14 +285,14 @@ export const TablesFloorView: React.FC = () => {
 
             <button
               onClick={() => setIs3DModalOpen(true)}
-              className="sm:hidden px-3.5 py-1.5 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              className="sm:hidden px-3.5 py-1.5 rounded-full bg-[#1C1917]/40 hover:bg-[#1C1917]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>Pedido ({draftItemsCount})</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-full bg-[#f73b20] text-white shadow-[0_8px_24px_rgba(247,59,32,0.35)] border border-white/20 max-w-full overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-[#C2410C] text-white shadow-[0_8px_24px_rgba(194,65,12,0.35)] border border-white/20 max-w-full overflow-x-auto no-scrollbar">
             {PLATES_CATALOG.map((plate, idx) => (
               <button
                 key={plate.id}
@@ -296,7 +302,7 @@ export const TablesFloorView: React.FC = () => {
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                   selectedPlateIdx === idx
-                    ? 'bg-white text-[#f73b20]'
+                    ? 'bg-white text-[#C2410C]'
                     : 'text-white/95 hover:bg-white/15'
                 }`}
               >
@@ -307,7 +313,7 @@ export const TablesFloorView: React.FC = () => {
 
           <button
             onClick={() => setIs3DModalOpen(true)}
-            className="hidden sm:flex px-4 py-2 rounded-full bg-[#360802]/40 hover:bg-[#360802]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium items-center gap-2 transition-all cursor-pointer"
+            className="hidden sm:flex px-4 py-2 rounded-full bg-[#1C1917]/40 hover:bg-[#1C1917]/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium items-center gap-2 transition-all cursor-pointer"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>Pedido ({draftItemsCount})</span>

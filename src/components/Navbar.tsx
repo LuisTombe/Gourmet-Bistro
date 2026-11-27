@@ -81,7 +81,7 @@ export const Navbar: React.FC = React.memo(() => {
 
   return (
     <>
-      <header className="bg-[#ffffff]/95 backdrop-blur-xl text-[#360802] border-b border-[#e7dcdb]/80 sticky top-0 z-40">
+      <header className="bg-[#FAF8F5]/90 backdrop-blur-xl text-[#292524] border-b border-[#E7E5E4] sticky top-0 z-40">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between min-h-[48px] gap-4">
           {/* Left: Clean Editorial Brand + Quiet Live Summary */}
@@ -94,11 +94,11 @@ export const Navbar: React.FC = React.memo(() => {
               <BrandLogo />
             </button>
 
-            <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-[#e7dcdb] text-xs text-[#74514b]">
-              <span className="w-2 h-2 rounded-full bg-[#34c771]" />
+            <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-[#E7E5E4] text-xs text-[#57534E]">
+              <span className="w-2 h-2 rounded-full bg-[#15803D]" />
               <span>{availableCount} mesas libres</span>
               {readyCount > 0 && (
-                <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#fdedea] text-[#f73b20] font-medium">
+                <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#166534] font-medium">
                   {readyCount} {readyCount === 1 ? 'listo' : 'listos'}
                 </span>
               )}
@@ -108,7 +108,7 @@ export const Navbar: React.FC = React.memo(() => {
           {/* Center: Balanced Pill Navigation */}
           <nav
             aria-label="Navegación principal"
-            className="hidden md:flex items-center gap-1 bg-[#fdedea]/55 p-1.5 rounded-full border border-[#e7dcdb]/80"
+            className="hidden md:flex items-center gap-1 bg-[#F5F5F4] p-1.5 rounded-full border border-[#E7E5E4]"
           >
             {(role === 'mesero' || role === 'administrador') && (
               <>
@@ -116,8 +116,8 @@ export const Navbar: React.FC = React.memo(() => {
                   onClick={() => setActiveView('mesas')}
                   className={`px-4 py-2 rounded-full text-xs font-medium tracking-[0.01em] flex items-center gap-2 transition-all cursor-pointer ${
                     activeView === 'mesas'
-                      ? 'bg-[#f73b20] text-white shadow-xs'
-                      : 'text-[#360802]/80 hover:text-[#360802] hover:bg-[#ffffff]/80'
+                      ? 'bg-[#C2410C] text-white shadow-xs'
+                      : 'text-[#57534E] hover:text-[#292524] hover:bg-[#FFFFFF]'
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -128,8 +128,8 @@ export const Navbar: React.FC = React.memo(() => {
                   onClick={() => setActiveView('nuevo-pedido')}
                   className={`px-4 py-2 rounded-full text-xs font-medium tracking-[0.01em] flex items-center gap-2 transition-all cursor-pointer ${
                     activeView === 'nuevo-pedido'
-                      ? 'bg-[#f73b20] text-white shadow-xs'
-                      : 'text-[#360802]/80 hover:text-[#360802] hover:bg-[#ffffff]/80'
+                      ? 'bg-[#C2410C] text-white shadow-xs'
+                      : 'text-[#57534E] hover:text-[#292524] hover:bg-[#FFFFFF]'
                   }`}
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
@@ -138,8 +138,8 @@ export const Navbar: React.FC = React.memo(() => {
                     <span
                       className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium leading-none ${
                         activeView === 'nuevo-pedido'
-                          ? 'bg-white text-[#f73b20]'
-                          : 'bg-[#f73b20] text-white'
+                          ? 'bg-white text-[#C2410C]'
+                          : 'bg-[#C2410C] text-white'
                       }`}
                     >
                       {draftCount}
@@ -154,8 +154,8 @@ export const Navbar: React.FC = React.memo(() => {
                 onClick={() => setActiveView('cocina')}
                 className={`px-4 py-2 rounded-full text-xs font-medium tracking-[0.01em] flex items-center gap-2 transition-all cursor-pointer ${
                   activeView === 'cocina'
-                    ? 'bg-[#f73b20] text-white shadow-xs'
-                    : 'text-[#360802]/80 hover:text-[#360802] hover:bg-[#ffffff]/80'
+                    ? 'bg-[#C2410C] text-white shadow-xs'
+                    : 'text-[#57534E] hover:text-[#292524] hover:bg-[#FFFFFF]'
                 }`}
               >
                 <ChefHat className="w-3.5 h-3.5" />
@@ -164,8 +164,8 @@ export const Navbar: React.FC = React.memo(() => {
                   <span
                     className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium leading-none ${
                       activeView === 'cocina'
-                        ? 'bg-white text-[#f73b20]'
-                        : 'bg-[#360802]/10 text-[#360802]'
+                        ? 'bg-white text-[#C2410C]'
+                        : 'bg-[#E7E5E4] text-[#292524]'
                     }`}
                   >
                     {kitchenActiveCount}
@@ -178,8 +178,8 @@ export const Navbar: React.FC = React.memo(() => {
               onClick={() => setActiveView('pedidos')}
               className={`px-4 py-2 rounded-full text-xs font-medium tracking-[0.01em] flex items-center gap-2 transition-all cursor-pointer ${
                 activeView === 'pedidos'
-                  ? 'bg-[#f73b20] text-white shadow-xs'
-                  : 'text-[#360802]/80 hover:text-[#360802] hover:bg-[#ffffff]/80'
+                  ? 'bg-[#C2410C] text-white shadow-xs'
+                  : 'text-[#57534E] hover:text-[#292524] hover:bg-[#FFFFFF]'
               }`}
             >
               <ClipboardList className="w-3.5 h-3.5" />
@@ -187,8 +187,8 @@ export const Navbar: React.FC = React.memo(() => {
             </button>
 
             {isSettingsActive && (
-              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#ffffff] text-[#360802] text-xs font-medium border border-[#e7dcdb]">
-                <Sliders className="w-3.5 h-3.5 text-[#f73b20]" />
+              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#FFFFFF] text-[#292524] text-xs font-medium border border-[#E7E5E4]">
+                <Sliders className="w-3.5 h-3.5 text-[#C2410C]" />
                 <span>
                   {activeView === 'menu' && 'Menú'}
                   {activeView === 'gestion-mesas' && 'Mesas'}
@@ -203,7 +203,7 @@ export const Navbar: React.FC = React.memo(() => {
           <div className="flex items-center gap-2 sm:gap-2.5">
             <button
               onClick={() => setIs3DModalOpen(true)}
-              className="p-2 sm:px-4 sm:py-2 rounded-full bg-[#fdedea] hover:bg-[#f73b20] text-[#f73b20] hover:text-white border border-[#f73b20]/20 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              className="p-2 sm:px-4 sm:py-2 rounded-full bg-[#FFF7ED] hover:bg-[#C2410C] text-[#C2410C] hover:text-white border border-[#FDBA74]/40 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
               title="Explorar platos gourmet del menú"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -215,13 +215,13 @@ export const Navbar: React.FC = React.memo(() => {
                 onClick={() => setProfilePanelOpen(!profilePanelOpen)}
                 className={`flex items-center gap-2 py-1.5 pl-2 pr-3 rounded-full transition-all border cursor-pointer ${
                   profilePanelOpen
-                    ? 'bg-[#fdedea] border-[#f73b20]'
-                    : 'bg-[#ffffff] hover:bg-[#fdedea]/60 border-[#e7dcdb]'
+                    ? 'bg-[#FFF7ED] border-[#C2410C]'
+                    : 'bg-[#FFFFFF] hover:bg-[#FFF7ED]/70 border-[#E7E5E4]'
                 }`}
                 title="Abrir perfil y administración"
                 aria-expanded={profilePanelOpen}
               >
-                <div className="w-7 h-7 rounded-full overflow-hidden border border-[#e7dcdb] shrink-0">
+                <div className="w-7 h-7 rounded-full overflow-hidden border border-[#E7E5E4] shrink-0">
                   <OptimizedImage
                     src={currentUser.avatar || '/assets/dishes/avatar.svg'}
                     alt={currentUser.name}
@@ -230,12 +230,12 @@ export const Navbar: React.FC = React.memo(() => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="hidden sm:inline text-xs font-medium text-[#360802]">
+                <span className="hidden sm:inline text-xs font-medium text-[#292524]">
                   {currentUser.name}
                 </span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-[#74514b] transition-transform duration-200 ${
-                    profilePanelOpen ? 'rotate-180 text-[#f73b20]' : ''
+                  className={`w-3.5 h-3.5 text-[#78716C] transition-transform duration-200 ${
+                    profilePanelOpen ? 'rotate-180 text-[#C2410C]' : ''
                   }`}
                 />
               </button>
@@ -393,13 +393,13 @@ export const Navbar: React.FC = React.memo(() => {
       </div>
 
       {/* Mobile Navigation Sub-bar */}
-      <div className="md:hidden flex items-center justify-start sm:justify-around bg-[#ffffff] border-t border-[#e7dcdb] px-3 py-2 text-xs overflow-x-auto no-scrollbar gap-1.5">
+      <div className="md:hidden flex items-center justify-start sm:justify-around bg-[#FFFFFF] border-t border-[#E7E5E4] px-3 py-2 text-xs overflow-x-auto no-scrollbar gap-1.5">
         {(role === 'mesero' || role === 'administrador') && (
           <>
             <button
               onClick={() => setActiveView('mesas')}
               className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap ${
-                activeView === 'mesas' ? 'bg-[#f73b20] text-white' : 'text-[#360802]'
+                activeView === 'mesas' ? 'bg-[#C2410C] text-white shadow-xs' : 'text-[#292524]'
               }`}
             >
               Salón
@@ -407,7 +407,7 @@ export const Navbar: React.FC = React.memo(() => {
             <button
               onClick={() => setActiveView('nuevo-pedido')}
               className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap ${
-                activeView === 'nuevo-pedido' ? 'bg-[#f73b20] text-white' : 'text-[#360802]'
+                activeView === 'nuevo-pedido' ? 'bg-[#C2410C] text-white shadow-xs' : 'text-[#292524]'
               }`}
             >
               + Pedido {draftCount > 0 ? `(${draftCount})` : ''}
@@ -418,7 +418,7 @@ export const Navbar: React.FC = React.memo(() => {
           <button
             onClick={() => setActiveView('cocina')}
             className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap ${
-              activeView === 'cocina' ? 'bg-[#f73b20] text-white' : 'text-[#360802]'
+              activeView === 'cocina' ? 'bg-[#C2410C] text-white shadow-xs' : 'text-[#292524]'
             }`}
           >
             Cocina {kitchenActiveCount > 0 ? `(${kitchenActiveCount})` : ''}
@@ -427,7 +427,7 @@ export const Navbar: React.FC = React.memo(() => {
         <button
           onClick={() => setActiveView('pedidos')}
           className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap ${
-            activeView === 'pedidos' ? 'bg-[#f73b20] text-white' : 'text-[#360802]'
+            activeView === 'pedidos' ? 'bg-[#C2410C] text-white shadow-xs' : 'text-[#292524]'
           }`}
         >
           Pedidos
